@@ -70,10 +70,14 @@ export const platformSettingsService = {
         structuredClone(defaultPlatformSettings)
       );
 
-      // brand_logo_url is stored as a flat JSONB string — Supabase parses it to a JS string already
+      // brand_logo_url is stored as a flat JSONB string — Supabase may return it
+      // as a plain string OR as a JSON-encoded string (with outer quotes "\"https://...\"")
       const logoRow = (data || []).find((r) => r.key === "brand_logo_url");
-      if (logoRow?.value) {
-        settings.brand_logo_url = typeof logoRow.value === "string" ? logoRow.value : String(logoRow.value);
+      if (logoRow?.value != null) {
+        let raw = typeof logoRow.value === "string" ? logoRow.value : String(logoRow.value);
+        // Strip JSON-encoded outer quotes if present: '"https://..."' → 'https://...'
+        raw = raw.replace(/^"|"$/g, "");
+        settings.brand_logo_url = raw;
       }
 
       localStorage.setItem(CACHE_KEY, JSON.stringify(settings));
@@ -85,10 +89,15 @@ export const platformSettingsService = {
   },
 
   mergeSettings(settings) {
-    return Object.entries(settings || {}).reduce(
-      (merged, [key, value]) => ({ ...merged, [key]: { ...merged[key], ...value } }),
-      structuredClone(defaultPlatformSettings)
-    );
+    const defaults = structuredClone(defaultPlatformSettings);
+    return Object.entries(settings || {}).reduce((merged, [key, value]) => {
+      // For section keys (brand, homepage, etc.), merge nested objects
+      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+        return { ...merged, [key]: { ...merged[key], ...value } };
+      }
+      // For flat string values like brand_logo_url, assign directly
+      return { ...merged, [key]: value };
+    }, defaults);
   },
 };
 

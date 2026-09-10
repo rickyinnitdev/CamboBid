@@ -1,11 +1,17 @@
 <script setup>
 import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useSettingsStore } from "@/stores/settings";
 
 const authStore = useAuthStore();
+const settingsStore = useSettingsStore();
 
 onMounted(async () => {
-  await authStore.initialize();
+  // Run both in parallel — neither depends on the other
+  await Promise.all([
+    authStore.initialize(),
+    settingsStore.fetchSettings(),
+  ]);
 });
 </script>
 

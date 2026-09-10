@@ -4,10 +4,12 @@ import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { notificationService } from "@/services/notificationService";
 import { platformSettingsService, defaultPlatformSettings } from "@/services/platformSettingsService";
+import { useSettingsStore } from "@/stores/settings";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
 
 const router = useRouter();
 const { profile, isAuthenticated, isAdmin, logout } = useAuth();
+const settingsStore = useSettingsStore();
 
 const settings = ref(platformSettingsService.getCached());
 const mobileMenuOpen = ref(false);
@@ -66,10 +68,10 @@ onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel)
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="h-20 flex items-center gap-5">
           <router-link to="/" class="flex items-center gap-3 shrink-0">
-            <!-- Dynamic logo image if set, otherwise fallback to icon mark -->
+            <!-- Dynamic logo: use reactive store value (fetched on app startup) -->
             <img
-              v-if="settings.brand_logo_url"
-              :src="settings.brand_logo_url"
+              v-if="settingsStore.logoUrl"
+              :src="settingsStore.logoUrl"
               alt="CamboBid"
               style="height: 40px; object-fit: contain; max-width: 160px;"
             />
