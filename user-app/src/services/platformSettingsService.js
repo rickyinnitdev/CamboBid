@@ -39,6 +39,7 @@ export const defaultPlatformSettings = {
     admin_mfa_required: true,
     verified_bidder_mfa_required: false,
   },
+  brand_logo_url: "",
 };
 
 export const platformSettingsService = {
@@ -57,10 +58,23 @@ export const platformSettingsService = {
       const { data, error } = await supabase.from("platform_settings").select("key, value");
       if (error) throw error;
 
+      // Section keys (brand, homepage, etc.) are JSONB objects — spread them into nested shape
+      const SECTION_KEYS = ["brand", "homepage", "auction_rules", "auth"];
       const settings = (data || []).reduce(
-        (settings, row) => ({ ...settings, [row.key]: { ...settings[row.key], ...row.value } }),
+        (settings, row) => {
+          if (SECTION_KEYS.includes(row.key)) {
+            return { ...settings, [row.key]: { ...settings[row.key], ...row.value } };
+          }
+          return settings;
+        },
         structuredClone(defaultPlatformSettings)
       );
+
+      // brand_logo_url is stored as a flat JSONB string — Supabase parses it to a JS string already
+      const logoRow = (data || []).find((r) => r.key === "brand_logo_url");
+      if (logoRow?.value) {
+        settings.brand_logo_url = typeof logoRow.value === "string" ? logoRow.value : String(logoRow.value);
+      }
 
       localStorage.setItem(CACHE_KEY, JSON.stringify(settings));
       window.dispatchEvent(new CustomEvent("platform-settings-updated", { detail: settings }));

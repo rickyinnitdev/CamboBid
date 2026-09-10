@@ -7,22 +7,90 @@ import BaseCard from "@/components/base/BaseCard.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import { platformSettingsService, defaultPlatformSettings } from "@/services/platformSettingsService";
+import { supabase } from "@/services/supabase";
+import { useAuthStore } from "@/stores/auth";
 
 const { t } = useI18n();
 const toast = useToast();
+const authStore = useAuthStore();
 const settings = ref(structuredClone(defaultPlatformSettings));
 const loading = ref(true);
 const saving = ref(false);
+const logoUrl = ref("");
+const logoUploading = ref(false);
+const logoFileInput = ref(null);
 
 async function loadSettings() {
   try {
     loading.value = true;
     settings.value = await platformSettingsService.getAll();
+
+    // Load logo URL separately — stored as a flat JSONB string key
+    const { data: logoRow } = await supabase
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "brand_logo_url")
+      .maybeSingle();
+    if (logoRow?.value) {
+      // Supabase already parses JSONB — value is the raw string
+      logoUrl.value = typeof logoRow.value === "string" ? logoRow.value : String(logoRow.value);
+    }
   } catch (error) {
     toast.error(error.message || "Failed to load platform settings");
   } finally {
     loading.value = false;
   }
+}
+
+async function uploadLogo(file) {
+  if (file.size > 2 * 1024 * 1024) {
+    toast.error("File too large. Max 2MB.");
+    return;
+  }
+
+  logoUploading.value = true;
+  try {
+    const ext = file.name.split(".").pop();
+    const fileName = `logos/brand-logo-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("platform-assets")
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from("platform-assets")
+      .getPublicUrl(fileName);
+
+    // Save to platform_settings as JSONB string
+    const { error: saveError } = await supabase
+      .from("platform_settings")
+      .upsert(
+        {
+          key: "brand_logo_url",
+          value: JSON.stringify(publicUrl),
+          updated_by: authStore.user?.id || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" }
+      );
+
+    if (saveError) throw saveError;
+
+    logoUrl.value = publicUrl;
+    toast.success("Logo uploaded and saved!");
+  } catch (error) {
+    toast.error(error.message || "Logo upload failed");
+  } finally {
+    logoUploading.value = false;
+    if (logoFileInput.value) logoFileInput.value.value = "";
+  }
+}
+
+function onFileChange(event) {
+  const file = event.target.files?.[0];
+  if (file) uploadLogo(file);
 }
 
 async function saveSettings() {
@@ -70,6 +138,49 @@ onMounted(loadSettings);
             </div>
             <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">Public site</span>
           </div>
+          <!-- Brand Logo Upload -->
+          <div class="mb-5 p-4 rounded-2xl border border-border bg-slate-50">
+            <p class="text-sm font-bold text-heading mb-3">Brand Logo</p>
+            <div class="flex items-center gap-5 flex-wrap">
+              <!-- Preview -->
+              <div class="w-32 h-16 rounded-xl border border-border bg-white flex items-center justify-center overflow-hidden shrink-0">
+                <img
+                  v-if="logoUrl"
+                  :src="logoUrl"
+                  alt="Brand logo"
+                  class="max-h-full max-w-full object-contain p-1"
+                />
+                <span v-else class="text-xs text-muted text-center px-2">No logo set</span>
+              </div>
+
+              <!-- Upload button -->
+              <div class="flex flex-col gap-2">
+                <input
+                  ref="logoFileInput"
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  class="hidden"
+                  @change="onFileChange"
+                />
+                <BaseButton
+                  variant="outline"
+                  :loading="logoUploading"
+                  size="sm"
+                  @click="logoFileInput?.click()"
+                >
+                  <template v-if="!logoUploading">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Upload logo
+                  </template>
+                  <template v-else>Uploading…</template>
+                </BaseButton>
+                <p class="text-xs text-muted">PNG, JPG, SVG, WebP · Max 2 MB</p>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <BaseInput v-model="settings.brand.name" label="Business Name" />
             <BaseInput v-model="settings.brand.tagline" label="Tagline" />

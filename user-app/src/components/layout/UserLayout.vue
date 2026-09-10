@@ -66,13 +66,22 @@ onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel)
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="h-20 flex items-center gap-5">
           <router-link to="/" class="flex items-center gap-3 shrink-0">
-            <div class="w-11 h-11 rounded-2xl bg-blue-700 flex items-center justify-center shadow-sm shadow-blue-700/25">
-              <span class="w-6 h-6 rounded-full bg-white block" />
-            </div>
-            <div>
-              <p class="text-2xl font-black tracking-tight text-blue-700 leading-none">{{ settings.brand.name }}</p>
-              <p class="text-[11px] text-slate-500 hidden sm:block">{{ settings.brand.tagline }}</p>
-            </div>
+            <!-- Dynamic logo image if set, otherwise fallback to icon mark -->
+            <img
+              v-if="settings.brand_logo_url"
+              :src="settings.brand_logo_url"
+              alt="CamboBid"
+              style="height: 40px; object-fit: contain; max-width: 160px;"
+            />
+            <template v-else>
+              <div class="w-11 h-11 rounded-2xl bg-blue-700 flex items-center justify-center shadow-sm shadow-blue-700/25">
+                <span class="w-6 h-6 rounded-full bg-white block" />
+              </div>
+              <div>
+                <p class="text-2xl font-black tracking-tight text-blue-700 leading-none">{{ settings.brand.name }}</p>
+                <p class="text-[11px] text-slate-500 hidden sm:block">{{ settings.brand.tagline }}</p>
+              </div>
+            </template>
           </router-link>
 
           <button class="hidden lg:inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
