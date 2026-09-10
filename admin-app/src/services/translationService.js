@@ -4,7 +4,7 @@ export const translationService = {
   async getTranslations(locale, prefix) {
     let query = supabase
       .from("cms_translations")
-      .select("id, locale, key, value, updated_at, updated_by, profiles!updated_by(display_name)")
+      .select("id, locale, key, value, updated_at, updated_by, editor:profiles!cms_translations_updated_by_fkey(display_name)")
       .eq("locale", locale);
 
     if (prefix) {

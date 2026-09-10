@@ -32,6 +32,7 @@ async function saveSettings() {
       platformSettingsService.saveSection("brand", settings.value.brand),
       platformSettingsService.saveSection("homepage", settings.value.homepage),
       platformSettingsService.saveSection("auction_rules", settings.value.auction_rules),
+      platformSettingsService.saveSection("auth", settings.value.auth),
     ]);
     toast.success("Platform CMS settings saved");
   } catch (error) {
@@ -77,6 +78,38 @@ onMounted(loadSettings);
             <BaseInput v-model="settings.brand.trust_score" label="Trust Score Label" />
             <BaseInput v-model="settings.brand.review_count" label="Review Count" />
             <BaseInput v-model="settings.brand.review_source" label="Review Source" />
+          </div>
+        </BaseCard>
+
+        <BaseCard>
+          <div class="mb-5">
+            <h3 class="font-black text-heading text-lg">Authentication & Security</h3>
+            <p class="text-sm text-muted">Control login options displayed by the apps. Supabase provider and MFA enforcement must also be enabled in Supabase Auth settings.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <label class="rounded-2xl border border-border p-4 flex items-start gap-3">
+              <input v-model="settings.auth.email_confirm_required" type="checkbox" class="mt-1 h-4 w-4 rounded border-border text-blue-700" />
+              <span><strong class="block text-heading">Require email verification</strong><span class="text-sm text-muted">Users should confirm Gmail/email before bidding.</span></span>
+            </label>
+            <label class="rounded-2xl border border-border p-4 flex items-start gap-3">
+              <input v-model="settings.auth.google_login_enabled" type="checkbox" class="mt-1 h-4 w-4 rounded border-border text-blue-700" />
+              <span><strong class="block text-heading">Google sign-in button</strong><span class="text-sm text-muted">Show Google login on user and admin apps.</span></span>
+            </label>
+            <label class="rounded-2xl border border-border p-4 flex items-start gap-3">
+              <input v-model="settings.auth.admin_mfa_required" type="checkbox" class="mt-1 h-4 w-4 rounded border-border text-blue-700" />
+              <span><strong class="block text-heading">Admin MFA required</strong><span class="text-sm text-muted">Require authenticator app for admin users.</span></span>
+            </label>
+            <label class="rounded-2xl border border-border p-4 flex items-start gap-3">
+              <input v-model="settings.auth.user_mfa_required" type="checkbox" class="mt-1 h-4 w-4 rounded border-border text-blue-700" />
+              <span><strong class="block text-heading">User MFA required</strong><span class="text-sm text-muted">Require 2FA for all user accounts.</span></span>
+            </label>
+            <label class="rounded-2xl border border-border p-4 flex items-start gap-3">
+              <input v-model="settings.auth.verified_bidder_mfa_required" type="checkbox" class="mt-1 h-4 w-4 rounded border-border text-blue-700" />
+              <span><strong class="block text-heading">Verified bidder MFA</strong><span class="text-sm text-muted">Require 2FA before high-trust bidding.</span></span>
+            </label>
+          </div>
+          <div class="mt-5 rounded-2xl bg-blue-50 border border-blue-100 p-4 text-sm text-blue-900">
+            Enable Google in Supabase: Authentication → Providers → Google. Enable MFA in Supabase: Authentication → Settings → Multi-Factor Authentication.
           </div>
         </BaseCard>
 

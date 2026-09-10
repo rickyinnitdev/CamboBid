@@ -7,9 +7,9 @@ export const disputeService = {
       .select(`
         id, reason, description, status, created_at, resolved_at, appeal_deadline,
         auctions!inner(id, end_time, listings!inner(id, title, images)),
-        profiles!filer_id(id, display_name, avatar_url),
-        profiles!respondent_id(id, display_name, avatar_url),
-        profiles!arbitrator_id(id, display_name, avatar_url)
+        filer:profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
+        respondent:profiles!disputes_respondent_id_fkey(id, display_name, avatar_url),
+        arbitrator:profiles!disputes_arbitrator_id_fkey(id, display_name, avatar_url)
       `, { count: "exact" });
 
     if (status) query = query.eq("status", status);
@@ -30,9 +30,9 @@ export const disputeService = {
       .select(`
         id, reason, description, evidence, status, resolution, created_at, resolved_at, appeal_deadline,
         auctions!inner(id, end_time, current_price, listings!inner(id, title, images, description)),
-        profiles!filer_id(id, display_name, avatar_url, email),
-        profiles!respondent_id(id, display_name, avatar_url, email),
-        profiles!arbitrator_id(id, display_name, avatar_url, email)
+        filer:profiles!disputes_filer_id_fkey(id, display_name, avatar_url, email),
+        respondent:profiles!disputes_respondent_id_fkey(id, display_name, avatar_url, email),
+        arbitrator:profiles!disputes_arbitrator_id_fkey(id, display_name, avatar_url, email)
       `)
       .eq("id", id)
       .single();

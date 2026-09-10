@@ -11,7 +11,7 @@ export const searchService = {
       .select(`
         id, title, description, images, starting_price, status, created_at,
         categories!inner(id, name, slug),
-        profiles!inner(id, display_name, avatar_url)
+        seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url)
       `, { count: "exact" })
       .textSearch("title", query, { type: "websearch" })
       .in("status", ["approved", "live", "sold"]);

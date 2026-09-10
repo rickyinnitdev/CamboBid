@@ -8,7 +8,7 @@ import BaseButton from "@/components/base/BaseButton.vue";
 
 const { t } = useI18n();
 const router = useRouter();
-const { login } = useAuth();
+const { login, loginWithGoogle } = useAuth();
 
 const email = ref("");
 const password = ref("");
@@ -28,6 +28,17 @@ async function handleLogin() {
   } catch (e) {
     error.value = e.message || "Invalid credentials";
   } finally {
+    loading.value = false;
+  }
+}
+
+async function handleGoogleLogin() {
+  loading.value = true;
+  error.value = "";
+  try {
+    await loginWithGoogle();
+  } catch (e) {
+    error.value = e.message || "Google sign-in failed";
     loading.value = false;
   }
 }
@@ -77,6 +88,16 @@ async function handleLogin() {
             Sign In
           </BaseButton>
         </form>
+
+        <div class="my-5 flex items-center gap-3">
+          <div class="h-px flex-1 bg-border" />
+          <span class="text-xs font-semibold uppercase tracking-widest text-muted">or</span>
+          <div class="h-px flex-1 bg-border" />
+        </div>
+
+        <BaseButton variant="outline" :loading="loading" class="w-full" @click="handleGoogleLogin">
+          Continue with Google
+        </BaseButton>
       </div>
     </div>
   </div>

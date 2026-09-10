@@ -35,6 +35,7 @@ export function useAuth() {
     hasPermission,
     register: authStore.register,
     login: authStore.login,
+    loginWithGoogle: authStore.loginWithGoogle,
     logout: authStore.logout,
     refreshProfile: authStore.refreshProfile,
     updateProfile: authStore.updateProfile,

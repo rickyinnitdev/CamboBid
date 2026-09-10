@@ -7,8 +7,8 @@ export const escrowService = {
       .select(`
         id, amount, status, created_at, released_at, frozen_at, refunded_at, notes,
         auctions!inner(id, end_time, listings!inner(id, title)),
-        profiles!buyer_id(id, display_name, avatar_url),
-        profiles!seller_id(id, display_name, avatar_url)
+        buyer:profiles!escrow_transactions_buyer_id_fkey(id, display_name, avatar_url),
+        seller:profiles!escrow_transactions_seller_id_fkey(id, display_name, avatar_url)
       `, { count: "exact" });
 
     if (status) query = query.eq("status", status);
@@ -29,8 +29,8 @@ export const escrowService = {
       .select(`
         id, amount, status, created_at, released_at, frozen_at, refunded_at, notes,
         auctions!inner(id, end_time, current_price, listings!inner(id, title, images, description)),
-        profiles!buyer_id(id, display_name, avatar_url, email),
-        profiles!seller_id(id, display_name, avatar_url, email)
+        buyer:profiles!escrow_transactions_buyer_id_fkey(id, display_name, avatar_url, email),
+        seller:profiles!escrow_transactions_seller_id_fkey(id, display_name, avatar_url, email)
       `)
       .eq("id", id)
       .single();

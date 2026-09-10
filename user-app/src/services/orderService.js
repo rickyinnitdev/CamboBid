@@ -13,8 +13,8 @@ export const orderService = {
           id, end_time, current_price, winner_id,
           listings!inner(id, title, images, seller_id)
         ),
-        profiles!buyer_id(id, display_name, avatar_url),
-        profiles!seller_id(id, display_name, avatar_url)
+        buyer:profiles!escrow_transactions_buyer_id_fkey(id, display_name, avatar_url),
+        seller:profiles!escrow_transactions_seller_id_fkey(id, display_name, avatar_url)
       `)
       .eq("buyer_id", user.id)
       .order("created_at", { ascending: false });
@@ -35,8 +35,8 @@ export const orderService = {
           id, end_time, current_price, winner_id, type,
           listings!inner(id, title, images, description, condition, seller_id)
         ),
-        profiles!buyer_id(id, display_name, avatar_url, email),
-        profiles!seller_id(id, display_name, avatar_url, email)
+        buyer:profiles!escrow_transactions_buyer_id_fkey(id, display_name, avatar_url, email),
+        seller:profiles!escrow_transactions_seller_id_fkey(id, display_name, avatar_url, email)
       `)
       .eq("id", orderId)
       .single();
@@ -76,7 +76,7 @@ export const orderService = {
           id, end_time, current_price, winner_id,
           listings!inner(id, title, images)
         ),
-        profiles!buyer_id(id, display_name, avatar_url)
+        buyer:profiles!escrow_transactions_buyer_id_fkey(id, display_name, avatar_url)
       `)
       .eq("seller_id", user.id)
       .order("created_at", { ascending: false });

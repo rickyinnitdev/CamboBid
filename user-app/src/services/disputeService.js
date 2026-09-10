@@ -93,8 +93,8 @@ export const disputeService = {
           id, end_time, current_price,
           listings!inner(id, title, images)
         ),
-        profiles!filer_id(id, display_name, avatar_url),
-        profiles!respondent_id(id, display_name, avatar_url)
+        filer:profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
+        respondent:profiles!disputes_respondent_id_fkey(id, display_name, avatar_url)
       `)
       .or(`filer_id.eq.${user.id},respondent_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
@@ -115,9 +115,9 @@ export const disputeService = {
           id, end_time, current_price,
           listings!inner(id, title, images, description)
         ),
-        profiles!filer_id(id, display_name, avatar_url),
-        profiles!respondent_id(id, display_name, avatar_url),
-        profiles!arbitrator_id(id, display_name, avatar_url)
+        filer:profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
+        respondent:profiles!disputes_respondent_id_fkey(id, display_name, avatar_url),
+        arbitrator:profiles!disputes_arbitrator_id_fkey(id, display_name, avatar_url)
       `)
       .eq("id", disputeId)
       .single();

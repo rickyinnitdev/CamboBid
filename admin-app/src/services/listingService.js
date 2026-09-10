@@ -25,7 +25,7 @@ export const listingService = {
   async getListingById(id) {
     const { data, error } = await supabase
       .from("listings")
-      .select("*, categories(*), profiles!seller_id(id, display_name, avatar_url, email, reputation_score)")
+      .select("*, categories(*), seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url, email, reputation_score)")
       .eq("id", id)
       .single();
     if (error) throw error;

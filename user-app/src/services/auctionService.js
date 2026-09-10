@@ -9,7 +9,7 @@ export const auctionService = {
         listings!inner(
           id, title, description, images, category_id, condition, seller_id, starting_price,
           categories(id, name, slug),
-          profiles!seller_id(display_name, avatar_url)
+          seller:profiles!listings_seller_id_fkey(display_name, avatar_url)
         )
       `, { count: "exact" });
 
@@ -68,7 +68,7 @@ export const auctionService = {
       .from("auctions")
       .select(`
         *,
-        listings!inner(*, profiles!seller_id(id, display_name, avatar_url, reputation_score))
+        listings!inner(*, seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url, reputation_score))
       `)
       .eq("id", id)
       .single();

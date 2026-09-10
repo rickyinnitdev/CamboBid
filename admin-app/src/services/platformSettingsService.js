@@ -30,6 +30,13 @@ export const defaultPlatformSettings = {
     escrow_release_hours: 24,
     min_deposit: 50,
   },
+  auth: {
+    email_confirm_required: true,
+    google_login_enabled: true,
+    user_mfa_required: false,
+    admin_mfa_required: true,
+    verified_bidder_mfa_required: false,
+  },
 };
 
 export const platformSettingsService = {

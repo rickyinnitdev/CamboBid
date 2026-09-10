@@ -85,7 +85,7 @@ serve(async (req: Request) => {
     // Get winning bid
     const { data: winningBid } = await adminClient
       .from("bids")
-      .select("*, profiles!bidder_id(display_name, email)")
+      .select("*, bidder:profiles!bids_bidder_id_fkey(display_name, email)")
       .eq("auction_id", auction_id)
       .eq("status", "winning")
       .order("amount", { ascending: false })

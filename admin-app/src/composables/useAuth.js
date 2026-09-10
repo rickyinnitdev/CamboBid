@@ -23,6 +23,7 @@ export function useAuth() {
     isAdmin, isSuperAdmin, isAuctioneer, isEscrowManager, userRole,
     hasPermission,
     login: authStore.login,
+    loginWithGoogle: authStore.loginWithGoogle,
     logout: authStore.logout,
     refreshProfile: authStore.refreshProfile,
   };

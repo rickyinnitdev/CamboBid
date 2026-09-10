@@ -47,6 +47,10 @@ export const useAuthStore = defineStore("auth", () => {
     return data;
   }
 
+  async function loginWithGoogle() {
+    return authService.loginWithGoogle();
+  }
+
   async function logout() {
     await authService.logout();
     user.value = null;
@@ -112,6 +116,6 @@ export const useAuthStore = defineStore("auth", () => {
   return {
     user, profile, loading, initialized,
     isAuthenticated, isAdmin, isSuperAdmin, isAuctioneer, isEscrowManager, userRole,
-    initialize, login, logout, refreshProfile, hasPermission,
+    initialize, login, loginWithGoogle, logout, refreshProfile, hasPermission,
   };
 });

@@ -5,7 +5,7 @@ export const auctionService = {
     let query = supabase
       .from("auctions")
       .select(`
-        *, listings!inner(id, title, images, seller_id, starting_price, profiles!seller_id(display_name))
+        *, listings!inner(id, title, images, seller_id, starting_price, seller:profiles!listings_seller_id_fkey(display_name))
       `, { count: "exact" });
 
     if (status) query = query.eq("status", status);
@@ -25,7 +25,7 @@ export const auctionService = {
     const { data, error } = await supabase
       .from("auctions")
       .select(`
-        *, listings!inner(*, profiles!seller_id(display_name, avatar_url))
+        *, listings!inner(*, seller:profiles!listings_seller_id_fkey(display_name, avatar_url))
       `)
       .eq("id", id)
       .single();

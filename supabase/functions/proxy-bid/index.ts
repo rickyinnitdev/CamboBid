@@ -71,7 +71,7 @@ serve(async (req: Request) => {
     // Find all active proxy bids for this auction, highest max first
     const { data: proxyBids } = await adminClient
       .from("bids")
-      .select("*, profiles!bidder_id(display_name)")
+      .select("*, bidder:profiles!bids_bidder_id_fkey(display_name)")
       .eq("auction_id", auction_id)
       .eq("is_proxy", true)
       .neq("status", "retracted")
@@ -214,7 +214,7 @@ serve(async (req: Request) => {
         payload: {
           bid_id: newBid.id,
           bidder_id: proxyBid.bidder_id,
-          bidder_name: proxyBid.profiles?.display_name || "Proxy Bidder",
+          bidder_name: proxyBid.bidder?.display_name || "Proxy Bidder",
           amount: nextBidAmount,
           auction_id,
           current_price: nextBidAmount,

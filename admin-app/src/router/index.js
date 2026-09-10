@@ -3,6 +3,10 @@ import { useAuthStore } from "@/stores/auth";
 
 const routes = [
   {
+    path: "/",
+    redirect: "/admin",
+  },
+  {
     path: "/admin",
     name: "AdminDashboard",
     component: () => import("@/pages/DashboardPage.vue"),

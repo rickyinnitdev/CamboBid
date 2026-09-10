@@ -27,6 +27,46 @@ export const authService = {
     return data;
   },
 
+  async loginWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/profile`,
+      },
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getMfaFactors() {
+    const { data, error } = await supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    return data;
+  },
+
+  async enrollTotpMfa() {
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+    if (error) throw error;
+    return data;
+  },
+
+  async verifyTotpMfa({ factorId, challengeId, code }) {
+    const { data, error } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId,
+      code,
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async challengeMfa(factorId) {
+    const { data, error } = await supabase.auth.mfa.challenge({ factorId });
+    if (error) throw error;
+    return data;
+  },
+
   async logout() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

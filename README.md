@@ -110,6 +110,43 @@ supabase functions deploy send-notification
 - **Mobile-responsive** design
 - **Multi-language** support (EN + KM)
 
+## Auth Setup
+
+### Email Verification
+
+In Supabase Dashboard:
+
+```text
+Authentication → Providers → Email → Confirm email
+```
+
+Enable email confirmation before production.
+
+### Google/Gmail Login
+
+In Supabase Dashboard:
+
+```text
+Authentication → Providers → Google
+```
+
+Add your Google OAuth client ID/secret, then add both Vercel domains to Supabase redirect URLs:
+
+```text
+https://your-user-app.vercel.app/**
+https://your-admin-app.vercel.app/**
+```
+
+### Two-Factor Authentication
+
+In Supabase Dashboard:
+
+```text
+Authentication → Settings → Multi-Factor Authentication
+```
+
+Enable TOTP authenticator app support. Admin CMS settings include toggles for user/admin MFA requirements.
+
 ## Deployment
 
 ### Vercel

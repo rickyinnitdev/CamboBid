@@ -10,6 +10,23 @@ export const authService = {
     return data;
   },
 
+  async loginWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/admin`,
+      },
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async getMfaFactors() {
+    const { data, error } = await supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    return data;
+  },
+
   async logout() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

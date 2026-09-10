@@ -77,7 +77,7 @@ serve(async (req: Request) => {
     // Get escrow transaction
     const { data: escrow, error: escrowError } = await adminClient
       .from("escrow_transactions")
-      .select("*, auctions(*, listings(title, seller_id)), profiles!buyer_id(display_name)")
+      .select("*, auctions(*, listings(title, seller_id)), buyer:profiles!escrow_transactions_buyer_id_fkey(display_name)")
       .eq("id", escrow_id)
       .single();
 

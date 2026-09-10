@@ -4,7 +4,7 @@ export const logService = {
   async getLogs({ actorId, resourceType, resourceId, action, startDate, endDate, page = 1, limit = 50 } = {}) {
     let query = supabase
       .from("activity_logs")
-      .select("*, profiles!actor_id(display_name, avatar_url)", { count: "exact" });
+      .select("*, actor:profiles!activity_logs_actor_id_fkey(display_name, avatar_url)", { count: "exact" });
 
     if (actorId) query = query.eq("actor_id", actorId);
     if (resourceType) query = query.eq("resource_type", resourceType);
@@ -26,7 +26,7 @@ export const logService = {
   async getLogById(id) {
     const { data, error } = await supabase
       .from("activity_logs")
-      .select("*, profiles!actor_id(display_name, avatar_url, email)")
+      .select("*, actor:profiles!activity_logs_actor_id_fkey(display_name, avatar_url, email)")
       .eq("id", id)
       .single();
     if (error) throw error;
@@ -56,7 +56,7 @@ export const logService = {
   async exportToCSV({ actorId, resourceType, action, startDate, endDate } = {}) {
     let query = supabase
       .from("activity_logs")
-      .select("*, profiles!actor_id(display_name, email)");
+      .select("*, actor:profiles!activity_logs_actor_id_fkey(display_name, email)");
 
     if (actorId) query = query.eq("actor_id", actorId);
     if (resourceType) query = query.eq("resource_type", resourceType);
