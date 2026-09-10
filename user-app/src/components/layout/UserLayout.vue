@@ -128,7 +128,7 @@ onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel)
                   <button class="w-full text-left px-4 py-3 rounded-2xl text-sm hover:bg-slate-100" @click="navigate('/profile')">My profile</button>
                   <button class="w-full text-left px-4 py-3 rounded-2xl text-sm hover:bg-slate-100" @click="navigate('/seller/listings')">Seller studio</button>
                   <button class="w-full text-left px-4 py-3 rounded-2xl text-sm hover:bg-slate-100" @click="navigate('/orders')">Orders & escrow</button>
-                  <button v-if="isAdmin" class="w-full text-left px-4 py-3 rounded-2xl text-sm font-semibold text-blue-700 hover:bg-blue-50" @click="navigate('/admin')">Admin panel</button>
+                  <a v-if="isAdmin" href="https://cambobidadmin.vercel.app" target="_blank" rel="noopener noreferrer" class="block w-full text-left px-4 py-3 rounded-2xl text-sm font-semibold text-blue-700 hover:bg-blue-50">Admin panel</a>
                   <button class="w-full text-left px-4 py-3 rounded-2xl text-sm text-rose-600 hover:bg-rose-50" @click="handleLogout">Logout</button>
                 </div>
               </div>

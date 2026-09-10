@@ -139,6 +139,11 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/not-allowed",
+    name: "NotAllowed",
+    component: () => import("@/pages/NotAllowed.vue"),
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "AdminNotFound",
     component: () => import("@/pages/NotFoundPage.vue"),
@@ -154,7 +159,12 @@ const router = createRouter({
   },
 });
 
+const allowedRoles = ["super_admin", "auctioneer", "escrow_manager"];
+
 router.beforeEach(async (to, from, next) => {
+  // Always allow access to the not-allowed page itself
+  if (to.name === "NotAllowed") return next();
+
   const authStore = useAuthStore();
 
   if (!authStore.initialized) {
@@ -163,6 +173,10 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.guest) {
     if (authStore.isAuthenticated) {
+      // If logged in but not staff, redirect to not-allowed
+      if (!allowedRoles.includes(authStore.userRole)) {
+        return next({ name: "NotAllowed" });
+      }
       next({ name: "AdminDashboard" });
     } else {
       next();
@@ -170,8 +184,9 @@ router.beforeEach(async (to, from, next) => {
   } else if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated) {
       next({ name: "AdminLogin" });
-    } else if (!authStore.isAdmin) {
-      next({ name: "AdminDashboard" });
+    } else if (!allowedRoles.includes(authStore.userRole)) {
+      // Logged in but not staff (e.g. casual_visitor, verified_bidder)
+      next({ name: "NotAllowed" });
     } else if (to.meta.permission) {
       const [resource, action] = to.meta.permission.split(".");
       if (!authStore.hasPermission(action, resource)) {
