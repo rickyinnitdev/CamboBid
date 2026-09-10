@@ -1,5 +1,7 @@
 import { supabase } from "./supabase";
 
+const CACHE_KEY = "cambobid-platform-settings";
+
 export const defaultPlatformSettings = {
   brand: {
     name: "BidHaus",
@@ -40,17 +42,31 @@ export const defaultPlatformSettings = {
 };
 
 export const platformSettingsService = {
+  getCached() {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!cached) return structuredClone(defaultPlatformSettings);
+      return this.mergeSettings(JSON.parse(cached));
+    } catch {
+      return structuredClone(defaultPlatformSettings);
+    }
+  },
+
   async getAll() {
     try {
       const { data, error } = await supabase.from("platform_settings").select("key, value");
       if (error) throw error;
 
-      return (data || []).reduce(
+      const settings = (data || []).reduce(
         (settings, row) => ({ ...settings, [row.key]: { ...settings[row.key], ...row.value } }),
         structuredClone(defaultPlatformSettings)
       );
+
+      localStorage.setItem(CACHE_KEY, JSON.stringify(settings));
+      window.dispatchEvent(new CustomEvent("platform-settings-updated", { detail: settings }));
+      return settings;
     } catch {
-      return structuredClone(defaultPlatformSettings);
+      return this.getCached();
     }
   },
 
@@ -74,7 +90,18 @@ export const platformSettingsService = {
       .single();
 
     if (error) throw error;
+    const cached = this.getCached();
+    const nextSettings = { ...cached, [key]: { ...cached[key], ...value } };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(nextSettings));
+    window.dispatchEvent(new CustomEvent("platform-settings-updated", { detail: nextSettings }));
     return data;
+  },
+
+  mergeSettings(settings) {
+    return Object.entries(settings || {}).reduce(
+      (merged, [key, value]) => ({ ...merged, [key]: { ...merged[key], ...value } }),
+      structuredClone(defaultPlatformSettings)
+    );
   },
 };
 

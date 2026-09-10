@@ -9,7 +9,7 @@ import LanguageSwitcher from "./LanguageSwitcher.vue";
 const router = useRouter();
 const { profile, isAuthenticated, isAdmin, logout } = useAuth();
 
-const settings = ref(defaultPlatformSettings);
+const settings = ref(platformSettingsService.getCached());
 const mobileMenuOpen = ref(false);
 const profileDropdownOpen = ref(false);
 const searchQuery = ref("");

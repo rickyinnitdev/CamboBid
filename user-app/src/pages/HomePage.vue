@@ -8,7 +8,7 @@ import { listingService } from "@/services/listingService";
 import { searchService } from "@/services/searchService";
 import { platformSettingsService, defaultPlatformSettings } from "@/services/platformSettingsService";
 
-const settings = ref(defaultPlatformSettings);
+const settings = ref(platformSettingsService.getCached());
 const liveAuctions = ref([]);
 const featuredListings = ref([]);
 const categories = ref([]);
