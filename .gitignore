@@ -1,0 +1,12 @@
+node_modules
+dist
+supabase/.temp
+.env
+.env.local
+.env.*.local
+SUPABASE_SERVICE_ROLE_KEY
+DATABASE_PASSWORD
+*service-role*
+*database-password*
+*.log
+.DS_Store
