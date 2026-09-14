@@ -19,6 +19,16 @@ interface BidRequest {
   device_fingerprint?: string;
 }
 
+function getClientIp(req: Request): string | null {
+  const forwarded = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  const ip = forwarded.split(",")[0]?.trim();
+  if (!ip) return null;
+
+  const ipv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
+  const ipv6 = /^[0-9a-f:]+$/i.test(ip) && ip.includes(":");
+  return ipv4 || ipv6 ? ip : null;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -159,7 +169,7 @@ serve(async (req: Request) => {
       }
 
       // Same IP as seller (flagged but not blocked, logged for review)
-      const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+      const clientIp = getClientIp(req);
 
       // Check if seller has same IP in recent activity
       const { data: sellerLogs } = await adminClient
@@ -238,7 +248,7 @@ serve(async (req: Request) => {
       .single();
 
     // Insert the bid
-    const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const clientIp = getClientIp(req);
     const userAgent = req.headers.get("user-agent") || "";
 
     const { data: newBid, error: bidError } = await adminClient
@@ -259,7 +269,7 @@ serve(async (req: Request) => {
 
     if (bidError) {
       return new Response(
-        JSON.stringify({ error: "Failed to place bid" }),
+        JSON.stringify({ error: "Failed to place bid", details: bidError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
