@@ -506,20 +506,32 @@ INSERT INTO public.cms_translations (locale, key, value) VALUES
 
 INSERT INTO auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
-  raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+  confirmed_at, confirmation_token, recovery_token, email_change_token_new,
+  email_change, phone_change, phone_change_token, email_change_token_current,
+  reauthentication_token, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
 ) VALUES
-  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"CamboBid Admin"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'auctioneer@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Auction Ops"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'escrow@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Escrow Manager"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller1@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Future Finds Studio"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller2@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Phnom Penh Vault"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bidder1@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Maya Proxy Bidder"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bidder2@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Dara Live Bidder"}', NOW(), NOW()),
-  ('10000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'visitor@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Casual Visitor"}', NOW(), NOW())
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"CamboBid Admin"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'auctioneer@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Auction Ops"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'escrow@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Escrow Manager"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller1@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Future Finds Studio"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller2@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Phnom Penh Vault"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bidder1@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Maya Proxy Bidder"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bidder2@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Dara Live Bidder"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'visitor@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), NOW(), '', '', '', '', '', '', '', '', '{"provider":"email","providers":["email"]}', '{"display_name":"Casual Visitor"}', NOW(), NOW())
 ON CONFLICT (id) DO UPDATE SET
   email = EXCLUDED.email,
   encrypted_password = EXCLUDED.encrypted_password,
   email_confirmed_at = EXCLUDED.email_confirmed_at,
+  confirmed_at = EXCLUDED.confirmed_at,
+  confirmation_token = EXCLUDED.confirmation_token,
+  recovery_token = EXCLUDED.recovery_token,
+  email_change_token_new = EXCLUDED.email_change_token_new,
+  email_change = EXCLUDED.email_change,
+  phone_change = EXCLUDED.phone_change,
+  phone_change_token = EXCLUDED.phone_change_token,
+  email_change_token_current = EXCLUDED.email_change_token_current,
+  reauthentication_token = EXCLUDED.reauthentication_token,
+  raw_app_meta_data = EXCLUDED.raw_app_meta_data,
   raw_user_meta_data = EXCLUDED.raw_user_meta_data,
   updated_at = NOW();
 
