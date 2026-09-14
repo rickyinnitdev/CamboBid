@@ -500,5 +500,200 @@ INSERT INTO public.cms_translations (locale, key, value) VALUES
   ('km', 'common.submit', '\u1795\u17D2\u178F\u17D2\u179A\u1780\u17CB');
 
 -- ============================================================================
+-- 7. DEMO TEST USERS
+-- Password for every seeded auth user: Test1234!
+-- ============================================================================
+
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+) VALUES
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"CamboBid Admin"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'auctioneer@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Auction Ops"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'escrow@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Escrow Manager"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller1@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Future Finds Studio"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'seller2@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Phnom Penh Vault"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bidder1@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Maya Proxy Bidder"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bidder2@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Dara Live Bidder"}', NOW(), NOW()),
+  ('10000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'visitor@cambobid.test', crypt('Test1234!', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"display_name":"Casual Visitor"}', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  email = EXCLUDED.email,
+  encrypted_password = EXCLUDED.encrypted_password,
+  email_confirmed_at = EXCLUDED.email_confirmed_at,
+  raw_user_meta_data = EXCLUDED.raw_user_meta_data,
+  updated_at = NOW();
+
+INSERT INTO public.profiles (
+  id, role, display_name, email, identity_verified, reputation_score, bid_limit,
+  deposit_paid, bio, location
+) VALUES
+  ('10000000-0000-0000-0000-000000000001', 'super_admin', 'CamboBid Admin', 'admin@cambobid.test', TRUE, 99.50, 100, TRUE, 'Platform owner account for full admin testing.', 'Phnom Penh'),
+  ('10000000-0000-0000-0000-000000000002', 'auctioneer', 'Auction Ops', 'auctioneer@cambobid.test', TRUE, 96.00, 80, TRUE, 'Approves listings, manages auctions, and reviews AI risk flags.', 'Phnom Penh'),
+  ('10000000-0000-0000-0000-000000000003', 'escrow_manager', 'Escrow Manager', 'escrow@cambobid.test', TRUE, 94.00, 60, TRUE, 'Tests escrow release, refund, freeze, and dispute workflows.', 'Siem Reap'),
+  ('10000000-0000-0000-0000-000000000004', 'verified_bidder', 'Future Finds Studio', 'seller1@cambobid.test', TRUE, 91.30, 40, TRUE, 'Seller test account for premium tech and creator-owned lots.', 'Phnom Penh'),
+  ('10000000-0000-0000-0000-000000000005', 'verified_bidder', 'Phnom Penh Vault', 'seller2@cambobid.test', TRUE, 89.80, 40, TRUE, 'Seller test account for collectibles, jewelry, art, and rare goods.', 'Battambang'),
+  ('10000000-0000-0000-0000-000000000006', 'verified_bidder', 'Maya Proxy Bidder', 'bidder1@cambobid.test', TRUE, 87.20, 30, TRUE, 'Tests proxy bidding and high-value auction participation.', 'Kampot'),
+  ('10000000-0000-0000-0000-000000000007', 'verified_bidder', 'Dara Live Bidder', 'bidder2@cambobid.test', TRUE, 82.40, 30, TRUE, 'Tests live bidding, outbid notifications, and disputes.', 'Siem Reap'),
+  ('10000000-0000-0000-0000-000000000008', 'casual_visitor', 'Casual Visitor', 'visitor@cambobid.test', FALSE, 10.00, 5, FALSE, 'Unverified visitor for access-control testing.', 'Phnom Penh')
+ON CONFLICT (id) DO UPDATE SET
+  role = EXCLUDED.role,
+  display_name = EXCLUDED.display_name,
+  email = EXCLUDED.email,
+  identity_verified = EXCLUDED.identity_verified,
+  reputation_score = EXCLUDED.reputation_score,
+  bid_limit = EXCLUDED.bid_limit,
+  deposit_paid = EXCLUDED.deposit_paid,
+  bio = EXCLUDED.bio,
+  location = EXCLUDED.location,
+  updated_at = NOW();
+
+-- ============================================================================
+-- 8. DEMO MARKETPLACE DATA: 5 ITEMS PER TOP-LEVEL CATEGORY
+-- Uses direct online image URLs instead of Supabase Storage uploads.
+-- ============================================================================
+
+WITH demo_categories AS (
+  SELECT id, name, slug, row_number() OVER (ORDER BY sort_order) AS category_rank
+  FROM public.categories
+  WHERE parent_id IS NULL
+), demo_items AS (
+  SELECT
+    c.id AS category_id,
+    c.slug,
+    c.name AS category_name,
+    item_no,
+    CASE item_no
+      WHEN 1 THEN 'AI-authenticated signature piece'
+      WHEN 2 THEN 'smart provenance collector lot'
+      WHEN 3 THEN 'limited prototype drop'
+      WHEN 4 THEN 'heritage restoration showcase'
+      ELSE 'creator-curated vault bundle'
+    END AS concept,
+    (120 + c.category_rank * 65 + item_no * 37)::numeric(12,2) AS starting_price,
+    CASE WHEN item_no IN (1, 3) THEN 'excellent'::public.condition_type WHEN item_no = 2 THEN 'like_new'::public.condition_type ELSE 'good'::public.condition_type END AS condition
+  FROM demo_categories c
+  CROSS JOIN generate_series(1, 5) AS item_no
+), inserted_listings AS (
+  INSERT INTO public.listings (
+    seller_id, title, description, category_id, condition, images,
+    starting_price, reserve_price, buy_it_now_price, status, approved_by,
+    approved_at, view_count, created_at, updated_at
+  )
+  SELECT
+    CASE WHEN item_no % 2 = 0 THEN '10000000-0000-0000-0000-000000000004'::uuid ELSE '10000000-0000-0000-0000-000000000005'::uuid END,
+    '[Demo] ' || category_name || ' - ' || concept,
+    'Innovation-focused ' || lower(category_name) || ' auction lot with AI-ready metadata, online image URL, provenance notes, and buyer confidence signals for demo testing.',
+    category_id,
+    condition,
+    jsonb_build_array(jsonb_build_object(
+      'url', 'https://source.unsplash.com/1200x900/?' || replace(slug, '-', ',') || ',auction,' || item_no,
+      'name', slug || '-demo-' || item_no || '.jpg',
+      'path', 'external/' || slug || '-' || item_no || '.jpg'
+    )),
+    starting_price,
+    starting_price * 1.35,
+    starting_price * 2.25,
+    CASE WHEN item_no = 5 THEN 'sold'::public.listing_status ELSE 'approved'::public.listing_status END,
+    '10000000-0000-0000-0000-000000000002'::uuid,
+    NOW() - INTERVAL '2 days',
+    25 + item_no * 13,
+    NOW() - (item_no || ' days')::interval,
+    NOW()
+  FROM demo_items di
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.listings l
+    WHERE l.title = '[Demo] ' || di.category_name || ' - ' || di.concept
+  )
+  RETURNING id, title, seller_id, starting_price
+), all_demo_listings AS (
+  SELECT id, title, seller_id, starting_price, row_number() OVER (ORDER BY title) AS rn
+  FROM public.listings
+  WHERE title LIKE '[Demo] %'
+), inserted_auctions AS (
+  INSERT INTO public.auctions (
+    listing_id, type, status, start_time, end_time, original_end_time,
+    current_price, bid_increment, bid_increment_percent, reserve_met,
+    winner_id, closed_by, closure_reason, created_at, updated_at
+  )
+  SELECT
+    l.id,
+    CASE WHEN rn % 11 = 0 THEN 'sealed'::public.auction_type WHEN rn % 7 = 0 THEN 'dutch'::public.auction_type ELSE 'english'::public.auction_type END,
+    CASE WHEN rn % 5 = 0 THEN 'closed'::public.auction_status WHEN rn % 4 = 0 THEN 'scheduled'::public.auction_status WHEN rn % 3 = 0 THEN 'extended'::public.auction_status ELSE 'live'::public.auction_status END,
+    CASE WHEN rn % 5 = 0 THEN NOW() - INTERVAL '2 days' WHEN rn % 4 = 0 THEN NOW() + INTERVAL '1 day' ELSE NOW() - INTERVAL '2 hours' END,
+    CASE WHEN rn % 5 = 0 THEN NOW() - INTERVAL '1 hour' WHEN rn % 4 = 0 THEN NOW() + INTERVAL '3 days' ELSE NOW() + ((rn % 6 + 1) || ' hours')::interval END,
+    CASE WHEN rn % 5 = 0 THEN NOW() - INTERVAL '1 hour' WHEN rn % 4 = 0 THEN NOW() + INTERVAL '3 days' ELSE NOW() + ((rn % 6 + 1) || ' hours')::interval END,
+    l.starting_price + (rn % 9) * 18,
+    CASE WHEN l.starting_price < 500 THEN 10 ELSE 25 END,
+    NULL,
+    rn % 2 = 0,
+    CASE WHEN rn % 5 = 0 THEN '10000000-0000-0000-0000-000000000006'::uuid ELSE NULL END,
+    CASE WHEN rn % 5 = 0 THEN '10000000-0000-0000-0000-000000000002'::uuid ELSE NULL END,
+    CASE WHEN rn % 5 = 0 THEN 'Demo auction closed for completed-order testing' ELSE NULL END,
+    NOW() - INTERVAL '1 day',
+    NOW()
+  FROM all_demo_listings l
+  WHERE NOT EXISTS (SELECT 1 FROM public.auctions a WHERE a.listing_id = l.id)
+  RETURNING id, listing_id, status, current_price
+), demo_auctions AS (
+  SELECT a.id, a.listing_id, a.status, a.current_price, l.seller_id, row_number() OVER (ORDER BY l.title) AS rn
+  FROM public.auctions a
+  JOIN public.listings l ON l.id = a.listing_id
+  WHERE l.title LIKE '[Demo] %'
+), demo_bids AS (
+  INSERT INTO public.bids (auction_id, bidder_id, amount, proxy_max_amount, is_proxy, status, placed_at, ip_address, user_agent, device_fingerprint)
+  SELECT id, '10000000-0000-0000-0000-000000000006'::uuid, current_price + 10, current_price + 120, TRUE,
+    CASE WHEN status = 'closed' THEN 'winning'::public.bid_status ELSE 'active'::public.bid_status END,
+    NOW() - INTERVAL '50 minutes', '203.0.113.21'::inet, 'CamboBid demo browser', 'demo-maya-proxy'
+  FROM demo_auctions da
+  WHERE da.status IN ('live', 'extended', 'closed')
+    AND da.seller_id <> '10000000-0000-0000-0000-000000000006'::uuid
+    AND NOT EXISTS (SELECT 1 FROM public.bids b WHERE b.auction_id = da.id AND b.bidder_id = '10000000-0000-0000-0000-000000000006'::uuid)
+  UNION ALL
+  SELECT id, '10000000-0000-0000-0000-000000000007'::uuid, current_price + 25, NULL, FALSE,
+    CASE WHEN status = 'closed' THEN 'outbid'::public.bid_status ELSE 'active'::public.bid_status END,
+    NOW() - INTERVAL '35 minutes', '203.0.113.22'::inet, 'CamboBid demo browser', 'demo-dara-live'
+  FROM demo_auctions da
+  WHERE da.status IN ('live', 'extended', 'closed')
+    AND da.seller_id <> '10000000-0000-0000-0000-000000000007'::uuid
+    AND NOT EXISTS (SELECT 1 FROM public.bids b WHERE b.auction_id = da.id AND b.bidder_id = '10000000-0000-0000-0000-000000000007'::uuid)
+  RETURNING auction_id, bidder_id
+), closed_demo AS (
+  SELECT * FROM demo_auctions WHERE status = 'closed' LIMIT 8
+), demo_escrow AS (
+  INSERT INTO public.escrow_transactions (auction_id, buyer_id, seller_id, amount, status, released_by, notes)
+  SELECT id, '10000000-0000-0000-0000-000000000006'::uuid, seller_id, current_price,
+    CASE WHEN rn % 2 = 0 THEN 'held'::public.escrow_status ELSE 'pending'::public.escrow_status END,
+    NULL,
+    'Demo escrow transaction for testing payment, release, refund, and freeze controls.'
+  FROM closed_demo cd
+  WHERE seller_id <> '10000000-0000-0000-0000-000000000006'::uuid
+    AND NOT EXISTS (SELECT 1 FROM public.escrow_transactions e WHERE e.auction_id = cd.id)
+  RETURNING auction_id
+), dispute_source AS (
+  SELECT * FROM closed_demo WHERE rn % 2 = 1 LIMIT 3
+), demo_disputes AS (
+  INSERT INTO public.disputes (auction_id, filer_id, respondent_id, reason, description, evidence, status, arbitrator_id, appeal_deadline)
+  SELECT id, '10000000-0000-0000-0000-000000000007'::uuid, seller_id,
+    'Item condition mismatch',
+    'Demo dispute: buyer says AI analysis predicted excellent condition but received condition needs manual review.',
+    jsonb_build_array(jsonb_build_object('url', 'https://source.unsplash.com/1200x900/?auction,evidence', 'name', 'demo-evidence.jpg')),
+    'open'::public.dispute_status,
+    '10000000-0000-0000-0000-000000000002'::uuid,
+    NOW() + INTERVAL '7 days'
+  FROM dispute_source ds
+  WHERE seller_id <> '10000000-0000-0000-0000-000000000007'::uuid
+    AND NOT EXISTS (SELECT 1 FROM public.disputes d WHERE d.auction_id = ds.id)
+  RETURNING auction_id
+)
+INSERT INTO public.notifications (user_id, type, title, body, auction_id)
+SELECT '10000000-0000-0000-0000-000000000006'::uuid, 'demo_bid', 'Demo proxy bids are ready', 'Use this account to test proxy bidding and winning flows.', id FROM demo_auctions WHERE status IN ('live', 'extended') LIMIT 10
+ON CONFLICT DO NOTHING;
+
+INSERT INTO public.activity_logs (actor_id, action, resource_type, metadata)
+VALUES
+  ('10000000-0000-0000-0000-000000000002', 'demo_seed_loaded', 'seed', '{"scope":"users,listings,auctions,bids,escrow,disputes","note":"Rich demo data loaded for testing."}'::jsonb),
+  ('10000000-0000-0000-0000-000000000001', 'automation_feature_ready', 'ai_listing_analysis', '{"provider":"gemini","status":"migration_and_edge_function_available"}'::jsonb);
+
+-- ============================================================================
 -- END OF SEED DATA
 -- ============================================================================
