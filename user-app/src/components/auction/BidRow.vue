@@ -23,20 +23,20 @@ const timeAgo = computed(() => {
     <div class="flex items-center gap-3">
       <div class="relative" v-if="showBidder">
         <img
-          v-if="bid.profiles?.avatar_url"
-          :src="bid.profiles.avatar_url"
-          :alt="bid.profiles?.display_name"
+          v-if="bid.bidder?.avatar_url"
+          :src="bid.bidder.avatar_url"
+          :alt="bid.bidder?.display_name"
           class="w-8 h-8 rounded-full object-cover"
         />
         <div v-else class="w-8 h-8 rounded-full bg-navy-700/10 flex items-center justify-center">
           <span class="text-xs font-semibold text-navy-700">
-            {{ (bid.profiles?.display_name || "U").charAt(0).toUpperCase() }}
+            {{ (bid.bidder?.display_name || "U").charAt(0).toUpperCase() }}
           </span>
         </div>
       </div>
       <div>
         <p v-if="showBidder" class="text-sm font-medium text-heading">
-          {{ bid.profiles?.display_name || "Anonymous" }}
+          {{ bid.bidder?.display_name || "Anonymous" }}
           <span v-if="bid.is_proxy" class="text-xs text-muted ml-1">(proxy)</span>
         </p>
         <p class="text-xs text-muted">{{ bid.placed_at ? dayjs(bid.placed_at).format("MMM D, HH:mm") : "" }}</p>

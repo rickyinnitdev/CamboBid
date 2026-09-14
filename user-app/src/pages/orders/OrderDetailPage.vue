@@ -120,11 +120,11 @@ function getImage() {
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-navy-700 flex items-center justify-center">
                   <span class="text-sm font-semibold text-white">
-                    {{ (order.profiles?.display_name || "S").charAt(0).toUpperCase() }}
+                    {{ (order.seller?.display_name || "S").charAt(0).toUpperCase() }}
                   </span>
                 </div>
                 <div>
-                  <p class="font-medium text-heading text-sm">{{ order.profiles?.display_name }}</p>
+                  <p class="font-medium text-heading text-sm">{{ order.seller?.display_name || "Unknown" }}</p>
                 </div>
               </div>
             </div>

@@ -141,9 +141,9 @@ function formatAction(action) {
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
                       <div class="w-6 h-6 rounded-full bg-navy-700 flex items-center justify-center">
-                        <span class="text-xs font-semibold text-white">{{ (log.profiles?.display_name || "S").charAt(0).toUpperCase() }}</span>
+                        <span class="text-xs font-semibold text-white">{{ (log.actor?.display_name || "S").charAt(0).toUpperCase() }}</span>
                       </div>
-                      <span class="text-heading">{{ log.profiles?.display_name || "System" }}</span>
+                      <span class="text-heading">{{ log.actor?.display_name || "System" }}</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">

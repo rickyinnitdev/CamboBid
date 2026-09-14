@@ -191,11 +191,11 @@ watch(
                     <div class="flex items-center gap-2">
                       <div class="w-8 h-8 rounded-full bg-navy-700 flex items-center justify-center">
                         <span class="text-xs font-semibold text-white">
-                          {{ (bid.profiles?.display_name || "U").charAt(0).toUpperCase() }}
+                          {{ (bid.bidder?.display_name || "U").charAt(0).toUpperCase() }}
                         </span>
                       </div>
                       <div>
-                        <p class="text-sm font-medium text-heading">{{ bid.profiles?.display_name }}</p>
+                        <p class="text-sm font-medium text-heading">{{ bid.bidder?.display_name || "Anonymous" }}</p>
                         <p class="text-xs text-muted">{{ new Date(bid.placed_at).toLocaleString() }}</p>
                       </div>
                     </div>

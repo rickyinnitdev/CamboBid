@@ -170,23 +170,23 @@ function statusBadgeVariant(status) {
                   <p class="text-xs text-muted mb-1">Filed By</p>
                   <div class="flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full bg-navy-700 flex items-center justify-center">
-                      <span class="text-xs font-semibold text-white">{{ (dispute.profiles?.display_name || "U").charAt(0).toUpperCase() }}</span>
+                      <span class="text-xs font-semibold text-white">{{ (dispute.filer?.display_name || "U").charAt(0).toUpperCase() }}</span>
                     </div>
-                    <span class="text-sm text-heading">{{ dispute.profiles?.display_name || "Unknown" }}</span>
+                    <span class="text-sm text-heading">{{ dispute.filer?.display_name || "Unknown" }}</span>
                   </div>
                 </div>
                 <div>
                   <p class="text-xs text-muted mb-1">Against</p>
                   <div class="flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full bg-navy-700 flex items-center justify-center">
-                      <span class="text-xs font-semibold text-white">{{ (dispute.profiles?.display_name || "U").charAt(0).toUpperCase() }}</span>
+                      <span class="text-xs font-semibold text-white">{{ (dispute.respondent?.display_name || "U").charAt(0).toUpperCase() }}</span>
                     </div>
-                    <span class="text-sm text-heading">{{ dispute.profiles?.display_name || "Unknown" }}</span>
+                    <span class="text-sm text-heading">{{ dispute.respondent?.display_name || "Unknown" }}</span>
                   </div>
                 </div>
-                <div v-if="dispute.profiles?.display_name">
+                <div v-if="dispute.arbitrator?.display_name">
                   <p class="text-xs text-muted mb-1">Arbitrator</p>
-                  <p class="text-sm text-heading">{{ dispute.profiles?.display_name || "Not assigned" }}</p>
+                  <p class="text-sm text-heading">{{ dispute.arbitrator?.display_name || "Not assigned" }}</p>
                 </div>
               </div>
             </BaseCard>

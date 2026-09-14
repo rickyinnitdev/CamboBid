@@ -136,11 +136,11 @@ function statusBadgeVariant(status) {
               <h3 class="font-semibold text-heading mb-3">Seller</h3>
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-navy-700 flex items-center justify-center">
-                  <span class="text-sm font-semibold text-white">{{ (listing.profiles?.display_name || "U").charAt(0).toUpperCase() }}</span>
+                  <span class="text-sm font-semibold text-white">{{ (listing.seller?.display_name || "U").charAt(0).toUpperCase() }}</span>
                 </div>
                 <div>
-                  <p class="font-medium text-heading">{{ listing.profiles?.display_name || "Unknown" }}</p>
-                  <p class="text-xs text-muted">Reputation: {{ listing.profiles?.reputation_score || 0 }}</p>
+                  <p class="font-medium text-heading">{{ listing.seller?.display_name || "Unknown" }}</p>
+                  <p class="text-xs text-muted">Reputation: {{ listing.seller?.reputation_score || 0 }}</p>
                 </div>
               </div>
             </BaseCard>

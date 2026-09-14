@@ -102,8 +102,8 @@ function statusBadgeVariant(status) {
                       <p class="text-xs text-muted">{{ dispute.auctions?.listings?.title || "Unknown" }}</p>
                     </div>
                   </td>
-                  <td class="px-4 py-3 text-muted">{{ dispute.profiles?.display_name || "Unknown" }}</td>
-                  <td class="px-4 py-3 text-muted">{{ dispute.profiles?.display_name || "Unknown" }}</td>
+                  <td class="px-4 py-3 text-muted">{{ dispute.filer?.display_name || "Unknown" }}</td>
+                  <td class="px-4 py-3 text-muted">{{ dispute.respondent?.display_name || "Unknown" }}</td>
                   <td class="px-4 py-3">
                     <BaseBadge :variant="statusBadgeVariant(dispute.status)">{{ dispute.status?.replace("_", " ") }}</BaseBadge>
                   </td>

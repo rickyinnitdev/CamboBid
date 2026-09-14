@@ -109,7 +109,7 @@ export const auctionService = {
   async getAuctionBids(auctionId) {
     const { data, error } = await supabase
       .from("bids")
-      .select("id, amount, is_proxy, status, placed_at, bidder_id, profiles(display_name, avatar_url)")
+      .select("id, amount, is_proxy, status, placed_at, bidder_id, bidder:profiles!bids_bidder_id_fkey(display_name, avatar_url)")
       .eq("auction_id", auctionId)
       .order("amount", { ascending: false });
 

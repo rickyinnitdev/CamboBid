@@ -1,5 +1,16 @@
 import { supabase } from "./supabase";
 
+async function throwFunctionError(error) {
+  if (!error) return;
+  try {
+    const payload = await error.context?.json?.();
+    throw new Error(payload?.details || payload?.error || error.message);
+  } catch (readError) {
+    if (readError instanceof Error && readError.message !== error.message) throw readError;
+    throw error;
+  }
+}
+
 export const bidService = {
   async placeBid({ auctionId, amount, proxyMaxAmount, isProxy, deviceFingerprint }) {
     const { data, error } = await supabase.functions.invoke("process-bid", {
@@ -12,7 +23,7 @@ export const bidService = {
       },
     });
 
-    if (error) throw error;
+    await throwFunctionError(error);
     return data;
   },
 
@@ -21,7 +32,7 @@ export const bidService = {
       body: { auction_id: auctionId },
     });
 
-    if (error) throw error;
+    await throwFunctionError(error);
     return data;
   },
 
@@ -50,7 +61,7 @@ export const bidService = {
       .from("bids")
       .select(`
         id, amount, is_proxy, status, placed_at, bidder_id,
-        profiles(display_name, avatar_url)
+        bidder:profiles!bids_bidder_id_fkey(display_name, avatar_url)
       `)
       .eq("auction_id", auctionId)
       .order("amount", { ascending: false });
@@ -62,7 +73,7 @@ export const bidService = {
   async getHighestBid(auctionId) {
     const { data, error } = await supabase
       .from("bids")
-      .select("id, amount, bidder_id, profiles(display_name)")
+      .select("id, amount, bidder_id, bidder:profiles!bids_bidder_id_fkey(display_name)")
       .eq("auction_id", auctionId)
       .eq("status", "winning")
       .order("amount", { ascending: false })

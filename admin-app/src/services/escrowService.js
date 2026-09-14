@@ -1,5 +1,16 @@
 import { supabase } from "./supabase";
 
+async function throwFunctionError(error) {
+  if (!error) return;
+  try {
+    const payload = await error.context?.json?.();
+    throw new Error(payload?.details || payload?.error || error.message);
+  } catch (readError) {
+    if (readError instanceof Error && readError.message !== error.message) throw readError;
+    throw error;
+  }
+}
+
 export const escrowService = {
   async getEscrowTransactions({ status, page = 1, limit = 20 } = {}) {
     let query = supabase
@@ -19,7 +30,7 @@ export const escrowService = {
     query = query.order("created_at", { ascending: false }).range(from, to);
 
     const { data, error, count } = await query;
-    if (error) throw error;
+    await throwFunctionError(error);
     return { transactions: data, total: count };
   },
 
@@ -34,7 +45,7 @@ export const escrowService = {
       `)
       .eq("id", id)
       .single();
-    if (error) throw error;
+    await throwFunctionError(error);
     return data;
   },
 
@@ -42,7 +53,7 @@ export const escrowService = {
     const { data, error } = await supabase.functions.invoke("escrow-release", {
       body: { escrow_id: escrowId, action: "release", notes },
     });
-    if (error) throw error;
+    await throwFunctionError(error);
     return data;
   },
 

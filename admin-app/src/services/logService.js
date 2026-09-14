@@ -76,7 +76,7 @@ export const logService = {
 
     const rows = data.map((log) => [
       log.id,
-      log.profiles?.display_name || log.actor_id,
+      log.actor?.display_name || log.actor_id,
       log.action,
       log.resource_type,
       log.resource_id || "",

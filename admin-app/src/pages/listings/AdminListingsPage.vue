@@ -128,7 +128,7 @@ function statusBadgeVariant(status) {
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-3 text-muted">{{ listing.profiles?.display_name || "Unknown" }}</td>
+                  <td class="px-4 py-3 text-muted">{{ listing.seller?.display_name || "Unknown" }}</td>
                   <td class="px-4 py-3 font-medium text-heading">${{ Number(listing.starting_price || 0).toLocaleString() }}</td>
                   <td class="px-4 py-3">
                     <BaseBadge :variant="statusBadgeVariant(listing.status)">{{ listing.status }}</BaseBadge>

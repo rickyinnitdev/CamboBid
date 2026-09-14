@@ -1,5 +1,16 @@
 import { supabase } from "./supabase";
 
+async function throwFunctionError(error) {
+  if (!error) return;
+  try {
+    const payload = await error.context?.json?.();
+    throw new Error(payload?.details || payload?.error || error.message);
+  } catch (readError) {
+    if (readError instanceof Error && readError.message !== error.message) throw readError;
+    throw error;
+  }
+}
+
 export const disputeService = {
   async fileDispute({ auctionId, reason, description, evidence }) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -69,13 +80,14 @@ export const disputeService = {
       .single();
 
     if (escrow) {
-      await supabase.functions.invoke("escrow-release", {
+      const { error } = await supabase.functions.invoke("escrow-release", {
         body: {
           escrow_id: escrow.id,
           action: "freeze",
           notes: `Dispute filed: ${reason}`,
         },
       });
+      await throwFunctionError(error);
     }
 
     return data;

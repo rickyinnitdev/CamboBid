@@ -143,11 +143,11 @@ function statusBadgeVariant(status) {
                   <p class="text-xs text-muted mb-2">Buyer</p>
                   <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full bg-navy-700 flex items-center justify-center">
-                      <span class="text-xs font-semibold text-white">{{ (escrow.profiles?.display_name || "U").charAt(0).toUpperCase() }}</span>
+                      <span class="text-xs font-semibold text-white">{{ (escrow.buyer?.display_name || "U").charAt(0).toUpperCase() }}</span>
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-heading">{{ escrow.profiles?.display_name || "Unknown" }}</p>
-                      <p class="text-xs text-muted">{{ escrow.profiles?.email }}</p>
+                      <p class="text-sm font-medium text-heading">{{ escrow.buyer?.display_name || "Unknown" }}</p>
+                      <p class="text-xs text-muted">{{ escrow.buyer?.email }}</p>
                     </div>
                   </div>
                 </div>
@@ -155,11 +155,11 @@ function statusBadgeVariant(status) {
                   <p class="text-xs text-muted mb-2">Seller</p>
                   <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full bg-navy-700 flex items-center justify-center">
-                      <span class="text-xs font-semibold text-white">{{ (escrow.profiles?.display_name || "U").charAt(0).toUpperCase() }}</span>
+                      <span class="text-xs font-semibold text-white">{{ (escrow.seller?.display_name || "U").charAt(0).toUpperCase() }}</span>
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-heading">{{ escrow.profiles?.display_name || "Unknown" }}</p>
-                      <p class="text-xs text-muted">{{ escrow.profiles?.email }}</p>
+                      <p class="text-sm font-medium text-heading">{{ escrow.seller?.display_name || "Unknown" }}</p>
+                      <p class="text-xs text-muted">{{ escrow.seller?.email }}</p>
                     </div>
                   </div>
                 </div>

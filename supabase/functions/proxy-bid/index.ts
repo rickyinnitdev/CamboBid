@@ -11,6 +11,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function getClientIp(req: Request): string | null {
+  const forwarded = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  const ip = forwarded.split(",")[0]?.trim();
+  if (!ip) return null;
+
+  const ipv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
+  const ipv6 = /^[0-9a-f:]+$/i.test(ip) && ip.includes(":");
+  return ipv4 || ipv6 ? ip : null;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -119,7 +129,7 @@ serve(async (req: Request) => {
       if (nextBidAmount > proxyMax) continue;
 
       // Place the proxy bid
-      const clientIp = req.headers.get("x-forwarded-for") || "unknown";
+      const clientIp = getClientIp(req);
 
       const { data: newBid, error: bidError } = await adminClient
         .from("bids")
@@ -138,6 +148,13 @@ serve(async (req: Request) => {
 
       if (bidError) {
         console.error("Failed to place proxy bid:", bidError);
+        await adminClient.from("activity_logs").insert({
+          actor_id: proxyBid.bidder_id,
+          action: "proxy_bid_insert_failed",
+          resource_type: "auction",
+          resource_id: auction_id,
+          metadata: { error: bidError.message, proxy_bid_id: proxyBid.id },
+        });
         continue;
       }
 
@@ -244,7 +261,7 @@ serve(async (req: Request) => {
   } catch (error) {
     console.error("proxy-bid error:", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Internal server error", details: error instanceof Error ? error.message : String(error) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

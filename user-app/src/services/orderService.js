@@ -1,5 +1,16 @@
 import { supabase } from "./supabase";
 
+async function throwFunctionError(error) {
+  if (!error) return;
+  try {
+    const payload = await error.context?.json?.();
+    throw new Error(payload?.details || payload?.error || error.message);
+  } catch (readError) {
+    if (readError instanceof Error && readError.message !== error.message) throw readError;
+    throw error;
+  }
+}
+
 export const orderService = {
   async getMyOrders() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -19,7 +30,7 @@ export const orderService = {
       .eq("buyer_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    await throwFunctionError(error);
     return data;
   },
 
