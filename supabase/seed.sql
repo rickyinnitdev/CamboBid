@@ -547,6 +547,23 @@ ON CONFLICT (id) DO UPDATE SET
   location = EXCLUDED.location,
   updated_at = NOW();
 
+INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at, id)
+SELECT
+  u.id::text,
+  u.id,
+  jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', TRUE, 'phone_verified', FALSE),
+  'email',
+  NOW(),
+  NOW(),
+  NOW(),
+  gen_random_uuid()
+FROM auth.users u
+WHERE u.email LIKE '%@cambobid.test'
+  AND NOT EXISTS (
+    SELECT 1 FROM auth.identities i
+    WHERE i.user_id = u.id AND i.provider = 'email'
+  );
+
 -- ============================================================================
 -- 8. DEMO MARKETPLACE DATA: 5 ITEMS PER TOP-LEVEL CATEGORY
 -- Uses direct online image URLs instead of Supabase Storage uploads.
@@ -693,6 +710,34 @@ INSERT INTO public.activity_logs (actor_id, action, resource_type, metadata)
 VALUES
   ('10000000-0000-0000-0000-000000000002', 'demo_seed_loaded', 'seed', '{"scope":"users,listings,auctions,bids,escrow,disputes","note":"Rich demo data loaded for testing."}'::jsonb),
   ('10000000-0000-0000-0000-000000000001', 'automation_feature_ready', 'ai_listing_analysis', '{"provider":"gemini","status":"migration_and_edge_function_available"}'::jsonb);
+
+WITH image_map(slug, image_url) AS (
+  VALUES
+    ('watches', 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1200&q=80'),
+    ('jewelry', 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80'),
+    ('art', 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=1200&q=80'),
+    ('antiques', 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1200&q=80'),
+    ('electronics', 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'),
+    ('vehicles', 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80'),
+    ('collectibles', 'https://images.unsplash.com/photo-1607462109225-6b64ae2dd3cb?auto=format&fit=crop&w=1200&q=80'),
+    ('real-estate', 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80'),
+    ('fashion', 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80'),
+    ('home-garden', 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80'),
+    ('sports-outdoors', 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80'),
+    ('books-media', 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=80')
+)
+UPDATE public.listings l
+SET
+  images = jsonb_build_array(jsonb_build_object(
+    'url', image_map.image_url,
+    'name', c.slug || '-demo.jpg',
+    'path', 'external/' || c.slug || '-demo.jpg'
+  )),
+  updated_at = NOW()
+FROM public.categories c
+JOIN image_map ON image_map.slug = c.slug
+WHERE l.category_id = c.id
+  AND l.title LIKE '[Demo]%';
 
 -- ============================================================================
 -- END OF SEED DATA
