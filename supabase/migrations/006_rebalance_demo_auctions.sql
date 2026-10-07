@@ -1,14 +1,14 @@
 -- ============================================================================
--- Migration 005: Randomize the 60 demo auctions into 20 closed, 20 extended,
--- and 20 live auctions.
+-- Migration 006: Rebalance all demo auctions into 20 closed, 20 extended,
+-- and 20 live auctions with valid timestamps.
 -- ============================================================================
 
 WITH randomized_demo_auctions AS (
   SELECT
     a.id,
     row_number() OVER (ORDER BY random()) AS rn
-  FROM public.auctions a
-  JOIN public.listings l ON l.id = a.listing_id
+  FROM public.auctions AS a
+  JOIN public.listings AS l ON l.id = a.listing_id
   WHERE l.title LIKE '[Demo] %'
 )
 UPDATE public.auctions AS a
@@ -24,11 +24,11 @@ SET
   END,
   end_time = CASE
     WHEN r.rn <= 20 THEN NOW() - INTERVAL '1 hour'
-    ELSE NOW() + ((r.rn % 6 + 1) || ' hours')::interval
+    ELSE NOW() + ((1 + (r.rn % 6)) || ' hours')::interval
   END,
   original_end_time = CASE
     WHEN r.rn <= 20 THEN NOW() - INTERVAL '1 hour'
-    ELSE NOW() + ((r.rn % 6 + 1) || ' hours')::interval
+    ELSE NOW() + ((1 + (r.rn % 6)) || ' hours')::interval
   END,
   winner_id = CASE
     WHEN r.rn <= 20 THEN '10000000-0000-0000-0000-000000000006'::uuid
@@ -44,13 +44,12 @@ SET
   END,
   updated_at = NOW()
 FROM randomized_demo_auctions AS r
-WHERE a.id = r.id
-  AND r.rn <= 60;
+WHERE a.id = r.id;
 
--- Verify the expected demo distribution after applying this migration:
--- SELECT status, COUNT(*)
--- FROM public.auctions a
--- JOIN public.listings l ON l.id = a.listing_id
+-- Verify:
+-- SELECT a.status, COUNT(*)
+-- FROM public.auctions AS a
+-- JOIN public.listings AS l ON l.id = a.listing_id
 -- WHERE l.title LIKE '[Demo] %'
--- GROUP BY status
--- ORDER BY status;
+-- GROUP BY a.status
+-- ORDER BY a.status;
