@@ -6,7 +6,15 @@
     "login": "\u1785\u1791\u17D2\u179A\u17B8\u179F\u17CD",
     "register": "\u1785\u17D2\u179A\u179B\u1780\u179F\u17CD",
     "profile": "\u1794\u17D2\u178F\u17D2\u178F\u1784\u1794\u1789\u17D2\u1799\u17C0\u178E",
-    "logout": "\u1785\u1787\u17D2\u179A\u179F\u17CD"
+    "logout": "\u1785\u1787\u17D2\u179A\u179F\u17CD",
+    "terms": "Terms & Conditions"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "accept_prefix": "I have read and agree to the ",
+    "accept_suffix": ".",
+    "accept_required": "You must agree to the Terms & Conditions to create an account.",
+    "unavailable": "Registration is temporarily unavailable while the Terms & Conditions are being prepared."
   },
   "home": {
     "hero_title": "\u1795\u17D2\u178F\u17D2\u179A\u1780\u17CB \u1780\u17B6\u1789\u1789\u17D2\u179A\u1794\u17D2\u178A\u1784 \u1789\u1798\u17D2\u179A\u1780",

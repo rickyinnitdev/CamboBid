@@ -39,6 +39,15 @@ export const defaultPlatformSettings = {
     admin_mfa_required: true,
     verified_bidder_mfa_required: false,
   },
+  terms: {
+    title: "Terms & Conditions",
+    version: "draft-1",
+    effective_date: "",
+    contact_email: "",
+    published: false,
+    content:
+      "This Terms & Conditions document is a draft and must be replaced with the final text before production use.\n\nPlease provide and publish the approved terms before launching the marketplace.",
+  },
 };
 
 export const platformSettingsService = {

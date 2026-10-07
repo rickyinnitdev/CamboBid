@@ -101,6 +101,7 @@ async function saveSettings() {
       platformSettingsService.saveSection("homepage", settings.value.homepage),
       platformSettingsService.saveSection("auction_rules", settings.value.auction_rules),
       platformSettingsService.saveSection("auth", settings.value.auth),
+      platformSettingsService.saveSection("terms", settings.value.terms),
     ]);
     toast.success("Platform CMS settings saved");
   } catch (error) {
@@ -189,6 +190,41 @@ onMounted(loadSettings);
             <BaseInput v-model="settings.brand.trust_score" label="Trust Score Label" />
             <BaseInput v-model="settings.brand.review_count" label="Review Count" />
             <BaseInput v-model="settings.brand.review_source" label="Review Source" />
+          </div>
+        </BaseCard>
+
+        <BaseCard>
+          <div class="mb-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+              <h3 class="font-black text-heading text-lg">Terms & Conditions</h3>
+              <p class="text-sm text-muted">Manage the public English Terms document shown at /terms and during registration.</p>
+            </div>
+            <span
+              :class="settings.terms.published ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
+              class="rounded-full px-3 py-1 text-xs font-bold self-start"
+            >
+              {{ settings.terms.published ? "Published" : "Unpublished" }}
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <BaseInput v-model="settings.terms.title" label="Document Title" />
+            <BaseInput v-model="settings.terms.version" label="Version" placeholder="e.g. 1.0" />
+            <BaseInput v-model="settings.terms.effective_date" label="Effective Date" placeholder="e.g. 2026-10-07" />
+            <BaseInput v-model="settings.terms.contact_email" label="Contact Email" type="email" />
+            <label class="rounded-2xl border border-border p-4 flex items-start gap-3">
+              <input v-model="settings.terms.published" type="checkbox" class="mt-1 h-4 w-4 rounded border-border text-blue-700" />
+              <span><strong class="block text-heading">Publish document</strong><span class="text-sm text-muted">Show this version as active on the public site.</span></span>
+            </label>
+          </div>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-heading mb-1">Terms content</label>
+            <textarea
+              v-model="settings.terms.content"
+              rows="16"
+              class="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Paste the approved Terms & Conditions here. Separate paragraphs with a blank line."
+            />
+            <p class="mt-2 text-xs text-muted">Use plain text and blank lines between paragraphs. Replace the draft before publishing.</p>
           </div>
         </BaseCard>
 

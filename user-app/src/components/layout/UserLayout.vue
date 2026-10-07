@@ -202,7 +202,7 @@ onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel)
     </main>
 
     <footer class="bg-slate-950 text-white mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div class="md:col-span-2">
           <p class="text-2xl font-black text-white">{{ settings.brand.name }}</p>
           <p class="mt-3 text-slate-400 max-w-md">{{ settings.brand.tagline }} with verified bidders, immutable logs, proxy bidding, and escrow protection.</p>
@@ -218,6 +218,10 @@ onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel)
           <router-link to="/verify-identity" class="block text-sm text-slate-400 hover:text-white mb-2">Bidder verification</router-link>
           <router-link to="/disputes" class="block text-sm text-slate-400 hover:text-white mb-2">Dispute resolution</router-link>
           <router-link to="/orders" class="block text-sm text-slate-400 hover:text-white">Escrow orders</router-link>
+        </div>
+        <div>
+          <h4 class="font-bold mb-3">Legal</h4>
+          <router-link to="/terms" class="block text-sm text-slate-400 hover:text-white">Terms & Conditions</router-link>
         </div>
       </div>
     </footer>

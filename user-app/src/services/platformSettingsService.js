@@ -39,6 +39,15 @@ export const defaultPlatformSettings = {
     admin_mfa_required: true,
     verified_bidder_mfa_required: false,
   },
+  terms: {
+    title: "Terms & Conditions",
+    version: "draft-1",
+    effective_date: "",
+    contact_email: "",
+    published: false,
+    content:
+      "This Terms & Conditions document is a draft and must be replaced with the final text before production use.\n\nPlease provide and publish the approved terms before launching the marketplace.",
+  },
   brand_logo_url: "",
 };
 
@@ -59,7 +68,7 @@ export const platformSettingsService = {
       if (error) throw error;
 
       // Section keys (brand, homepage, etc.) are JSONB objects — spread them into nested shape
-      const SECTION_KEYS = ["brand", "homepage", "auction_rules", "auth"];
+      const SECTION_KEYS = ["brand", "homepage", "auction_rules", "auth", "terms"];
       const settings = (data || []).reduce(
         (settings, row) => {
           if (SECTION_KEYS.includes(row.key)) {

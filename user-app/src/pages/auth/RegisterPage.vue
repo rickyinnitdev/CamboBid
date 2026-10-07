@@ -6,6 +6,7 @@ import { useAuth } from "@/composables/useAuth";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import { platformSettingsService } from "@/services/platformSettingsService";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -15,6 +16,7 @@ const displayName = ref("");
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
+const termsAccepted = ref(false);
 const error = ref("");
 const loading = ref(false);
 const success = ref(false);
@@ -29,12 +31,22 @@ async function handleRegister() {
     error.value = "Password must be at least 8 characters.";
     return;
   }
+  if (!termsAccepted.value) {
+    error.value = t("terms.accept_required");
+    return;
+  }
   loading.value = true;
   try {
+    const terms = (await platformSettingsService.getAll()).terms;
+    if (!terms.published || !terms.version) {
+      error.value = t("terms.unavailable");
+      return;
+    }
     await register({
       email: email.value,
       password: password.value,
       displayName: displayName.value,
+      termsAcceptedVersion: terms.version,
     });
     success.value = true;
   } catch (err) {
@@ -81,6 +93,17 @@ async function handleRegister() {
               placeholder="John Doe"
               required
             />
+
+            <label class="flex items-start gap-3 text-sm text-slate-600">
+              <input v-model="termsAccepted" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600" />
+              <span>
+                {{ t("terms.accept_prefix") }}
+                <router-link to="/terms" target="_blank" class="font-semibold text-blue-700 hover:text-blue-800">
+                  {{ t("terms.title") }}
+                </router-link>
+                {{ t("terms.accept_suffix") }}
+              </span>
+            </label>
 
             <BaseInput
               v-model="email"

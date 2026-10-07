@@ -14,7 +14,15 @@
     "my_disputes": "My Disputes",
     "notifications": "Notifications",
     "logout": "Logout",
-    "admin": "Admin Panel"
+    "admin": "Admin Panel",
+    "terms": "Terms & Conditions"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "accept_prefix": "I have read and agree to the ",
+    "accept_suffix": ".",
+    "accept_required": "You must agree to the Terms & Conditions to create an account.",
+    "unavailable": "Registration is temporarily unavailable while the Terms & Conditions are being prepared."
   },
   "home": {
     "hero_title": "Discover. Bid. Win.",
