@@ -14,9 +14,13 @@ const settingsStore = useSettingsStore();
 const settings = ref(platformSettingsService.getCached());
 const mobileMenuOpen = ref(false);
 const profileDropdownOpen = ref(false);
+const notificationPopoverOpen = ref(false);
+const notificationPreview = ref([]);
+const notificationPreviewLoading = ref(false);
 const searchQuery = ref("");
 const unreadCount = ref(0);
 let notifChannel = null;
+const notificationPopoverRef = ref(null);
 
 const categoryRail = [
   { label: "This week", icon: "M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", to: "/auctions" },
@@ -32,6 +36,96 @@ const categoryRail = [
 
 async function fetchUnreadCount() {
   if (isAuthenticated.value) unreadCount.value = await notificationService.getUnreadCount();
+}
+
+async function fetchNotificationPreview() {
+  if (!isAuthenticated.value) return;
+
+  notificationPreviewLoading.value = true;
+  try {
+    const result = await notificationService.getNotifications({ limit: 8 });
+    notificationPreview.value = result.notifications || [];
+  } catch (error) {
+    if (import.meta.env.DEV) console.error("Failed to load notification preview:", error);
+  } finally {
+    notificationPreviewLoading.value = false;
+  }
+}
+
+function getNotificationLink(notification) {
+  return notification.auction_id ? `/auctions/${notification.auction_id}` : "/notifications";
+}
+
+function getNotificationTitle(notification) {
+  return notification.title || notification.type || "Notification";
+}
+
+function getNotificationBody(notification) {
+  return notification.body || notification.message || "";
+}
+
+function timeAgo(dateString) {
+  const diff = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+async function toggleNotificationPopover() {
+  notificationPopoverOpen.value = !notificationPopoverOpen.value;
+  if (notificationPopoverOpen.value) await fetchNotificationPreview();
+}
+
+async function markNotificationRead(notification, event) {
+  event?.stopPropagation();
+  try {
+    await notificationService.markAsRead(notification.id);
+    notification.read = true;
+    await fetchUnreadCount();
+  } catch (error) {
+    if (import.meta.env.DEV) console.error("Failed to mark notification as read:", error);
+  }
+}
+
+async function dismissNotification(notification, event) {
+  event?.stopPropagation();
+  try {
+    await notificationService.deleteNotification(notification.id);
+    notificationPreview.value = notificationPreview.value.filter((item) => item.id !== notification.id);
+    if (!notification.read) await fetchUnreadCount();
+  } catch (error) {
+    if (import.meta.env.DEV) console.error("Failed to dismiss notification:", error);
+  }
+}
+
+async function markAllNotificationsRead() {
+  try {
+    await notificationService.markAllAsRead();
+    notificationPreview.value.forEach((notification) => {
+      notification.read = true;
+    });
+    unreadCount.value = 0;
+  } catch (error) {
+    if (import.meta.env.DEV) console.error("Failed to mark all notifications as read:", error);
+  }
+}
+
+function openNotification(notification) {
+  notificationPopoverOpen.value = false;
+  router.push(getNotificationLink(notification));
+}
+
+function handleNotificationPopoverClickOutside(event) {
+  if (notificationPopoverOpen.value && !notificationPopoverRef.value?.contains(event.target)) {
+    notificationPopoverOpen.value = false;
+  }
+}
+
+function handleNotificationPopoverKeydown(event) {
+  if (event.key === "Escape") notificationPopoverOpen.value = false;
 }
 
 function submitSearch() {
@@ -54,12 +148,18 @@ function navigate(path) {
 onMounted(async () => {
   settings.value = await platformSettingsService.getAll();
   await fetchUnreadCount();
+  document.addEventListener("click", handleNotificationPopoverClickOutside);
+  document.addEventListener("keydown", handleNotificationPopoverKeydown);
   if (isAuthenticated.value) {
     notifChannel = await notificationService.subscribeToNotifications(fetchUnreadCount);
   }
 });
 
-onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel));
+onUnmounted(() => {
+  document.removeEventListener("click", handleNotificationPopoverClickOutside);
+  document.removeEventListener("keydown", handleNotificationPopoverKeydown);
+  notificationService.unsubscribeFromNotifications(notifChannel);
+});
 </script>
 
 <template>
@@ -121,12 +221,94 @@ onUnmounted(() => notificationService.unsubscribeFromNotifications(notifChannel)
             <LanguageSwitcher />
 
             <template v-if="isAuthenticated">
-              <router-link to="/notifications" class="relative grid w-11 h-11 place-items-center rounded-full hover:bg-slate-100 text-slate-700">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" />
-                </svg>
-                <span v-if="unreadCount" class="absolute -top-0.5 -right-0.5 min-w-5 h-5 rounded-full bg-rose-500 px-1 text-white text-xs grid place-items-center">{{ unreadCount > 9 ? "9+" : unreadCount }}</span>
-              </router-link>
+              <div ref="notificationPopoverRef" class="relative">
+                <button
+                  type="button"
+                  class="relative grid w-11 h-11 place-items-center rounded-full hover:bg-slate-100 text-slate-700"
+                  :aria-expanded="notificationPopoverOpen"
+                  aria-label="Open notifications"
+                  @click="toggleNotificationPopover"
+                >
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" />
+                  </svg>
+                  <span v-if="unreadCount" class="absolute -top-0.5 -right-0.5 min-w-5 h-5 rounded-full bg-rose-500 px-1 text-white text-xs grid place-items-center">{{ unreadCount > 9 ? "9+" : unreadCount }}</span>
+                </button>
+
+                <div
+                  v-if="notificationPopoverOpen"
+                  class="absolute right-0 top-full z-50 mt-3 flex w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
+                >
+                  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                    <h2 class="text-sm font-bold text-slate-900">Notifications</h2>
+                    <button
+                      type="button"
+                      class="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      :disabled="!unreadCount"
+                      @click="markAllNotificationsRead"
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+
+                  <div class="max-h-96 overflow-y-auto">
+                    <div v-if="notificationPreviewLoading" class="space-y-3 p-4">
+                      <div v-for="i in 4" :key="i" class="h-14 animate-pulse rounded-xl bg-slate-100" />
+                    </div>
+
+                    <div v-else-if="notificationPreview.length === 0" class="px-4 py-10 text-center text-sm text-slate-500">
+                      No new notifications
+                    </div>
+
+                    <div
+                      v-for="notification in notificationPreview"
+                      v-else
+                      :key="notification.id"
+                      class="flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50"
+                      :class="!notification.read && 'bg-blue-50/60'"
+                      @click="openNotification(notification)"
+                      @keydown.enter="openNotification(notification)"
+                      tabindex="0"
+                      role="button"
+                    >
+                      <span class="relative mt-0.5 grid h-8 w-8 flex-shrink-0 place-items-center rounded-full" :class="notification.read ? 'bg-slate-100 text-slate-500' : 'bg-blue-100 text-blue-700'">
+                        <span v-if="!notification.read" class="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-blue-700 ring-2 ring-white" />
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                      </span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block truncate text-sm font-semibold text-slate-900">{{ getNotificationTitle(notification) }}</span>
+                        <span v-if="getNotificationBody(notification)" class="mt-0.5 block line-clamp-2 text-xs leading-5 text-slate-500">{{ getNotificationBody(notification) }}</span>
+                        <span class="mt-1 block text-[11px] text-slate-400">{{ timeAgo(notification.created_at) }}</span>
+                      </span>
+                      <span class="flex flex-shrink-0 items-center gap-1 self-center">
+                        <button
+                          v-if="!notification.read"
+                          type="button"
+                          class="rounded px-1.5 py-1 text-[10px] font-semibold text-blue-700 hover:bg-blue-100"
+                          @click="markNotificationRead(notification, $event)"
+                        >
+                          Read
+                        </button>
+                        <button
+                          type="button"
+                          class="rounded px-1.5 py-1 text-[10px] font-semibold text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                          @click="dismissNotification(notification, $event)"
+                        >
+                          Dismiss
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-slate-100 bg-slate-50 px-4 py-3 text-center">
+                    <button type="button" class="text-sm font-semibold text-blue-700 hover:text-blue-800" @click="navigate('/notifications')">
+                      View all notifications
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <div class="relative">
                 <button class="flex items-center gap-2 rounded-full bg-slate-100 p-1 pr-3 hover:bg-slate-200" @click="profileDropdownOpen = !profileDropdownOpen">
