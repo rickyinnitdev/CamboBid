@@ -45,6 +45,12 @@ const formattedTime = computed(() => {
   return parts.join(" ");
 });
 
+const displayText = computed(() => {
+  if (isEnded.value) return "ENDED";
+  if (isExtended.value) return `EXTENDED · ${formattedTime.value}`;
+  return formattedTime.value;
+});
+
 const sizeClasses = {
   sm: "text-sm font-mono",
   md: "text-lg font-mono font-semibold",
@@ -63,21 +69,17 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="inline-flex items-center gap-2">
-    <span v-if="showBadge && isExtended" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gold-500/10 text-gold-700">
-      EXTENDED
-    </span>
-    <span v-if="showBadge && isEnded" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-muted/20 text-muted">
-      ENDED
-    </span>
+  <div class="flex min-w-0 max-w-full justify-end overflow-hidden">
     <span
       :class="[
         sizeClasses[size],
-        'tabular-nums tracking-tight',
-        isEnded ? 'text-muted' : isCritical ? 'text-danger animate-flash-fast' : isUrgent ? 'text-danger' : 'text-heading',
+        'block min-w-0 max-w-full truncate tabular-nums tracking-tight',
+        showBadge && (isEnded || isExtended) ? 'rounded px-2 py-0.5 text-xs font-semibold' : '',
+        isEnded ? 'bg-muted/20 text-muted' : isExtended ? 'bg-gold-500/10 text-gold-700' : isCritical ? 'text-danger animate-flash-fast' : isUrgent ? 'text-danger' : 'text-heading',
       ]"
+      :title="displayText"
     >
-      {{ formattedTime }}
+      {{ displayText }}
     </span>
   </div>
 </template>

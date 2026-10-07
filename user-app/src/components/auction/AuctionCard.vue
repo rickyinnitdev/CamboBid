@@ -57,17 +57,25 @@ const categoryName = computed(() => listing.value.categories?.name || "Curated l
           {{ listing.title || "Untitled auction lot" }}
         </h3>
 
-        <div class="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-3">
-          <div>
+        <div class="mt-4 grid min-w-0 grid-cols-2 gap-3 overflow-hidden rounded-2xl bg-slate-50 p-3">
+          <div class="min-w-0 max-w-full overflow-hidden">
             <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Current bid</p>
-            <p class="mt-1 font-mono text-xl font-black text-slate-950">
+            <p class="mt-1 min-w-0 max-w-full truncate font-mono text-xl font-black text-slate-950">
               ${{ Number(auction.current_price || 0).toLocaleString() }}
             </p>
           </div>
-          <div class="text-right">
+          <div class="min-w-0 max-w-full overflow-hidden text-right">
             <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ isScheduled ? "Starts" : "Ends" }}</p>
-            <CountdownTimer v-if="isLive" :end-time="auction.end_time" :status="auction.status" size="sm" class="mt-1 justify-end" />
-            <p v-else class="mt-1 text-xs font-semibold text-slate-600">{{ new Date(isScheduled ? auction.start_time : auction.end_time).toLocaleDateString() }}</p>
+            <CountdownTimer
+              v-if="isLive"
+              :end-time="auction.end_time"
+              :status="auction.status"
+              size="sm"
+              class="mt-1 min-w-0 max-w-full"
+            />
+            <p v-else class="mt-1 min-w-0 max-w-full truncate text-xs font-semibold text-slate-600">
+              {{ new Date(isScheduled ? auction.start_time : auction.end_time).toLocaleDateString() }}
+            </p>
           </div>
         </div>
 
