@@ -10,7 +10,6 @@ WITH randomized_demo_auctions AS (
   FROM public.auctions a
   JOIN public.listings l ON l.id = a.listing_id
   WHERE l.title LIKE '[Demo] %'
-  LIMIT 60
 )
 UPDATE public.auctions AS a
 SET
@@ -31,6 +30,10 @@ SET
     WHEN r.rn <= 20 THEN NOW() - INTERVAL '1 hour'
     ELSE NOW() + ((r.rn % 6 + 1) || ' hours')::interval
   END,
+  winner_id = CASE
+    WHEN r.rn <= 20 THEN '10000000-0000-0000-0000-000000000006'::uuid
+    ELSE NULL
+  END,
   closed_by = CASE
     WHEN r.rn <= 20 THEN '10000000-0000-0000-0000-000000000002'::uuid
     ELSE NULL
@@ -41,4 +44,13 @@ SET
   END,
   updated_at = NOW()
 FROM randomized_demo_auctions AS r
-WHERE a.id = r.id;
+WHERE a.id = r.id
+  AND r.rn <= 60;
+
+-- Verify the expected demo distribution after applying this migration:
+-- SELECT status, COUNT(*)
+-- FROM public.auctions a
+-- JOIN public.listings l ON l.id = a.listing_id
+-- WHERE l.title LIKE '[Demo] %'
+-- GROUP BY status
+-- ORDER BY status;
