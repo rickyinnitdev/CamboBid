@@ -12,8 +12,11 @@ const imageUrl = computed(() => {
   if (Array.isArray(images) && images.length > 0) return typeof images[0] === "string" ? images[0] : images[0]?.url;
   return null;
 });
-const isLive = computed(() => ["live", "extended"].includes(props.auction.status));
-const isEnded = computed(() => props.auction.status === "closed");
+const isEnded = computed(() => {
+  const endTime = props.auction.end_time ? new Date(props.auction.end_time).getTime() : NaN;
+  return props.auction.status === "closed" || (Number.isFinite(endTime) && endTime <= Date.now());
+});
+const isLive = computed(() => !isEnded.value && ["live", "extended"].includes(props.auction.status));
 const isScheduled = computed(() => props.auction.status === "scheduled");
 const categoryName = computed(() => listing.value.categories?.name || "Curated lot");
 </script>
