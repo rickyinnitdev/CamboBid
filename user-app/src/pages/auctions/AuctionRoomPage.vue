@@ -32,8 +32,11 @@ const auctionChannel = ref(null);
 
 const auctionId = computed(() => route.params.id);
 
-const isLive = computed(() => ["live", "extended"].includes(auction.value?.status));
-const isEnded = computed(() => auction.value?.status === "closed");
+const isEnded = computed(() => {
+  const endTime = auction.value?.end_time ? new Date(auction.value.end_time).getTime() : NaN;
+  return auction.value?.status === "closed" || (Number.isFinite(endTime) && endTime <= Date.now());
+});
+const isLive = computed(() => !isEnded.value && ["live", "extended"].includes(auction.value?.status));
 const isScheduled = computed(() => auction.value?.status === "scheduled");
 
 const listing = computed(() => auction.value?.listings || {});

@@ -20,6 +20,16 @@ const loading = ref(true);
 const error = ref("");
 const actionLoading = ref(false);
 
+function isExpired() {
+  const endTime = auction.value?.end_time ? new Date(auction.value.end_time).getTime() : NaN;
+  return Number.isFinite(endTime) && endTime <= Date.now();
+}
+
+function displayStatus() {
+  if (auction.value?.status === "closed" || isExpired()) return "closed";
+  return auction.value?.status || "";
+}
+
 const form = ref({
   bid_increment: 0,
   auto_extend_minutes: 0,
@@ -116,7 +126,7 @@ async function closeAuction() {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <p class="text-xs text-muted mb-1">Status</p>
-              <p class="text-sm font-medium text-heading capitalize">{{ auction.status }}</p>
+              <p class="text-sm font-medium text-heading capitalize">{{ displayStatus() }}</p>
             </div>
             <div>
               <p class="text-xs text-muted mb-1">Current Price</p>

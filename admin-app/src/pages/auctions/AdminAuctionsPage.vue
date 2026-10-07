@@ -23,6 +23,16 @@ const statusFilter = ref("");
 const loading = ref(true);
 const error = ref("");
 
+function isExpired(auction) {
+  const endTime = auction.end_time ? new Date(auction.end_time).getTime() : NaN;
+  return Number.isFinite(endTime) && endTime <= Date.now();
+}
+
+function displayStatus(auction) {
+  if (auction.status === "closed" || isExpired(auction)) return "closed";
+  return auction.status;
+}
+
 async function fetchAuctions() {
   loading.value = true;
   error.value = "";
@@ -109,7 +119,7 @@ function statusBadgeVariant(status) {
                   <td class="px-4 py-3 font-medium text-heading">${{ Number(auction.current_price || 0).toLocaleString() }}</td>
                   <td class="px-4 py-3 text-muted">{{ auction.end_time ? new Date(auction.end_time).toLocaleString() : "N/A" }}</td>
                   <td class="px-4 py-3">
-                    <BaseBadge :variant="statusBadgeVariant(auction.status)">{{ auction.status }}</BaseBadge>
+                    <BaseBadge :variant="statusBadgeVariant(displayStatus(auction))">{{ displayStatus(auction) }}</BaseBadge>
                   </td>
                   <td class="px-4 py-3 text-right">
                     <BaseButton variant="ghost" size="sm" @click="router.push(`/admin/auctions/${auction.id}/settings`)">
