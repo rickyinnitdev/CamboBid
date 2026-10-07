@@ -680,9 +680,17 @@ WITH demo_categories AS (
   )
   RETURNING id, title, seller_id, starting_price
 ), all_demo_listings AS (
-  SELECT id, title, seller_id, starting_price, row_number() OVER (ORDER BY title) AS rn
+  SELECT id, title, seller_id, starting_price
   FROM public.listings
   WHERE title LIKE '[Demo] %'
+), randomized_demo_listings AS (
+  SELECT
+    id,
+    title,
+    seller_id,
+    starting_price,
+    row_number() OVER (ORDER BY random()) AS rn
+  FROM all_demo_listings
 ), inserted_auctions AS (
   INSERT INTO public.auctions (
     listing_id, type, status, start_time, end_time, original_end_time,
@@ -692,20 +700,24 @@ WITH demo_categories AS (
   SELECT
     l.id,
     CASE WHEN rn % 11 = 0 THEN 'sealed'::public.auction_type WHEN rn % 7 = 0 THEN 'dutch'::public.auction_type ELSE 'english'::public.auction_type END,
-    CASE WHEN rn % 5 = 0 THEN 'closed'::public.auction_status WHEN rn % 4 = 0 THEN 'scheduled'::public.auction_status WHEN rn % 3 = 0 THEN 'extended'::public.auction_status ELSE 'live'::public.auction_status END,
-    CASE WHEN rn % 5 = 0 THEN NOW() - INTERVAL '2 days' WHEN rn % 4 = 0 THEN NOW() + INTERVAL '1 day' ELSE NOW() - INTERVAL '2 hours' END,
-    CASE WHEN rn % 5 = 0 THEN NOW() - INTERVAL '1 hour' WHEN rn % 4 = 0 THEN NOW() + INTERVAL '3 days' ELSE NOW() + ((rn % 6 + 1) || ' hours')::interval END,
-    CASE WHEN rn % 5 = 0 THEN NOW() - INTERVAL '1 hour' WHEN rn % 4 = 0 THEN NOW() + INTERVAL '3 days' ELSE NOW() + ((rn % 6 + 1) || ' hours')::interval END,
+    CASE
+      WHEN rn <= 20 THEN 'closed'::public.auction_status
+      WHEN rn <= 40 THEN 'extended'::public.auction_status
+      ELSE 'live'::public.auction_status
+    END,
+    CASE WHEN rn <= 20 THEN NOW() - INTERVAL '2 days' ELSE NOW() - INTERVAL '2 hours' END,
+    CASE WHEN rn <= 20 THEN NOW() - INTERVAL '1 hour' ELSE NOW() + ((rn % 6 + 1) || ' hours')::interval END,
+    CASE WHEN rn <= 20 THEN NOW() - INTERVAL '1 hour' ELSE NOW() + ((rn % 6 + 1) || ' hours')::interval END,
     l.starting_price + (rn % 9) * 18,
     CASE WHEN l.starting_price < 500 THEN 10 ELSE 25 END,
     NULL,
     rn % 2 = 0,
-    CASE WHEN rn % 5 = 0 THEN '10000000-0000-0000-0000-000000000006'::uuid ELSE NULL END,
-    CASE WHEN rn % 5 = 0 THEN '10000000-0000-0000-0000-000000000002'::uuid ELSE NULL END,
-    CASE WHEN rn % 5 = 0 THEN 'Demo auction closed for completed-order testing' ELSE NULL END,
+    CASE WHEN rn <= 20 THEN '10000000-0000-0000-0000-000000000006'::uuid ELSE NULL END,
+    CASE WHEN rn <= 20 THEN '10000000-0000-0000-0000-000000000002'::uuid ELSE NULL END,
+    CASE WHEN rn <= 20 THEN 'Demo auction closed for completed-order testing' ELSE NULL END,
     NOW() - INTERVAL '1 day',
     NOW()
-  FROM all_demo_listings l
+  FROM randomized_demo_listings l
   WHERE NOT EXISTS (SELECT 1 FROM public.auctions a WHERE a.listing_id = l.id)
   RETURNING id, listing_id, status, current_price
 ), demo_auctions AS (
