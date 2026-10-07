@@ -34,8 +34,13 @@ async function loadNotifications() {
 async function handleMarkRead(id) {
   try {
     await notificationService.markAsRead(id);
-    const notif = notifications.value.find((n) => n.id === id);
-    if (notif) notif.read = true;
+    if (filter.value === "unread") {
+      notifications.value = notifications.value.filter((n) => n.id !== id);
+      total.value = Math.max(0, total.value - 1);
+    } else {
+      const notif = notifications.value.find((n) => n.id === id);
+      if (notif) notif.read = true;
+    }
   } catch (err) {
     console.error("Failed to mark as read:", err);
   }
@@ -44,7 +49,12 @@ async function handleMarkRead(id) {
 async function handleMarkAllRead() {
   try {
     await notificationService.markAllAsRead();
-    notifications.value.forEach((n) => (n.read = true));
+    if (filter.value === "unread") {
+      notifications.value = [];
+      total.value = 0;
+    } else {
+      notifications.value.forEach((n) => (n.read = true));
+    }
   } catch (err) {
     console.error("Failed to mark all as read:", err);
   }
@@ -62,6 +72,14 @@ async function handleDelete(id) {
 function getNotificationLink(notif) {
   if (notif.auction_id) return `/auctions/${notif.auction_id}`;
   return null;
+}
+
+function getNotificationTitle(notif) {
+  return notif.title || notif.type || "Notification";
+}
+
+function getNotificationBody(notif) {
+  return notif.body || notif.message || "";
 }
 
 function timeAgo(dateStr) {
@@ -123,12 +141,13 @@ onUnmounted(() => {
         <div
           v-for="notif in notifications"
           :key="notif.id"
-          class="bg-white rounded-xl border border-border p-4 flex items-start gap-3 transition-colors"
-          :class="!notif.read && 'bg-navy-700/5'"
+          class="rounded-xl border border-border p-4 flex items-start gap-3 overflow-hidden transition-colors"
+          :class="notif.read ? 'bg-white' : 'bg-navy-700/5 border-navy-700/20'"
         >
-          <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center"
+          <div class="relative w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
             :class="notif.read ? 'bg-surface' : 'bg-navy-700/10'"
           >
+            <span v-if="!notif.read" class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-navy-700 ring-2 ring-white" />
             <svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -137,14 +156,17 @@ onUnmounted(() => {
             <router-link
               v-if="getNotificationLink(notif)"
               :to="getNotificationLink(notif)"
-              class="text-sm text-heading hover:text-navy-700 transition-colors block"
+              class="block min-w-0 text-sm font-semibold text-heading hover:text-navy-700 transition-colors break-words"
             >
-              {{ notif.message }}
+              {{ getNotificationTitle(notif) }}
             </router-link>
-            <p v-else class="text-sm text-heading">{{ notif.message }}</p>
-            <p class="text-xs text-muted mt-1">{{ timeAgo(notif.created_at) }}</p>
+            <p v-else class="min-w-0 text-sm font-semibold text-heading break-words">{{ getNotificationTitle(notif) }}</p>
+            <p v-if="getNotificationBody(notif)" class="mt-1 min-w-0 text-sm leading-5 text-muted break-words line-clamp-2">
+              {{ getNotificationBody(notif) }}
+            </p>
+            <p class="mt-2 text-xs text-muted">{{ timeAgo(notif.created_at) }}</p>
           </div>
-          <div class="flex items-center gap-1 flex-shrink-0">
+          <div class="flex flex-shrink-0 items-center gap-1 self-center">
             <button
               v-if="!notif.read"
               class="text-xs text-navy-700 hover:text-navy-800 px-2 py-1"
