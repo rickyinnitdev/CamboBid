@@ -57,7 +57,7 @@ function getImage() {
 
 <template>
   <UserLayout>
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="page-container max-w-3xl">
       <div class="mb-6">
         <button @click="router.back()" class="text-sm text-muted hover:text-heading transition-colors">&larr; {{ t("common.back") }}</button>
       </div>

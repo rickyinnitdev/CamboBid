@@ -7,8 +7,8 @@ defineProps({
 <template>
   <div
     :class="[
-      'bg-white rounded-xl shadow-sm border border-border',
-      hover && 'hover:shadow-md transition-shadow duration-200 cursor-pointer',
+      'bg-white rounded-2xl shadow-sm border border-border/80',
+      hover && 'hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 cursor-pointer',
     ]"
   >
     <slot />

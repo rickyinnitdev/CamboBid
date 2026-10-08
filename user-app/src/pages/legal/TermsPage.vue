@@ -32,7 +32,7 @@ onMounted(loadTerms);
 
 <template>
   <UserLayout>
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <main class="page-container max-w-4xl">
       <div class="mb-8">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Legal</p>
         <h1 class="mt-2 text-3xl sm:text-4xl font-black text-slate-950">{{ settings.title }}</h1>

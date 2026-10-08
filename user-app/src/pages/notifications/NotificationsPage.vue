@@ -107,9 +107,13 @@ onUnmounted(() => {
 
 <template>
   <UserLayout>
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-heading">{{ t("nav.notifications") }}</h1>
+    <div class="page-container max-w-3xl">
+      <div class="page-header">
+        <div>
+          <p class="section-eyebrow">Account</p>
+          <h1 class="page-title">{{ t("nav.notifications") }}</h1>
+          <p class="page-subtitle">Stay up to date on bids, auctions, and account activity.</p>
+        </div>
         <BaseButton variant="ghost" size="sm" @click="handleMarkAllRead">Mark all read</BaseButton>
       </div>
 
@@ -141,7 +145,7 @@ onUnmounted(() => {
         <div
           v-for="notif in notifications"
           :key="notif.id"
-          class="rounded-xl border border-border p-4 flex items-start gap-3 overflow-hidden transition-colors"
+          class="rounded-2xl border border-border/80 p-4 flex items-start gap-3 overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md"
           :class="notif.read ? 'bg-white' : 'bg-navy-700/5 border-navy-700/20'"
         >
           <div class="relative w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"

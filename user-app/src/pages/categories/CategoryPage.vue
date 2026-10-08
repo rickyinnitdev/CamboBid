@@ -78,7 +78,7 @@ watch(sort, () => { page.value = 1; loadCategory(); });
 
 <template>
   <UserLayout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="page-container max-w-7xl">
       <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between">
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Specialist department</p>

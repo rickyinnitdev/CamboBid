@@ -111,7 +111,7 @@ async function handleSubmit() {
 
 <template>
   <UserLayout>
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="page-container max-w-3xl">
       <h1 class="text-2xl font-bold text-heading mb-8">{{ t("listing.edit") }}</h1>
 
       <div v-if="loading" class="space-y-4">

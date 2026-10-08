@@ -67,8 +67,14 @@ async function handleSave() {
 
 <template>
   <UserLayout>
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <h1 class="text-2xl font-bold text-heading mb-8">{{ t("profile.title") }}</h1>
+    <div class="page-container max-w-3xl">
+      <div class="page-header">
+        <div>
+          <p class="section-eyebrow">Account</p>
+          <h1 class="page-title">{{ t("profile.title") }}</h1>
+          <p class="page-subtitle">Manage your profile, contact details, and bidder identity.</p>
+        </div>
+      </div>
 
       <BaseCard>
         <div class="p-6">

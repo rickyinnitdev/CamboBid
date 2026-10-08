@@ -38,14 +38,20 @@ function getOrderImage(order) {
 
 <template>
   <UserLayout>
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <h1 class="text-2xl font-bold text-heading mb-8">{{ t("order.title") }}</h1>
+    <div class="page-container max-w-4xl">
+      <div class="page-header">
+        <div>
+          <p class="section-eyebrow">Account</p>
+          <h1 class="page-title">{{ t("order.title") }}</h1>
+          <p class="page-subtitle">Track purchases and escrow-protected deliveries.</p>
+        </div>
+      </div>
 
       <div v-if="loading" class="space-y-4">
         <BaseSkeleton v-for="i in 4" :key="i" type="card" />
       </div>
 
-      <div v-else-if="error" class="p-4 rounded-lg bg-danger/10 text-danger text-sm">
+      <div v-else-if="error" class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
         {{ error }}
       </div>
 

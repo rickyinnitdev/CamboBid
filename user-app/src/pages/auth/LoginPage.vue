@@ -48,13 +48,14 @@ async function handleGoogleLogin() {
     <div class="flex items-center justify-center min-h-[70vh] px-4 py-12">
       <div class="w-full max-w-md">
         <div class="text-center mb-8">
-          <h1 class="text-2xl font-bold text-heading">{{ t("nav.login") }}</h1>
-          <p class="text-sm text-muted mt-2">Sign in to your account</p>
+          <p class="section-eyebrow mb-3">Welcome back</p>
+          <h1 class="text-3xl font-extrabold tracking-tight text-heading">{{ t("nav.login") }}</h1>
+          <p class="text-sm text-slate-600 mt-2">Sign in to your account</p>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-border p-6">
+        <div class="surface-panel p-6 sm:p-8">
           <form @submit.prevent="handleLogin" class="space-y-4">
-            <div v-if="error" class="p-3 rounded-lg bg-danger/10 text-danger text-sm">
+            <div v-if="error" class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
               {{ error }}
             </div>
 
@@ -81,7 +82,7 @@ async function handleGoogleLogin() {
 
           <div class="my-5 flex items-center gap-3">
             <div class="h-px flex-1 bg-border" />
-            <span class="text-xs font-semibold uppercase tracking-widest text-muted">or</span>
+            <span class="text-xs font-semibold uppercase tracking-widest text-slate-500">or</span>
             <div class="h-px flex-1 bg-border" />
           </div>
 

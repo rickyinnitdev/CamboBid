@@ -11,7 +11,7 @@ defineProps({
       <div v-for="i in lines" :key="i" class="h-4 bg-muted/20 rounded animate-pulse" :style="{ width: i === lines ? '60%' : '100%' }" />
     </template>
     <template v-else-if="type === 'card'">
-      <div class="bg-white rounded-xl border border-border p-4 space-y-3">
+      <div class="bg-white rounded-2xl border border-border/80 p-4 space-y-3">
         <div class="h-40 bg-muted/20 rounded-lg animate-pulse" />
         <div class="h-4 bg-muted/20 rounded animate-pulse w-3/4" />
         <div class="h-4 bg-muted/20 rounded animate-pulse w-1/2" />

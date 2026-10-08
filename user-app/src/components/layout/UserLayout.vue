@@ -163,11 +163,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-[#f4f6fb]">
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80">
+  <div class="min-h-screen flex flex-col bg-[#f4f6fb]/90">
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-200/80 shadow-sm shadow-slate-900/[0.03]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="h-20 flex items-center gap-5">
-          <router-link to="/" class="flex items-center gap-3 shrink-0">
+          <router-link to="/" class="flex items-center gap-3 shrink-0 focus-ring rounded-2xl">
             <!-- Dynamic logo: use reactive store value (fetched on app startup) -->
             <img
               v-if="settingsStore.logoUrl"
@@ -207,9 +207,9 @@ onUnmounted(() => {
           </form>
 
           <nav class="hidden lg:flex items-center gap-5 text-sm font-semibold text-slate-700">
-            <router-link to="/auctions/calendar" class="hover:text-blue-700">How it works?</router-link>
-            <router-link to="/seller/listings/create" class="hover:text-blue-700">Sell</router-link>
-            <router-link to="/disputes" class="hover:text-blue-700">Help</router-link>
+            <router-link to="/auctions/calendar" class="focus-ring rounded-lg hover:text-blue-700">How it works?</router-link>
+            <router-link to="/seller/listings/create" class="focus-ring rounded-lg hover:text-blue-700">Sell</router-link>
+            <router-link to="/disputes" class="focus-ring rounded-lg hover:text-blue-700">Help</router-link>
           </nav>
 
           <div class="flex items-center gap-2 ml-auto">
@@ -359,7 +359,7 @@ onUnmounted(() => {
               :key="item.label"
               :to="item.to"
               exact-active-class="bg-slate-950 text-white shadow-sm"
-              class="group flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-950"
+              class="group focus-ring flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:text-slate-950"
             >
               <svg class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
@@ -380,7 +380,7 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <main class="flex-1">
+    <main class="flex-1 relative">
       <slot />
     </main>
 

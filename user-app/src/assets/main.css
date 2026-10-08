@@ -9,6 +9,10 @@
 
   body {
     @apply bg-surface text-body antialiased;
+    background-image:
+      radial-gradient(circle at 15% -10%, rgb(59 130 246 / 0.07), transparent 28rem),
+      radial-gradient(circle at 90% 0%, rgb(232 160 32 / 0.06), transparent 24rem);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -30,7 +34,7 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
@@ -66,7 +70,7 @@
   }
 
   .card {
-    @apply bg-card rounded-xl shadow-sm border border-border;
+    @apply bg-card rounded-2xl shadow-sm border border-border/80;
   }
 
   .card-hover {
@@ -102,7 +106,7 @@
   }
 
   .input {
-    @apply block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-muted focus:border-navy-500 focus:outline-none focus:ring-2 focus:ring-navy-500/20 transition-colors;
+    @apply block w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-slate-400 focus:border-navy-500 focus:outline-none focus:ring-2 focus:ring-navy-500/20 transition-colors;
   }
 
   .input-error {
@@ -146,19 +150,31 @@
   }
 
   .page-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10;
   }
 
   .page-header {
-    @apply mb-8;
+    @apply mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between;
   }
 
   .page-title {
-    @apply text-2xl font-bold text-heading;
+    @apply text-2xl sm:text-3xl font-extrabold tracking-tight text-heading;
   }
 
   .page-subtitle {
-    @apply text-sm text-muted mt-1;
+    @apply text-sm leading-6 text-slate-600;
+  }
+
+  .surface-panel {
+    @apply rounded-2xl border border-border/80 bg-white shadow-sm;
+  }
+
+  .section-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.16em] text-navy-700;
+  }
+
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:ring-offset-2;
   }
 }
 

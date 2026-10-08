@@ -46,7 +46,7 @@ async function handleUpload() {
 
 <template>
   <UserLayout>
-    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="page-container max-w-2xl">
       <h1 class="text-2xl font-bold text-heading mb-2">{{ t("profile.identity_status") }}</h1>
       <p class="text-sm text-muted mb-8">Verify your identity to unlock full bidding capabilities.</p>
 

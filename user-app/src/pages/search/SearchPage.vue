@@ -103,7 +103,7 @@ watch(filters, () => { page.value = 1; doSearch(); }, { deep: true });
 
 <template>
   <UserLayout>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="page-container max-w-6xl">
       <!-- Search Bar -->
       <form @submit.prevent="handleSearch" class="flex gap-3 mb-8">
         <div class="flex-1">

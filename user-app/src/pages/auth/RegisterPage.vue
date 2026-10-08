@@ -62,11 +62,12 @@ async function handleRegister() {
     <div class="flex items-center justify-center min-h-[70vh] px-4 py-12">
       <div class="w-full max-w-md">
         <div class="text-center mb-8">
-          <h1 class="text-2xl font-bold text-heading">{{ t("nav.register") }}</h1>
-          <p class="text-sm text-muted mt-2">Create your account</p>
+          <p class="section-eyebrow mb-3">Join CamboBid</p>
+          <h1 class="text-3xl font-extrabold tracking-tight text-heading">{{ t("nav.register") }}</h1>
+          <p class="text-sm text-slate-600 mt-2">Create your account</p>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-border p-6">
+        <div class="surface-panel p-6 sm:p-8">
           <div v-if="success" class="text-center py-8">
             <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
               <svg class="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +84,7 @@ async function handleRegister() {
           </div>
 
           <form v-else @submit.prevent="handleRegister" class="space-y-4">
-            <div v-if="error" class="p-3 rounded-lg bg-danger/10 text-danger text-sm">
+            <div v-if="error" class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
               {{ error }}
             </div>
 

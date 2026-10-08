@@ -136,7 +136,7 @@ watch(
 
 <template>
   <UserLayout>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="page-container max-w-6xl">
       <div v-if="loading" class="space-y-6">
         <BaseSkeleton type="card" />
       </div>

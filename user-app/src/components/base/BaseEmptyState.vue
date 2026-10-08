@@ -15,14 +15,14 @@ const icons = {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center py-12 text-center">
-    <div class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mb-4">
+  <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white/70 px-6 py-14 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-navy-50 flex items-center justify-center mb-4">
       <svg class="w-8 h-8 text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="icons[icon] || icons.inbox" />
       </svg>
     </div>
-    <h3 class="text-lg font-medium text-heading mb-1">{{ title }}</h3>
-    <p v-if="description" class="text-sm text-muted max-w-sm">{{ description }}</p>
+    <h3 class="text-lg font-bold text-heading mb-1">{{ title }}</h3>
+    <p v-if="description" class="text-sm leading-6 text-slate-600 max-w-sm">{{ description }}</p>
     <slot name="action" />
   </div>
 </template>
