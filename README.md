@@ -151,11 +151,16 @@ Enable TOTP authenticator app support. Admin CMS settings include toggles for us
 
 ### Vercel
 
-1. Import `user-app` as a Vercel project
-2. Import `admin-app` as a separate Vercel project
+For the user-facing production site, either set the Vercel project's **Root Directory** to `user-app`, or import the repository root and use the root `vercel.json` configuration. The root configuration builds and serves `user-app` automatically.
+
+1. Connect the Vercel project to this GitHub repository and production branch (`main`)
+2. Set the project to deploy the `user-app` directory (or leave the root selected and use the committed root `vercel.json`)
 3. Set environment variables:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+4. Redeploy the latest `main` commit and confirm the deployment commit is `a17a067` or newer
+
+Import `admin-app` as a separate Vercel project with its Root Directory set to `admin-app`.
 
 ### Supabase Cloud
 

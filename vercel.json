@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build --prefix user-app",
+  "installCommand": "npm ci --prefix user-app",
+  "outputDirectory": "user-app/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
