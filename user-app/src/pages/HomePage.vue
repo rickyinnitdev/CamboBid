@@ -21,12 +21,12 @@ const currentDate = new Intl.DateTimeFormat("en-GB", {
 }).format(new Date());
 
 const featuredCategories = [
-  { name: "Watches", slug: "watches", icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" },
-  { name: "Jewellery", slug: "jewelry", icon: "M12 3l7 8-7 10-7-10 7-8z" },
-  { name: "Art", slug: "art", icon: "M4 16l4-4 4 4 8-8" },
-  { name: "Interiors", slug: "antiques", icon: "M4 6h16M4 10h16M6 14h12M8 18h8" },
-  { name: "Collectibles", slug: "collectibles", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" },
-  { name: "Cars", slug: "vehicles", icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z" },
+  { name: "Watches", slug: "watches", tone: "from-amber-500/15 via-orange-500/10 to-yellow-500/5", hover: "hover:border-amber-400/50", icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" },
+  { name: "Jewellery", slug: "jewelry", tone: "from-amber-500/15 via-orange-500/10 to-yellow-500/5", hover: "hover:border-amber-400/50", icon: "M12 3l7 8-7 10-7-10 7-8z" },
+  { name: "Art", slug: "art", tone: "from-fuchsia-500/15 via-purple-500/10 to-indigo-500/5", hover: "hover:border-purple-400/50", icon: "M4 16l4-4 4 4 8-8" },
+  { name: "Interiors", slug: "antiques", tone: "from-rose-500/15 via-pink-500/10 to-red-500/5", hover: "hover:border-rose-400/50", icon: "M4 6h16M4 10h16M6 14h12M8 18h8" },
+  { name: "Collectibles", slug: "collectibles", tone: "from-emerald-500/15 via-teal-500/10 to-green-500/5", hover: "hover:border-emerald-400/50", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" },
+  { name: "Cars", slug: "vehicles", tone: "from-cyan-500/15 via-blue-500/10 to-sky-500/5", hover: "hover:border-cyan-400/50", icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z" },
 ];
 
 const featureBlocks = [
@@ -108,7 +108,7 @@ onMounted(async () => {
 
           <div class="relative">
             <div class="absolute -inset-5 rounded-[2.25rem] bg-blue-700/15 blur-2xl" />
-            <div class="relative rounded-3xl border border-white/60 bg-white/90 p-3.5 shadow-2xl backdrop-blur-xl">
+            <div class="relative rounded-3xl border border-white/40 bg-white/70 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.1)] backdrop-blur-2xl transition-all duration-300 hover:shadow-[0_25px_60px_rgba(59,130,246,0.15)] dark:bg-neutral-900/60">
               <div class="relative aspect-[16/10] overflow-hidden rounded-2xl bg-neutral-100">
                 <img
                   v-if="heroImageUrl"
@@ -121,9 +121,12 @@ onMounted(async () => {
                 </div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
                 <div class="absolute left-4 right-4 top-4 flex items-start justify-between gap-3">
-                  <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                    <span class="relative flex h-2 w-2"><span class="absolute h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" /><span class="relative h-2 w-2 rounded-full bg-emerald-400" /></span>
+                  <span v-if="heroAuction?.status !== 'closed'" class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 shadow-sm backdrop-blur-md">
+                    <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
                     LIVE
+                  </span>
+                  <span v-else class="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs font-medium text-neutral-200 shadow-sm backdrop-blur-md">
+                    ENDED
                   </span>
                   <span class="rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-xs font-semibold tabular-nums text-white backdrop-blur-md">
                     <CountdownTimer
@@ -137,7 +140,7 @@ onMounted(async () => {
                   </span>
                 </div>
               </div>
-              <div class="rounded-b-2xl border-x border-b border-neutral-200/80 bg-white p-5">
+              <div class="rounded-b-2xl border-x border-b border-neutral-200/80 bg-white p-4">
                 <h2 class="line-clamp-2 text-xl font-bold leading-snug text-slate-950">
                   {{ heroAuction?.listings?.title || "1968 Rolex Submariner Ref. 5513" }}
                 </h2>
@@ -149,8 +152,8 @@ onMounted(async () => {
                     </p>
                     <p class="mt-1 text-xs text-neutral-500">{{ heroAuction?.bids?.[0]?.count || 18 }} bids</p>
                   </div>
-                  <router-link to="/auctions" class="inline-flex items-center justify-center rounded-xl bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-neutral-950/15 transition-all hover:bg-blue-700 hover:shadow-blue-700/20">
-                    Join Live Lot
+                  <router-link to="/auctions" class="inline-flex items-center justify-center rounded-2xl bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-neutral-950/15 transition-all hover:bg-neutral-800 hover:shadow-blue-700/20">
+                    Place Bid
                   </router-link>
                 </div>
               </div>
@@ -200,16 +203,20 @@ onMounted(async () => {
           v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          class="group flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-neutral-200/80 bg-gradient-to-b from-white to-neutral-50/80 p-5 text-center text-neutral-900 shadow-sm transition-all hover:-translate-y-1 hover:border-blue-500/30 hover:shadow-lg"
+          :class="[
+            'group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br p-5 text-neutral-900 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl',
+            cat.tone,
+            cat.hover,
+          ]"
         >
-          <span class="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-700 transition-colors duration-200 group-hover:bg-neutral-900 group-hover:text-white">
+          <span class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/50 bg-white/80 text-neutral-800 shadow-sm backdrop-blur-md transition-transform duration-300 group-hover:scale-110 dark:bg-white/10">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
             </svg>
           </span>
           <span>
-            <span class="block text-sm font-semibold text-neutral-900">{{ cat.name }}</span>
-            <span class="mt-0.5 block text-xs font-medium text-neutral-500">{{ cat.lotCount }} lots</span>
+            <span class="block text-base font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-blue-600 dark:text-white">{{ cat.name }}</span>
+            <span class="mt-1 inline-flex w-fit rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-neutral-600 dark:bg-white/10 dark:text-neutral-300">{{ cat.lotCount }} lots</span>
           </span>
         </router-link>
       </div>
