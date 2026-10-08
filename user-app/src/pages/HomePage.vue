@@ -21,12 +21,66 @@ const currentDate = new Intl.DateTimeFormat("en-GB", {
 }).format(new Date());
 
 const featuredCategories = [
-  { name: "Watches", slug: "watches", icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" },
-  { name: "Jewellery", slug: "jewelry", icon: "M12 3l7 8-7 10-7-10 7-8z" },
-  { name: "Art", slug: "art", icon: "M4 16l4-4 4 4 8-8" },
-  { name: "Interiors", slug: "antiques", icon: "M4 6h16M4 10h16M6 14h12M8 18h8" },
-  { name: "Collectibles", slug: "collectibles", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" },
-  { name: "Cars", slug: "vehicles", icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z" },
+  { 
+    name: "Watches", 
+    slug: "watches", 
+    icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z",
+    gradient: "from-amber-400/20 via-orange-400/10 to-yellow-300/25",
+    border: "border-amber-300/50 hover:border-amber-400",
+    glow: "bg-amber-400/25",
+    iconBg: "bg-amber-500/15 text-amber-900 border-amber-300/60",
+    badge: "bg-amber-500/15 text-amber-900 border-amber-300/40"
+  },
+  { 
+    name: "Jewellery", 
+    slug: "jewelry", 
+    icon: "M12 3l7 8-7 10-7-10 7-8z",
+    gradient: "from-pink-400/20 via-rose-400/10 to-red-300/25",
+    border: "border-pink-300/50 hover:border-pink-400",
+    glow: "bg-pink-400/25",
+    iconBg: "bg-pink-500/15 text-pink-900 border-pink-300/60",
+    badge: "bg-pink-500/15 text-pink-900 border-pink-300/40"
+  },
+  { 
+    name: "Art", 
+    slug: "art", 
+    icon: "M4 16l4-4 4 4 8-8",
+    gradient: "from-purple-400/20 via-fuchsia-400/10 to-indigo-300/25",
+    border: "border-purple-300/50 hover:border-purple-400",
+    glow: "bg-purple-400/25",
+    iconBg: "bg-purple-500/15 text-purple-900 border-purple-300/60",
+    badge: "bg-purple-500/15 text-purple-900 border-purple-300/40"
+  },
+  { 
+    name: "Interiors", 
+    slug: "antiques", 
+    icon: "M4 6h16M4 10h16M6 14h12M8 18h8",
+    gradient: "from-violet-400/20 via-blue-400/10 to-purple-300/25",
+    border: "border-violet-300/50 hover:border-violet-400",
+    glow: "bg-violet-400/25",
+    iconBg: "bg-violet-500/15 text-violet-900 border-violet-300/60",
+    badge: "bg-violet-500/15 text-violet-900 border-violet-300/40"
+  },
+  { 
+    name: "Collectibles", 
+    slug: "collectibles", 
+    icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10",
+    gradient: "from-emerald-400/20 via-teal-400/10 to-green-300/25",
+    border: "border-emerald-300/50 hover:border-emerald-400",
+    glow: "bg-emerald-400/25",
+    iconBg: "bg-emerald-500/15 text-emerald-900 border-emerald-300/60",
+    badge: "bg-emerald-500/15 text-emerald-900 border-emerald-300/40"
+  },
+  { 
+    name: "Cars", 
+    slug: "vehicles", 
+    icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z",
+    gradient: "from-cyan-400/20 via-sky-400/10 to-blue-300/25",
+    border: "border-cyan-300/50 hover:border-cyan-400",
+    glow: "bg-cyan-400/25",
+    iconBg: "bg-cyan-500/15 text-cyan-900 border-cyan-300/60",
+    badge: "bg-cyan-500/15 text-cyan-900 border-cyan-300/40"
+  },
 ];
 
 const featureBlocks = [
@@ -198,7 +252,7 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- SPECIALIST DEPARTMENTS (CLEAN HIGH-CONTRAST LIGHT CARDS) -->
+    <!-- SPECIALIST DEPARTMENTS (COLORFUL GLASSMORPHISM) -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
       <div class="mb-7">
         <p class="font-mono text-xs uppercase tracking-[0.25em] text-blue-700">Specialist departments</p>
@@ -210,26 +264,34 @@ onMounted(async () => {
           v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          class="group relative bg-white border border-neutral-200/90 rounded-2xl p-5 min-h-[140px] flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-neutral-400 hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+          :class="[
+            'group relative overflow-hidden rounded-3xl p-5 min-h-[150px] flex flex-col justify-between border backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl cursor-pointer',
+            'bg-gradient-to-br',
+            cat.gradient,
+            cat.border
+          ]"
         >
-          <!-- Top Row: Icon + Hover Arrow -->
-          <div class="flex items-center justify-between">
-            <div class="w-11 h-11 rounded-xl bg-neutral-100 text-neutral-800 flex items-center justify-center group-hover:bg-neutral-900 group-hover:text-white transition-colors duration-200">
+          <!-- Ambient Glow Orb inside glass -->
+          <div :class="['pointer-events-none absolute -right-6 -bottom-6 h-24 w-24 rounded-full blur-2xl transition-transform duration-500 group-hover:scale-150', cat.glow]" />
+
+          <!-- Top Row: Translucent Glass Icon + Arrow -->
+          <div class="relative z-10 flex items-center justify-between">
+            <div :class="['w-11 h-11 rounded-2xl flex items-center justify-center border backdrop-blur-md shadow-xs transition-transform duration-300 group-hover:scale-110', cat.iconBg]">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="cat.icon" />
               </svg>
             </div>
-            <span class="text-neutral-400 group-hover:text-neutral-900 group-hover:translate-x-1 transition-all duration-200 text-sm font-semibold">
+            <span class="text-neutral-500 group-hover:text-neutral-900 group-hover:translate-x-1 transition-all duration-200 text-sm font-semibold">
               →
             </span>
           </div>
 
-          <!-- Bottom Row: Title + Lot Count Pill -->
-          <div class="mt-4">
-            <h3 class="font-bold text-base text-neutral-900 tracking-tight leading-snug">
+          <!-- Bottom Row: Title + Frosted Badge -->
+          <div class="relative z-10 mt-4">
+            <h3 class="font-extrabold text-base text-neutral-950 tracking-tight leading-snug">
               {{ cat.name }}
             </h3>
-            <span class="inline-flex items-center text-xs font-medium text-neutral-500 bg-neutral-100 px-2.5 py-0.5 rounded-full mt-2">
+            <span :class="['inline-flex items-center text-xs font-bold border backdrop-blur-md px-2.5 py-0.5 rounded-full mt-2 shadow-2xs', cat.badge]">
               {{ cat.lotCount }} lots
             </span>
           </div>
