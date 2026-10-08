@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import AuctionCard from "@/components/auction/AuctionCard.vue";
+import CountdownTimer from "@/components/auction/CountdownTimer.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { auctionService } from "@/services/auctionService";
 import { listingService } from "@/services/listingService";
@@ -20,12 +21,12 @@ const currentDate = new Intl.DateTimeFormat("en-GB", {
 }).format(new Date());
 
 const featuredCategories = [
-  { name: "Watches", slug: "watches", tone: "from-slate-950 to-blue-900", icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" },
-  { name: "Jewellery", slug: "jewelry", tone: "from-amber-500 to-orange-600", icon: "M12 3l7 8-7 10-7-10 7-8z" },
-  { name: "Art", slug: "art", tone: "from-fuchsia-600 to-blue-700", icon: "M4 16l4-4 4 4 8-8" },
-  { name: "Interiors", slug: "antiques", tone: "from-emerald-700 to-teal-500", icon: "M4 6h16M4 10h16M6 14h12M8 18h8" },
-  { name: "Collectibles", slug: "collectibles", tone: "from-rose-600 to-red-500", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" },
-  { name: "Cars", slug: "vehicles", tone: "from-sky-700 to-cyan-500", icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z" },
+  { name: "Watches", slug: "watches", icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" },
+  { name: "Jewellery", slug: "jewelry", icon: "M12 3l7 8-7 10-7-10 7-8z" },
+  { name: "Art", slug: "art", icon: "M4 16l4-4 4 4 8-8" },
+  { name: "Interiors", slug: "antiques", icon: "M4 6h16M4 10h16M6 14h12M8 18h8" },
+  { name: "Collectibles", slug: "collectibles", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" },
+  { name: "Cars", slug: "vehicles", icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z" },
 ];
 
 const featureBlocks = [
@@ -34,6 +35,19 @@ const featureBlocks = [
   { title: "Escrow protected", body: "Winning payments are held until delivery, release, refund, or dispute resolution.", stat: "Finance safe" },
   { title: "Anti-sniping timer", body: "Late bids automatically extend auctions to keep competition fair.", stat: "+5 min" },
 ];
+
+const categoryTiles = computed(() =>
+  featuredCategories.map((featured) => {
+    const category = categories.value.find((item) => item.slug === featured.slug);
+    return {
+      ...featured,
+      imageUrl: category?.image_url,
+      lotCount: category?.listings?.[0]?.count || 0,
+    };
+  }),
+);
+
+const heroAuction = computed(() => liveAuctions.value[0] || null);
 
 onMounted(async () => {
   try {
@@ -87,21 +101,36 @@ onMounted(async () => {
 
           <div class="relative">
             <div class="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-blue-700/15 to-gold-500/20 blur-2xl" />
-            <div class="relative rounded-[2.5rem] bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 p-6 shadow-2xl overflow-hidden min-h-[360px]">
-              <div class="absolute right-6 top-6 rounded-full bg-white/20 px-4 py-2 text-white text-sm font-black backdrop-blur">516 watching</div>
-              <h2 class="text-5xl sm:text-6xl font-black tracking-tight text-white">{{ settings.brand.name }}</h2>
-              <div class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-3xl font-black text-rose-500">
-                <span class="w-4 h-4 rounded-full bg-rose-500" /> LIVE
+            <div class="relative min-h-[360px] overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-neutral-900 to-slate-950 p-6 shadow-2xl">
+              <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-700/20 blur-3xl" />
+              <div class="relative flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Live auction preview</p>
+                  <h2 class="mt-3 max-w-sm text-4xl font-black tracking-tight text-white">{{ heroAuction?.listings?.title || settings.brand.name }}</h2>
+                </div>
+                <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+                  <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> LIVE
+                </span>
               </div>
-              <div class="absolute bottom-8 right-6 left-6 grid grid-cols-3 gap-4">
-                <div class="rounded-[2rem] bg-white/80 p-4 shadow-xl backdrop-blur rotate-[-8deg]">
-                  <div class="aspect-square rounded-full bg-gradient-to-br from-amber-200 to-amber-500 grid place-items-center text-4xl">$</div>
-                </div>
-                <div class="rounded-[2rem] bg-white/85 p-4 shadow-xl backdrop-blur translate-y-[-34px]">
-                  <div class="aspect-square rounded-full bg-gradient-to-br from-slate-200 to-slate-500 grid place-items-center text-white font-black">LOT</div>
-                </div>
-                <div class="rounded-[2rem] bg-white/80 p-4 shadow-xl backdrop-blur rotate-[8deg]">
-                  <div class="aspect-square rounded-full bg-gradient-to-br from-yellow-200 to-orange-500 grid place-items-center text-4xl">⌚</div>
+              <div class="relative mt-12 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+                <div class="flex items-end justify-between gap-4">
+                  <div>
+                    <p class="text-xs uppercase tracking-wider text-slate-400">Current bid</p>
+                    <p class="mt-1 font-mono text-3xl font-bold tabular-nums text-white">
+                      ${{ Number(heroAuction?.current_price || 0).toLocaleString() }}
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs uppercase tracking-wider text-slate-400">Ends in</p>
+                    <CountdownTimer
+                      v-if="heroAuction"
+                      :end-time="heroAuction.end_time"
+                      :status="heroAuction.status"
+                      size="sm"
+                      class="mt-1"
+                    />
+                    <p v-else class="mt-1 font-mono text-sm font-semibold text-white">02h : 14m : 08s</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -109,10 +138,10 @@ onMounted(async () => {
         </div>
 
         <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div v-for="feature in featureBlocks" :key="feature.title" class="rounded-3xl bg-white/80 p-5 shadow-sm border border-white backdrop-blur">
+          <div v-for="feature in featureBlocks" :key="feature.title" class="rounded-xl border border-neutral-200/80 bg-white/90 p-4 shadow-sm backdrop-blur">
             <p class="font-mono text-xs font-bold text-blue-700">{{ feature.stat }}</p>
-            <h3 class="mt-2 font-black text-slate-950">{{ feature.title }}</h3>
-            <p class="mt-1 text-sm text-slate-600">{{ feature.body }}</p>
+            <h3 class="mt-2 font-semibold text-neutral-900">{{ feature.title }}</h3>
+            <p class="mt-1 text-sm leading-6 text-neutral-600">{{ feature.body }}</p>
           </div>
         </div>
       </div>
@@ -126,10 +155,10 @@ onMounted(async () => {
         </div>
         <router-link to="/auctions" class="hidden sm:inline-flex rounded-full px-5 py-2 text-sm font-bold text-blue-700 hover:bg-blue-50">View all lots</router-link>
       </div>
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div v-if="loading" class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <BaseSkeleton v-for="i in 4" :key="i" type="card" />
       </div>
-      <div v-else-if="liveAuctions.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div v-else-if="liveAuctions.length" class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <AuctionCard v-for="auction in liveAuctions" :key="auction.id" :auction="auction" />
       </div>
       <div v-else class="rounded-[2rem] bg-white border border-slate-200 p-10 text-center">
@@ -145,16 +174,20 @@ onMounted(async () => {
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <router-link
-          v-for="cat in featuredCategories"
+          v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          :class="['relative min-h-40 overflow-hidden rounded-[2rem] bg-gradient-to-br p-5 text-white shadow-sm hover:-translate-y-1 hover:shadow-xl transition-all', cat.tone]"
+          class="group relative min-h-40 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 p-5 text-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
         >
-          <svg class="w-8 h-8 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <img v-if="cat.imageUrl" :src="cat.imageUrl" :alt="cat.name" class="absolute inset-0 h-full w-full object-cover opacity-50 transition-transform duration-500 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20" />
+          <div class="relative z-10">
+          <svg class="h-8 w-8 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="cat.icon" />
           </svg>
-          <h3 class="absolute bottom-5 left-5 right-5 text-lg font-black">{{ cat.name }}</h3>
-          <div class="absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-white/15" />
+          <h3 class="absolute left-0 right-0 top-20 text-lg font-bold">{{ cat.name }}</h3>
+          <p class="absolute left-0 right-0 top-28 text-xs text-neutral-300">{{ cat.lotCount }} lots</p>
+          </div>
         </router-link>
       </div>
     </section>
@@ -179,11 +212,11 @@ onMounted(async () => {
         <div class="relative grid lg:grid-cols-2 gap-8 items-center">
           <div>
             <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold-500">For sellers</p>
-            <h2 class="mt-2 text-4xl font-black tracking-tight">Turn rare inventory into competitive auctions.</h2>
-            <p class="mt-4 text-slate-300">Create listings, set reserve prices, submit for approval, and let timed bidding discover the market price.</p>
+            <h2 class="mt-2 text-2xl font-bold text-white lg:text-4xl">Turn rare inventory into competitive auctions.</h2>
+            <p class="mt-4 text-sm leading-6 text-neutral-300">Create listings, set reserve prices, submit for approval, and let timed bidding discover the market price.</p>
           </div>
-          <div class="flex lg:justify-end">
-            <router-link to="/seller/listings/create" class="rounded-2xl bg-gold-500 px-7 py-4 text-sm font-black text-slate-950 hover:bg-gold-400">Submit your first lot</router-link>
+          <div class="flex items-center lg:justify-end">
+            <router-link to="/seller/listings/create" class="inline-flex items-center justify-center rounded-2xl bg-gold-500 px-7 py-4 text-sm font-black text-slate-950 shadow-lg shadow-gold-500/20 transition-colors hover:bg-gold-400">Submit your first lot</router-link>
           </div>
         </div>
       </div>

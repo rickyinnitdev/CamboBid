@@ -79,22 +79,24 @@ watch(sort, () => { page.value = 1; loadCategory(); });
 <template>
   <UserLayout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-heading">{{ categoryName || slug }}</h1>
-          <p class="text-sm text-muted mt-1">{{ total }} {{ t("common.results") }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Specialist department</p>
+          <h1 class="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">{{ categoryName || slug }}</h1>
+          <p class="mt-1 text-sm text-neutral-500">{{ total }} {{ t("common.results") }}</p>
         </div>
-        <div class="w-44 mt-4 md:mt-0">
+        <div class="mt-4 w-full md:mt-0 md:w-44">
+          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Sort</label>
           <select
             v-model="sort"
-            class="block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
+            class="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
           >
             <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
       </div>
 
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div v-if="loading" class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <BaseSkeleton v-for="i in 8" :key="i" type="card" />
       </div>
 
@@ -112,7 +114,7 @@ watch(sort, () => { page.value = 1; loadCategory(); });
       </BaseEmptyState>
 
       <template v-else>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AuctionCard v-for="auction in auctions" :key="auction.id" :auction="auction" />
         </div>
 

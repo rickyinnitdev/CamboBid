@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import UserLayout from "@/components/layout/UserLayout.vue";
@@ -33,6 +33,25 @@ const sortOptions = [
   { value: "price_asc", label: "Price: Low to High" },
   { value: "price_desc", label: "Price: High to Low" },
 ];
+
+const activeFilters = computed(() => {
+  const chips = [];
+  const sort = sortOptions.find((option) => option.value === filters.value.sort);
+  if (sort?.value !== "newest") chips.push({ key: "sort", label: `Sort: ${sort.label}` });
+  if (filters.value.minPrice) chips.push({ key: "minPrice", label: `Min: $${filters.value.minPrice}` });
+  if (filters.value.maxPrice) chips.push({ key: "maxPrice", label: `Max: $${filters.value.maxPrice}` });
+  return chips;
+});
+
+function removeFilter(key) {
+  filters.value[key] = key === "sort" ? "newest" : "";
+}
+
+function clearFilters() {
+  filters.value.sort = "newest";
+  filters.value.minPrice = "";
+  filters.value.maxPrice = "";
+}
 
 async function doSearch() {
   if (!query.value.trim()) {
@@ -100,12 +119,13 @@ watch(filters, () => { page.value = 1; doSearch(); }, { deep: true });
       </form>
 
       <!-- Filters -->
-      <div class="flex flex-wrap items-end gap-4 mb-8">
+      <div class="sticky top-[145px] z-30 -mx-4 mb-6 border-y border-neutral-200/80 bg-[#f4f6fb]/95 px-4 py-4 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:top-[168px] lg:-mx-8 lg:px-8">
+        <div class="flex flex-wrap items-end gap-3">
         <div class="w-40">
-          <label class="block text-xs font-medium text-heading mb-1">Sort</label>
+          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Sort</label>
           <select
             v-model="filters.sort"
-            class="block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
+            class="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
           >
             <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
@@ -116,14 +136,27 @@ watch(filters, () => { page.value = 1; doSearch(); }, { deep: true });
         <div class="w-32">
           <BaseInput v-model="filters.maxPrice" label="Max Price" type="number" placeholder="Any" />
         </div>
+        </div>
       </div>
 
-      <p v-if="query && !loading" class="text-sm text-muted mb-6">
-        {{ total }} {{ t("common.results") }} for "{{ query }}"
-      </p>
+      <div v-if="query && !loading" class="mb-6 flex flex-wrap items-center gap-2">
+        <p class="text-sm text-neutral-500">{{ total }} {{ t("common.results") }} for "{{ query }}"</p>
+        <button
+          v-for="chip in activeFilters"
+          :key="chip.key"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-900"
+          @click="removeFilter(chip.key)"
+        >
+          {{ chip.label }} <span aria-hidden="true" class="text-neutral-400">×</span>
+        </button>
+        <button v-if="activeFilters.length" type="button" class="text-xs font-semibold text-neutral-600 underline underline-offset-4" @click="clearFilters">
+          Clear all
+        </button>
+      </div>
 
       <!-- Results -->
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div v-if="loading" class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <BaseSkeleton v-for="i in 8" :key="i" type="card" />
       </div>
 
@@ -142,7 +175,7 @@ watch(filters, () => { page.value = 1; doSearch(); }, { deep: true });
       />
 
       <template v-else>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AuctionCard v-for="item in results" :key="item.id" :auction="item" />
         </div>
 

@@ -7,25 +7,29 @@ export const searchService = {
     }
 
     let dbQuery = supabase
-      .from("listings")
+      .from("auctions")
       .select(`
-        id, title, description, images, starting_price, status, created_at,
-        categories!inner(id, name, slug),
-        seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url)
+        id, type, status, start_time, end_time, current_price, reserve_met, created_at,
+        listings!inner(
+          id, title, description, images, starting_price, reserve_price,
+          categories!inner(id, name, slug),
+          seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url)
+        ),
+        bids(count)
       `, { count: "exact" })
-      .textSearch("title", query, { type: "websearch" })
-      .in("status", ["approved", "live", "sold"]);
+      .textSearch("title", query, { type: "websearch", referencedTable: "listings" })
+      .in("status", ["scheduled", "live", "extended", "closed"]);
 
     if (category) {
-      dbQuery = dbQuery.eq("categories.slug", category);
+      dbQuery = dbQuery.eq("listings.categories.slug", category);
     }
 
     if (minPrice) {
-      dbQuery = dbQuery.gte("starting_price", minPrice);
+      dbQuery = dbQuery.gte("listings.starting_price", minPrice);
     }
 
     if (maxPrice) {
-      dbQuery = dbQuery.lte("starting_price", maxPrice);
+      dbQuery = dbQuery.lte("listings.starting_price", maxPrice);
     }
 
     const from = (page - 1) * limit;
@@ -33,10 +37,10 @@ export const searchService = {
 
     switch (sort) {
       case "price_asc":
-        dbQuery = dbQuery.order("starting_price", { ascending: true });
+        dbQuery = dbQuery.order("current_price", { ascending: true });
         break;
       case "price_desc":
-        dbQuery = dbQuery.order("starting_price", { ascending: false });
+        dbQuery = dbQuery.order("current_price", { ascending: false });
         break;
       case "newest":
         dbQuery = dbQuery.order("created_at", { ascending: false });
@@ -99,7 +103,7 @@ export const searchService = {
   async getCategories() {
     const { data, error } = await supabase
       .from("categories")
-      .select("id, name, slug, image_url")
+      .select("id, name, slug, image_url, listings(count)")
       .is("parent_id", null)
       .order("sort_order", { ascending: true });
 
