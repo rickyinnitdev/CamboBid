@@ -30,10 +30,10 @@ const featuredCategories = [
 ];
 
 const featureBlocks = [
-  { title: "Real-time bidding", body: "Watch bids move instantly through Supabase Realtime channels.", stat: "WebSocket live" },
-  { title: "Proxy bidding", body: "Buyers can set a hidden maximum and let the engine bid safely.", stat: "Max hidden" },
-  { title: "Escrow protected", body: "Winning payments are held until delivery, release, refund, or dispute resolution.", stat: "Finance safe" },
-  { title: "Anti-sniping timer", body: "Late bids automatically extend auctions to keep competition fair.", stat: "+5 min" },
+  { title: "Real-time bidding", body: "Watch bids move instantly through Supabase Realtime channels.", stat: "WebSocket live", tone: "bg-emerald-500" },
+  { title: "Proxy bidding", body: "Buyers can set a hidden maximum and let the engine bid safely.", stat: "Max hidden", tone: "bg-blue-600" },
+  { title: "Escrow protected", body: "Winning payments are held until delivery, release, refund, or dispute resolution.", stat: "Finance safe", tone: "bg-amber-500" },
+  { title: "Anti-sniping timer", body: "Late bids automatically extend auctions to keep competition fair.", stat: "+5 min", tone: "bg-violet-500" },
 ];
 
 const categoryTiles = computed(() =>
@@ -77,25 +77,27 @@ onMounted(async () => {
 
 <template>
   <UserLayout>
-    <section class="relative overflow-hidden bg-[#eef2f8]">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(37,99,235,0.15),transparent_30%),radial-gradient(circle_at_85%_25%,rgba(232,160,32,0.18),transparent_28%)]" />
+    <section class="relative overflow-hidden bg-[#f4f6fb]">
+      <div class="pointer-events-none absolute inset-0 opacity-80 [background-image:radial-gradient(circle_at_12%_16%,rgba(30,64,175,0.18),transparent_32%),radial-gradient(circle_at_82%_18%,rgba(234,179,8,0.16),transparent_28%),radial-gradient(rgba(15,23,42,0.08)_1px,transparent_1px)] [background-size:auto,auto,24px_24px]" />
+      <div class="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-blue-700/10 blur-3xl" />
+      <div class="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-amber-300/10 blur-3xl" />
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
         <div class="grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <p class="font-mono text-xs uppercase tracking-[0.35em] text-slate-700 mb-5">{{ currentDate }}</p>
-            <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-slate-200 mb-6">
-              <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span class="text-sm font-bold text-slate-800">{{ settings.homepage.hero_eyebrow }}</span>
+            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-50/60 px-4 py-2 text-xs font-bold uppercase tracking-wider text-blue-700 shadow-sm backdrop-blur">
+              <span>✦</span>
+              <span>Live curated auctions</span>
             </div>
-            <h1 class="max-w-2xl text-5xl sm:text-6xl lg:text-7xl font-black tracking-[-0.06em] leading-[0.9] text-slate-950">
+            <h1 class="max-w-2xl text-5xl font-extrabold leading-[0.92] tracking-tight text-neutral-950 sm:text-6xl lg:text-7xl">
               {{ settings.homepage.hero_title }}
             </h1>
-            <p class="mt-6 max-w-xl text-lg leading-8 text-slate-700">
+            <p class="mt-6 max-w-xl text-lg leading-8 text-neutral-600">
               {{ settings.homepage.hero_subtitle }}
             </p>
-            <p class="mt-6 text-blue-700 font-bold">{{ settings.homepage.hero_promo }}</p>
+            <p class="mt-6 font-semibold text-blue-700">{{ settings.homepage.hero_promo }}</p>
             <div class="mt-8 flex flex-col sm:flex-row gap-3">
-              <router-link to="/auctions" class="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-7 py-4 text-sm font-black text-white shadow-lg shadow-blue-700/20 hover:bg-blue-800">
+              <router-link to="/auctions" class="inline-flex items-center justify-center rounded-xl bg-neutral-950 px-6 py-3 font-semibold text-white shadow-lg shadow-neutral-950/20 transition-all hover:bg-neutral-800">
                 {{ settings.brand.primary_cta }}
               </router-link>
               <router-link to="/seller/listings/create" class="inline-flex items-center justify-center rounded-2xl bg-white px-7 py-4 text-sm font-black text-slate-950 shadow-sm border border-slate-200 hover:border-blue-200 hover:text-blue-700">
@@ -105,9 +107,9 @@ onMounted(async () => {
           </div>
 
           <div class="relative">
-            <div class="absolute -inset-4 rounded-[2rem] bg-blue-900/10 blur-2xl" />
-            <div class="relative overflow-hidden rounded-2xl bg-white shadow-xl">
-              <div class="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-neutral-100">
+            <div class="absolute -inset-5 rounded-[2.25rem] bg-blue-700/15 blur-2xl" />
+            <div class="relative rounded-3xl border border-white/60 bg-white/90 p-3.5 shadow-2xl backdrop-blur-xl">
+              <div class="relative aspect-[16/10] overflow-hidden rounded-2xl bg-neutral-100">
                 <img
                   v-if="heroImageUrl"
                   :src="heroImageUrl"
@@ -120,9 +122,10 @@ onMounted(async () => {
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
                 <div class="absolute left-4 right-4 top-4 flex items-start justify-between gap-3">
                   <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                    <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> LIVE
+                    <span class="relative flex h-2 w-2"><span class="absolute h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" /><span class="relative h-2 w-2 rounded-full bg-emerald-400" /></span>
+                    LIVE
                   </span>
-                  <span class="rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-white backdrop-blur-md">
+                  <span class="rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-xs font-semibold tabular-nums text-white backdrop-blur-md">
                     <CountdownTimer
                       v-if="heroAuction"
                       :end-time="heroAuction.end_time"
@@ -134,7 +137,7 @@ onMounted(async () => {
                   </span>
                 </div>
               </div>
-              <div class="rounded-b-2xl border-x border-b border-neutral-200/80 bg-white p-5 shadow-xl">
+              <div class="rounded-b-2xl border-x border-b border-neutral-200/80 bg-white p-5">
                 <h2 class="line-clamp-2 text-xl font-bold leading-snug text-slate-950">
                   {{ heroAuction?.listings?.title || "1968 Rolex Submariner Ref. 5513" }}
                 </h2>
@@ -146,7 +149,7 @@ onMounted(async () => {
                     </p>
                     <p class="mt-1 text-xs text-neutral-500">{{ heroAuction?.bids?.[0]?.count || 18 }} bids</p>
                   </div>
-                  <router-link to="/auctions" class="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700">
+                  <router-link to="/auctions" class="inline-flex items-center justify-center rounded-xl bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-neutral-950/15 transition-all hover:bg-blue-700 hover:shadow-blue-700/20">
                     Join Live Lot
                   </router-link>
                 </div>
@@ -155,23 +158,25 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div v-for="feature in featureBlocks" :key="feature.title" class="rounded-xl border border-neutral-200/80 bg-white/90 p-4 shadow-sm backdrop-blur">
-            <p class="font-mono text-xs font-bold text-blue-700">{{ feature.stat }}</p>
-            <h3 class="mt-2 font-semibold text-neutral-900">{{ feature.title }}</h3>
-            <p class="mt-1 text-sm leading-6 text-neutral-600">{{ feature.body }}</p>
+        <div class="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+          <div v-for="feature in featureBlocks" :key="feature.title" class="relative flex min-h-[105px] flex-col justify-start rounded-2xl border border-neutral-200/80 bg-white/70 p-4 shadow-sm backdrop-blur-md transition-all hover:border-neutral-300 hover:shadow-md">
+            <span :class="['mb-3 h-1 w-10 rounded-full', feature.tone]" />
+            <p class="text-xs font-bold uppercase tracking-wider text-neutral-900">{{ feature.title }}</p>
+            <p class="mt-1.5 text-xs leading-relaxed text-neutral-600">{{ feature.body }}</p>
           </div>
         </div>
       </div>
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="flex items-end justify-between gap-4 mb-7">
+      <div class="mb-7 flex items-end justify-between gap-4">
         <div>
           <p class="font-mono text-xs uppercase tracking-[0.25em] text-blue-700">Featured auctions</p>
           <h2 class="text-3xl font-black tracking-tight text-slate-950">{{ settings.homepage.featured_title }}</h2>
         </div>
-        <router-link to="/auctions" class="hidden sm:inline-flex rounded-full px-5 py-2 text-sm font-bold text-blue-700 hover:bg-blue-50">View all lots</router-link>
+        <router-link to="/auctions" class="group hidden items-center gap-1 rounded-full px-5 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50 sm:inline-flex">
+          View all live lots <span class="transition-transform group-hover:translate-x-1">→</span>
+        </router-link>
       </div>
       <div v-if="loading" class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <BaseSkeleton v-for="i in 4" :key="i" type="card" />
@@ -195,27 +200,17 @@ onMounted(async () => {
           v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          :class="[
-            'group flex min-h-[120px] flex-col items-start justify-between rounded-2xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md',
-            cat.slug === 'watches'
-              ? 'relative overflow-hidden border border-slate-800 bg-gradient-to-br from-slate-950 to-blue-900 text-white hover:shadow-xl'
-              : 'border border-neutral-200/80 bg-white text-neutral-900',
-          ]"
+          class="group flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-neutral-200/80 bg-gradient-to-b from-white to-neutral-50/80 p-5 text-center text-neutral-900 shadow-sm transition-all hover:-translate-y-1 hover:border-blue-500/30 hover:shadow-lg"
         >
-          <span
-            :class="cat.slug === 'watches'
-              ? 'relative z-10 flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white'
-              : 'flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800'"
-          >
+          <span class="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-700 transition-colors duration-200 group-hover:bg-neutral-900 group-hover:text-white">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
             </svg>
           </span>
-          <span :class="cat.slug === 'watches' ? 'relative z-10' : ''">
-            <span :class="cat.slug === 'watches' ? 'block text-sm font-semibold text-white' : 'block text-sm font-semibold text-neutral-900'">{{ cat.name }}</span>
-            <span :class="cat.slug === 'watches' ? 'mt-0.5 block text-xs text-white/70' : 'mt-0.5 block text-xs text-neutral-500'">{{ cat.lotCount }} lots</span>
+          <span>
+            <span class="block text-sm font-semibold text-neutral-900">{{ cat.name }}</span>
+            <span class="mt-0.5 block text-xs font-medium text-neutral-500">{{ cat.lotCount }} lots</span>
           </span>
-          <span v-if="cat.slug === 'watches'" class="absolute -bottom-8 -right-8 h-28 w-28 rounded-full bg-white/15" />
         </router-link>
       </div>
     </section>
@@ -227,15 +222,15 @@ onMounted(async () => {
           <h2 class="mt-2 text-4xl font-black tracking-tight text-slate-950">{{ settings.homepage.trust_title }}</h2>
         </div>
         <div class="grid sm:grid-cols-3 gap-4">
-          <div class="rounded-[2rem] bg-slate-50 p-6 border border-slate-200"><h3 class="font-black text-slate-950">Verified bidders</h3><p class="mt-2 text-sm text-slate-600">Identity verification, deposits, limits, and reputation scores reduce manipulation.</p></div>
-          <div class="rounded-[2rem] bg-slate-50 p-6 border border-slate-200"><h3 class="font-black text-slate-950">Immutable audit trail</h3><p class="mt-2 text-sm text-slate-600">Every bid, escrow movement, dispute, and state change is logged with snapshots.</p></div>
-          <div class="rounded-[2rem] bg-slate-50 p-6 border border-slate-200"><h3 class="font-black text-slate-950">Escrow resolution</h3><p class="mt-2 text-sm text-slate-600">Funds can be released, frozen, or refunded after arbitration outcomes.</p></div>
+          <div class="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm"><div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">✓</div><h3 class="font-bold text-neutral-900">Verified bidders</h3><p class="mt-2 text-sm text-neutral-600">Identity verification, deposits, limits, and reputation scores reduce manipulation.</p></div>
+          <div class="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm"><div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">✓</div><h3 class="font-bold text-neutral-900">Immutable audit trail</h3><p class="mt-2 text-sm text-neutral-600">Every bid, escrow movement, dispute, and state change is logged with snapshots.</p></div>
+          <div class="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm"><div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">✓</div><h3 class="font-bold text-neutral-900">Escrow resolution</h3><p class="mt-2 text-sm text-neutral-600">Funds can be released, frozen, or refunded after arbitration outcomes.</p></div>
         </div>
       </div>
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div class="relative rounded-2xl bg-neutral-950 p-8 text-white shadow-xl lg:p-12">
+      <div class="relative rounded-3xl border border-neutral-800 bg-gradient-to-r from-neutral-950 via-slate-900 to-neutral-950 p-8 text-white shadow-2xl ring-1 ring-white/5 md:p-12">
         <div class="absolute right-0 top-0 h-64 w-64 rounded-full bg-blue-700/30 blur-3xl" />
         <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
