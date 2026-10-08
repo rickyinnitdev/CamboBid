@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from "vue";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import AuctionCard from "@/components/auction/AuctionCard.vue";
-import CountdownTimer from "@/components/auction/CountdownTimer.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { auctionService } from "@/services/auctionService";
 import { listingService } from "@/services/listingService";
@@ -46,8 +45,6 @@ const categoryTiles = computed(() =>
     };
   }),
 );
-
-const heroAuction = computed(() => liveAuctions.value[0] || null);
 
 onMounted(async () => {
   try {
@@ -101,36 +98,21 @@ onMounted(async () => {
 
           <div class="relative">
             <div class="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-blue-700/15 to-gold-500/20 blur-2xl" />
-            <div class="relative min-h-[360px] overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-neutral-900 to-slate-950 p-6 shadow-2xl">
-              <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-700/20 blur-3xl" />
-              <div class="relative flex items-start justify-between gap-4">
-                <div>
-                  <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Live auction preview</p>
-                  <h2 class="mt-3 max-w-sm text-4xl font-black tracking-tight text-white">{{ heroAuction?.listings?.title || settings.brand.name }}</h2>
-                </div>
-                <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-                  <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> LIVE
-                </span>
+            <div class="relative min-h-[360px] overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 p-6 shadow-2xl">
+              <div class="absolute right-6 top-6 rounded-full bg-white/20 px-4 py-2 text-sm font-black text-white backdrop-blur">516 watching</div>
+              <h2 class="text-5xl font-black tracking-tight text-white sm:text-6xl">{{ settings.brand.name }}</h2>
+              <div class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-3xl font-black text-rose-500">
+                <span class="h-4 w-4 rounded-full bg-rose-500" /> LIVE
               </div>
-              <div class="relative mt-12 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
-                <div class="flex items-end justify-between gap-4">
-                  <div>
-                    <p class="text-xs uppercase tracking-wider text-slate-400">Current bid</p>
-                    <p class="mt-1 font-mono text-3xl font-bold tabular-nums text-white">
-                      ${{ Number(heroAuction?.current_price || 0).toLocaleString() }}
-                    </p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-xs uppercase tracking-wider text-slate-400">Ends in</p>
-                    <CountdownTimer
-                      v-if="heroAuction"
-                      :end-time="heroAuction.end_time"
-                      :status="heroAuction.status"
-                      size="sm"
-                      class="mt-1"
-                    />
-                    <p v-else class="mt-1 font-mono text-sm font-semibold text-white">02h : 14m : 08s</p>
-                  </div>
+              <div class="absolute bottom-8 left-6 right-6 grid grid-cols-3 gap-4">
+                <div class="rotate-[-8deg] rounded-[2rem] bg-white/80 p-4 shadow-xl backdrop-blur">
+                  <div class="grid aspect-square place-items-center rounded-full bg-gradient-to-br from-amber-200 to-amber-500 text-4xl">$</div>
+                </div>
+                <div class="translate-y-[-34px] rounded-[2rem] bg-white/85 p-4 shadow-xl backdrop-blur">
+                  <div class="grid aspect-square place-items-center rounded-full bg-gradient-to-br from-slate-200 to-slate-500 font-black text-white">LOT</div>
+                </div>
+                <div class="rotate-[8deg] rounded-[2rem] bg-white/80 p-4 shadow-xl backdrop-blur">
+                  <div class="grid aspect-square place-items-center rounded-full bg-gradient-to-br from-yellow-200 to-orange-500 text-4xl">⌚</div>
                 </div>
               </div>
             </div>
