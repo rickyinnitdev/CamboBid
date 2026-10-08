@@ -24,7 +24,8 @@ const featuredCategories = [
   {
     name: "Watches",
     slug: "watches",
-    icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z",
+    // Wristwatch with strap & bezel
+    icon: "M12 6a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8zm-1 2v2.5l2 1.2.5-.8-1.5-.9V10h-1zm-2-7h6l-.75 3h-4.5L9 3zm0 18h6l-.75-3h-4.5L9 21z",
     gradient: "from-amber-400/20 via-orange-400/10 to-yellow-300/25",
     border: "border-amber-300/50 hover:border-amber-400",
     glow: "bg-amber-400/25",
@@ -34,7 +35,8 @@ const featuredCategories = [
   {
     name: "Jewellery",
     slug: "jewelry",
-    icon: "M12 3l7 8-7 10-7-10 7-8z",
+    // Brilliant cut diamond
+    icon: "M6 3h12l4 6-10 12L2 9l4-6zm.7 2L3.9 8.5h3.9L6.7 5zm2.4 0l1 3.5h3.8l1-3.5H9.1zm7.8 0l-1.1 3.5h3.9L16.9 5zM4.6 10.5L12 19.3l7.4-8.8H4.6z",
     gradient: "from-pink-400/20 via-rose-400/10 to-red-300/25",
     border: "border-pink-300/50 hover:border-pink-400",
     glow: "bg-pink-400/25",
@@ -44,7 +46,8 @@ const featuredCategories = [
   {
     name: "Art",
     slug: "art",
-    icon: "M4 16l4-4 4 4 8-8",
+    // Painter's palette
+    icon: "M12 2C6.48 2 2 6.48 2 12c0 4.42 3.58 8 8 8 1.1 0 2-.9 2-2 0-.52-.2-1-.53-1.37-.32-.37-.47-.85-.47-1.38 0-1.1.9-2 2-2h1.67c3.95 0 6.33-3.05 6.33-6.67C21.4 5.28 17.06 2 12 2zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 8 6.5 8s1.5.67 1.5 1.5S7.33 11 6.5 11zm3-4C8.67 7 8 6.33 8 5.5S8.67 4 9.5 4s1.5.67 1.5 1.5S10.33 7 9.5 7zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 4 14.5 4s1.5.67 1.5 1.5S15.33 7 14.5 7zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 8 17.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z",
     gradient: "from-purple-400/20 via-fuchsia-400/10 to-indigo-300/25",
     border: "border-purple-300/50 hover:border-purple-400",
     glow: "bg-purple-400/25",
@@ -54,7 +57,8 @@ const featuredCategories = [
   {
     name: "Interiors",
     slug: "antiques",
-    icon: "M4 6h16M4 10h16M6 14h12M8 18h8",
+    // Armchair / Lounge furniture
+    icon: "M7 4a2 2 0 012-2h6a2 2 0 012 2v7h1a3 3 0 013 3v3a2 2 0 01-2 2h-1v2a1 1 0 11-2 0v-2H8v2a1 1 0 11-2 0v-2H5a2 2 0 01-2-2v-3a3 3 0 013-3h1V4zm2 0v7h6V4H9zm-2 9H6a1 1 0 00-1 1v3h2v-4zm12 0h-1v4h2v-3a1 1 0 00-1-1zm-3 0H8v4h8v-4z",
     gradient: "from-violet-400/20 via-blue-400/10 to-purple-300/25",
     border: "border-violet-300/50 hover:border-violet-400",
     glow: "bg-violet-400/25",
@@ -64,7 +68,8 @@ const featuredCategories = [
   {
     name: "Collectibles",
     slug: "collectibles",
-    icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10",
+    // Rare award star / Trophy medal
+    icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2zm0 3.75L9.9 9.87l-4.55.66 3.3 3.2-.78 4.53 4.13-2.17 4.13 2.17-.78-4.53 3.3-3.2-4.55-.66L12 5.75z",
     gradient: "from-emerald-400/20 via-teal-400/10 to-green-300/25",
     border: "border-emerald-300/50 hover:border-emerald-400",
     glow: "bg-emerald-400/25",
@@ -74,7 +79,8 @@ const featuredCategories = [
   {
     name: "Cars",
     slug: "vehicles",
-    icon: "M3 13l2-5a2 2 0 011.9-1.37h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6z",
+    // Sports car / Vehicle front
+    icon: "M5 11l1.5-4.5A2.5 2.5 0 018.87 5h6.26a2.5 2.5 0 012.37 1.5L19 11h1a2 2 0 012 2v5a1 1 0 01-1 1h-1a2 2 0 01-2-2v-1H6v1a2 2 0 01-2 2H3a1 1 0 01-1-1v-5a2 2 0 012-2h1zm3.87-4a.5.5 0 00-.47.3L7.18 11h9.64l-1.22-3.7a.5.5 0 00-.47-.3H8.87zM6.5 15a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm11 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
     gradient: "from-cyan-400/20 via-sky-400/10 to-blue-300/25",
     border: "border-cyan-300/50 hover:border-cyan-400",
     glow: "bg-cyan-400/25",
