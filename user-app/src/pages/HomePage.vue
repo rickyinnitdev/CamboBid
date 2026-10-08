@@ -195,17 +195,27 @@ onMounted(async () => {
           v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          class="group flex min-h-[120px] flex-col items-start justify-between rounded-2xl border border-neutral-200/80 bg-white p-5 text-neutral-900 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+          :class="[
+            'group flex min-h-[120px] flex-col items-start justify-between rounded-2xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md',
+            cat.slug === 'watches'
+              ? 'relative overflow-hidden border border-slate-800 bg-gradient-to-br from-slate-950 to-blue-900 text-white hover:shadow-xl'
+              : 'border border-neutral-200/80 bg-white text-neutral-900',
+          ]"
         >
-          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800">
+          <span
+            :class="cat.slug === 'watches'
+              ? 'relative z-10 flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white'
+              : 'flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800'"
+          >
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
             </svg>
           </span>
-          <span>
-            <span class="block text-sm font-semibold text-neutral-900">{{ cat.name }}</span>
-            <span class="mt-0.5 block text-xs text-neutral-500">{{ cat.lotCount }} lots</span>
+          <span :class="cat.slug === 'watches' ? 'relative z-10' : ''">
+            <span :class="cat.slug === 'watches' ? 'block text-sm font-semibold text-white' : 'block text-sm font-semibold text-neutral-900'">{{ cat.name }}</span>
+            <span :class="cat.slug === 'watches' ? 'mt-0.5 block text-xs text-white/70' : 'mt-0.5 block text-xs text-neutral-500'">{{ cat.lotCount }} lots</span>
           </span>
+          <span v-if="cat.slug === 'watches'" class="absolute -bottom-8 -right-8 h-28 w-28 rounded-full bg-white/15" />
         </router-link>
       </div>
     </section>
