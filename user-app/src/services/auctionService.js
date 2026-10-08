@@ -8,15 +8,17 @@ export const auctionService = {
         *,
         listings!inner(
           id, title, description, images, category_id, condition, seller_id, starting_price,
+          reserve_price,
           categories(id, name, slug),
           seller:profiles!listings_seller_id_fkey(display_name, avatar_url)
-        )
+        ),
+        bids(count)
       `, { count: "exact" });
 
     if (status) {
       query = query.eq("status", status);
     } else {
-      query = query.in("status", ["scheduled", "live", "extended"]);
+      query = query.in("status", ["scheduled", "live", "extended", "closed"]);
     }
 
     if (type) {
@@ -82,7 +84,8 @@ export const auctionService = {
       .from("auctions")
       .select(`
         *,
-        listings!inner(id, title, images, starting_price, categories(name, slug))
+        listings!inner(id, title, images, starting_price, reserve_price, categories(name, slug)),
+        bids(count)
       `)
       .eq("status", "scheduled")
       .order("start_time", { ascending: true })
@@ -97,7 +100,8 @@ export const auctionService = {
       .from("auctions")
       .select(`
         *,
-        listings!inner(id, title, images, starting_price, categories(name, slug))
+        listings!inner(id, title, images, starting_price, reserve_price, categories(name, slug)),
+        bids(count)
       `)
       .in("status", ["live", "extended"])
       .order("end_time", { ascending: true });
