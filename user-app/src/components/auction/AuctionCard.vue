@@ -41,9 +41,9 @@ const closedDateLabel = computed(() => {
 </script>
 
 <template>
-  <router-link :to="`/auctions/${auction.id}`" class="group block">
+  <router-link :to="`/auctions/${auction.id}`" class="group block h-full">
     <article
-      class="rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+      class="flex h-full min-h-[31rem] flex-col rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
       :class="isEnded ? 'opacity-80' : ''"
     >
       <div class="relative aspect-[4/3] overflow-hidden rounded-t-2xl rounded-b-xl border border-neutral-100 bg-gradient-to-br from-slate-100 to-slate-200 ring-1 ring-black/5">
@@ -82,13 +82,14 @@ const closedDateLabel = computed(() => {
         </div>
       </div>
 
-      <div class="px-1 pt-4 pb-2">
+      <div class="flex flex-1 flex-col px-1 pb-2 pt-4">
         <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">{{ categoryName }}</p>
-        <h3 class="mt-1 min-h-[3rem] line-clamp-2 text-base font-semibold leading-snug text-neutral-900 transition-colors">
+        <h3 class="mt-1 h-11 min-h-[2.75rem] line-clamp-2 text-base font-semibold leading-snug text-neutral-900 transition-colors">
           {{ listing.title || "Untitled auction lot" }}
         </h3>
 
-        <div class="mt-4 grid min-w-0 grid-cols-2 gap-3 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50 p-3">
+        <div class="mt-4 flex min-h-[5.5rem] min-w-0 flex-col justify-between overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50 p-3">
+          <div class="grid min-w-0 grid-cols-2 gap-3">
           <div class="min-w-0 max-w-full overflow-hidden">
             <p class="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Current bid</p>
             <p class="mt-1 min-w-0 max-w-full truncate font-mono text-lg font-bold tabular-nums text-neutral-900">
@@ -117,9 +118,10 @@ const closedDateLabel = computed(() => {
               {{ new Date(isScheduled ? auction.start_time : auction.end_time).toLocaleDateString() }}
             </p>
           </div>
+          </div>
         </div>
 
-        <div class="mt-4 flex items-center justify-between gap-3">
+        <div class="mt-auto flex items-center justify-between gap-3 pt-4">
           <span class="inline-flex min-w-0 items-center gap-1.5 text-xs text-neutral-600">
             <svg class="h-4 w-4 flex-shrink-0 text-blue-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 2l2.1 1.5 2.55-.1.9 2.4 2.1 1.45-.9 2.4.9 2.4-2.1 1.45-.9 2.4-2.55-.1L12 22l-2.1-1.5-2.55.1-.9-2.4-2.1-1.45.9-2.4-.9-2.4 2.1-1.45.9-2.4 2.55.1L12 2zm-1.1 13.5l5.2-5.2-1.4-1.4-3.8 3.8-1.6-1.6-1.4 1.4 3 3z" />

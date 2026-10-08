@@ -174,7 +174,7 @@ function prevPage() {
       />
 
       <template v-else>
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AuctionCard v-for="auction in auctions" :key="auction.id" :auction="auction" />
         </div>
 

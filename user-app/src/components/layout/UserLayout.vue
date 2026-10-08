@@ -391,20 +391,20 @@ onUnmounted(() => {
           <p class="mt-3 text-slate-400 max-w-md">{{ settings.brand.tagline }} with verified bidders, immutable logs, proxy bidding, and escrow protection.</p>
         </div>
         <div>
-          <h4 class="font-bold mb-3">Marketplace</h4>
-          <router-link to="/auctions" class="block text-sm text-slate-400 hover:text-white mb-2">Live auctions</router-link>
-          <router-link to="/auctions/calendar" class="block text-sm text-slate-400 hover:text-white mb-2">Auction calendar</router-link>
-          <router-link to="/seller/listings/create" class="block text-sm text-slate-400 hover:text-white">Sell with us</router-link>
+          <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-white">Marketplace</h4>
+          <router-link to="/auctions" class="mb-2 block text-sm text-neutral-300 transition-colors hover:text-white">Live auctions</router-link>
+          <router-link to="/auctions/calendar" class="mb-2 block text-sm text-neutral-300 transition-colors hover:text-white">Auction calendar</router-link>
+          <router-link to="/seller/listings/create" class="block text-sm text-neutral-300 transition-colors hover:text-white">Sell with us</router-link>
         </div>
         <div>
-          <h4 class="font-bold mb-3">Protection</h4>
-          <router-link to="/verify-identity" class="block text-sm text-slate-400 hover:text-white mb-2">Bidder verification</router-link>
-          <router-link to="/disputes" class="block text-sm text-slate-400 hover:text-white mb-2">Dispute resolution</router-link>
-          <router-link to="/orders" class="block text-sm text-slate-400 hover:text-white">Escrow orders</router-link>
+          <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-white">Protection</h4>
+          <router-link to="/verify-identity" class="mb-2 block text-sm text-neutral-300 transition-colors hover:text-white">Bidder verification</router-link>
+          <router-link to="/disputes" class="mb-2 block text-sm text-neutral-300 transition-colors hover:text-white">Dispute resolution</router-link>
+          <router-link to="/orders" class="block text-sm text-neutral-300 transition-colors hover:text-white">Escrow orders</router-link>
         </div>
         <div>
-          <h4 class="font-bold mb-3">Legal</h4>
-          <router-link to="/terms" class="block text-sm text-slate-400 hover:text-white">Terms & Conditions</router-link>
+          <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-white">Legal</h4>
+          <router-link to="/terms" class="block text-sm text-neutral-300 transition-colors hover:text-white">Terms & Conditions</router-link>
         </div>
       </div>
     </footer>
