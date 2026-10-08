@@ -74,44 +74,47 @@ function prevPage() {
 <template>
   <UserLayout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-heading">{{ t("nav.auctions") }}</h1>
-          <p class="text-sm text-muted mt-1">{{ total }} {{ t("common.results") }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">The CamboBid edit</p>
+          <h1 class="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">{{ t("nav.auctions") }}</h1>
+          <p class="mt-1 text-sm text-neutral-500">{{ total }} {{ t("common.results") }}</p>
         </div>
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap items-end gap-4 mb-8">
-        <div class="w-44">
-          <label class="block text-xs font-medium text-heading mb-1">Status</label>
+      <div class="sticky top-[145px] z-30 -mx-4 mb-8 border-y border-neutral-200/80 bg-[#f4f6fb]/95 px-4 py-4 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:top-[168px] lg:-mx-8 lg:px-8">
+        <div class="flex flex-wrap items-end gap-3">
+        <div class="w-full sm:w-44">
+          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Status</label>
           <select
             v-model="filters.status"
-            class="block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
+            class="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
           >
             <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
-        <div class="w-44">
-          <label class="block text-xs font-medium text-heading mb-1">Sort</label>
+        <div class="w-full sm:w-44">
+          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Sort</label>
           <select
             v-model="filters.sort"
-            class="block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
+            class="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
           >
             <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
-        <div class="w-44">
-          <label class="block text-xs font-medium text-heading mb-1">Type</label>
+        <div class="w-full sm:w-44">
+          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Type</label>
           <select
             v-model="filters.type"
-            class="block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
+            class="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
           >
             <option value="">All Types</option>
             <option value="english">English</option>
             <option value="dutch">Dutch</option>
             <option value="sealed">Sealed</option>
           </select>
+        </div>
         </div>
       </div>
 
@@ -128,7 +131,7 @@ function prevPage() {
       />
 
       <template v-else>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AuctionCard v-for="auction in auctions" :key="auction.id" :auction="auction" />
         </div>
 

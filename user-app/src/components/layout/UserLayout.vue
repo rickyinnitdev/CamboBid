@@ -351,16 +351,17 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="bg-white border-t border-slate-100">
+      <div class="border-t border-slate-100 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
-          <div class="flex items-center gap-8 min-w-max py-5">
+          <div class="flex min-w-max items-center gap-2 py-3">
             <router-link
               v-for="item in categoryRail"
               :key="item.label"
               :to="item.to"
-              class="group flex flex-col items-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-700"
+              exact-active-class="bg-slate-950 text-white shadow-sm"
+              class="group flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-950"
             >
-              <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
               </svg>
               <span>{{ item.label }}</span>

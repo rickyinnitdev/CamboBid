@@ -28,7 +28,7 @@ const timeRemaining = computed(() => {
   };
 });
 
-const isUrgent = computed(() => timeRemaining.value.total > 0 && timeRemaining.value.total < 60000);
+const isUrgent = computed(() => timeRemaining.value.total > 0 && timeRemaining.value.total < 15 * 60 * 1000);
 const isCritical = computed(() => timeRemaining.value.total > 0 && timeRemaining.value.total < 10000);
 const isExtended = computed(() => props.status === "extended");
 const isEnded = computed(() => props.status === "closed" || timeRemaining.value.expired);
@@ -74,8 +74,8 @@ onUnmounted(() => {
       :class="[
         sizeClasses[size],
         'block min-w-0 max-w-full truncate tabular-nums tracking-tight',
-        showBadge && (isEnded || isExtended) ? 'rounded px-2 py-0.5 text-xs font-semibold' : '',
-        isEnded ? 'bg-muted/20 text-muted' : isExtended ? 'bg-gold-500/10 text-gold-700' : isCritical ? 'text-danger animate-flash-fast' : isUrgent ? 'text-danger' : 'text-heading',
+        showBadge && (isEnded || isExtended || isUrgent) ? 'rounded px-2 py-0.5 text-xs font-semibold' : '',
+        isEnded ? 'bg-neutral-100 text-neutral-500' : isExtended ? 'bg-amber-50 text-amber-700' : isCritical ? 'bg-rose-50 text-rose-700 animate-flash-fast' : isUrgent ? 'bg-amber-50 text-amber-700' : 'text-neutral-900',
       ]"
       :title="displayText"
     >

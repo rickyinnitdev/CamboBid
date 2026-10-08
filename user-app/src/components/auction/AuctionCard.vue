@@ -19,12 +19,17 @@ const isEnded = computed(() => {
 const isLive = computed(() => !isEnded.value && ["live", "extended"].includes(props.auction.status));
 const isScheduled = computed(() => props.auction.status === "scheduled");
 const categoryName = computed(() => listing.value.categories?.name || "Curated lot");
+const endLabel = computed(() => {
+  if (isScheduled.value) return "Starts";
+  if (isEnded.value) return "Ended";
+  return "Ends";
+});
 </script>
 
 <template>
   <router-link :to="`/auctions/${auction.id}`" class="group block">
-    <article class="rounded-[2rem] bg-white p-3 shadow-sm border border-slate-200/80 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-900/10 transition-all duration-300">
-      <div class="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-slate-100 to-slate-200">
+    <article class="rounded-2xl bg-white p-3 border border-neutral-200/80 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
+      <div class="relative aspect-[4/3] overflow-hidden rounded-xl border border-neutral-100 bg-gradient-to-br from-slate-100 to-slate-200 ring-1 ring-black/5">
         <img
           v-if="imageUrl"
           :src="imageUrl"
@@ -37,54 +42,66 @@ const categoryName = computed(() => listing.value.categories?.name || "Curated l
           </svg>
         </div>
 
-        <button class="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-blue-700 shadow-sm hover:scale-105 transition-transform" @click.prevent>
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button
+          type="button"
+          class="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full border border-white/50 bg-white/65 text-neutral-800 shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:bg-white/90"
+          aria-label="Save lot"
+          @click.prevent
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
           </svg>
         </button>
 
         <div class="absolute left-3 top-3 flex items-center gap-2">
-          <span v-if="isLive" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-black text-white shadow-lg shadow-emerald-600/20">
+          <span v-if="isLive" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/85 px-2.5 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-md">
             <span class="relative flex h-2 w-2"><span class="absolute h-full w-full animate-ping rounded-full bg-white opacity-75" /><span class="relative h-2 w-2 rounded-full bg-white" /></span>
             LIVE
           </span>
-          <span v-else-if="isScheduled" class="rounded-full bg-blue-700 px-3 py-1.5 text-xs font-black text-white">UPCOMING</span>
-          <span v-else-if="isEnded" class="rounded-full bg-slate-900/80 px-3 py-1.5 text-xs font-black text-white">ENDED</span>
-          <span v-if="auction.type !== 'english'" class="rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold capitalize text-slate-700">{{ auction.type }}</span>
+          <span v-else-if="isScheduled" class="rounded-full bg-white/85 px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm backdrop-blur-md">UPCOMING</span>
+          <span v-else-if="isEnded" class="rounded-full bg-neutral-900/80 px-2.5 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-md">ENDED</span>
+          <span v-if="auction.type !== 'english'" class="rounded-full bg-white/85 px-2.5 py-1 text-xs font-semibold capitalize text-neutral-700 shadow-sm backdrop-blur-md">{{ auction.type }}</span>
         </div>
       </div>
 
       <div class="px-1 pt-4 pb-2">
-        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">{{ categoryName }}</p>
-        <h3 class="mt-1 min-h-[3rem] text-base font-bold leading-snug text-slate-950 group-hover:text-blue-700 transition-colors line-clamp-2">
+        <p class="text-xs font-semibold uppercase tracking-wider text-neutral-400">{{ categoryName }}</p>
+        <h3 class="mt-1 min-h-[3rem] line-clamp-2 text-base font-semibold leading-snug text-neutral-900 transition-colors">
           {{ listing.title || "Untitled auction lot" }}
         </h3>
 
-        <div class="mt-4 grid min-w-0 grid-cols-2 gap-3 overflow-hidden rounded-2xl bg-slate-50 p-3">
+        <div class="mt-4 grid min-w-0 grid-cols-2 gap-3 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50 p-3">
           <div class="min-w-0 max-w-full overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Current bid</p>
-            <p class="mt-1 min-w-0 max-w-full truncate font-mono text-xl font-black text-slate-950">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Current bid</p>
+            <p class="mt-1 min-w-0 max-w-full truncate font-mono text-lg font-bold tabular-nums text-neutral-900">
               ${{ Number(auction.current_price || 0).toLocaleString() }}
             </p>
           </div>
           <div class="min-w-0 max-w-full overflow-hidden text-right">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ isScheduled ? "Starts" : "Ends" }}</p>
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">{{ endLabel }}</p>
             <CountdownTimer
-              v-if="isLive"
+              v-if="isLive || isEnded"
               :end-time="auction.end_time"
-              :status="auction.status"
+              :status="isEnded ? 'closed' : auction.status"
               size="sm"
               class="mt-1 min-w-0 max-w-full"
             />
-            <p v-else class="mt-1 min-w-0 max-w-full truncate text-xs font-semibold text-slate-600">
+            <p v-else class="mt-1 min-w-0 max-w-full truncate text-xs font-semibold text-neutral-600">
               {{ new Date(isScheduled ? auction.start_time : auction.end_time).toLocaleDateString() }}
             </p>
           </div>
         </div>
 
-        <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
-          <span>Verified seller</span>
-          <span class="font-semibold text-blue-700">View lot</span>
+        <div class="mt-4 flex items-center justify-between gap-3">
+          <span class="inline-flex min-w-0 items-center gap-1.5 text-xs text-neutral-500">
+            <svg class="h-4 w-4 flex-shrink-0 text-blue-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2l2.1 1.5 2.55-.1.9 2.4 2.1 1.45-.9 2.4.9 2.4-2.1 1.45-.9 2.4-2.55-.1L12 22l-2.1-1.5-2.55.1-.9-2.4-2.1-1.45.9-2.4-.9-2.4 2.1-1.45.9-2.4 2.55.1L12 2zm-1.1 13.5l5.2-5.2-1.4-1.4-3.8 3.8-1.6-1.6-1.4 1.4 3 3z" />
+            </svg>
+            <span class="truncate">Verified seller</span>
+          </span>
+          <span class="inline-flex flex-shrink-0 items-center rounded-full bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors group-hover:bg-blue-700">
+            {{ isEnded ? "View lot" : "Place bid" }}
+          </span>
         </div>
       </div>
     </article>

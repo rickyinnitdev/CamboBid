@@ -13,6 +13,11 @@ const liveAuctions = ref([]);
 const featuredListings = ref([]);
 const categories = ref([]);
 const loading = ref(true);
+const currentDate = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+}).format(new Date());
 
 const featuredCategories = [
   { name: "Watches", slug: "watches", tone: "from-slate-950 to-blue-900", icon: "M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" },
@@ -58,7 +63,7 @@ onMounted(async () => {
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
         <div class="grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <p class="font-mono text-xs uppercase tracking-[0.35em] text-slate-700 mb-5">7 - 13 September 2026</p>
+            <p class="font-mono text-xs uppercase tracking-[0.35em] text-slate-700 mb-5">{{ currentDate }}</p>
             <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-slate-200 mb-6">
               <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span class="text-sm font-bold text-slate-800">{{ settings.homepage.hero_eyebrow }}</span>
