@@ -125,7 +125,7 @@ onMounted(async () => {
                     <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
                     LIVE
                   </span>
-                  <span v-else class="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs font-medium text-neutral-200 shadow-sm backdrop-blur-md">
+                  <span v-else class="inline-flex items-center whitespace-nowrap rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs font-medium text-neutral-200 shadow-sm backdrop-blur-md">
                     ENDED
                   </span>
                   <span class="rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-xs font-semibold tabular-nums text-white backdrop-blur-md">
@@ -203,21 +203,30 @@ onMounted(async () => {
           v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          :class="[
-            'group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br p-5 text-neutral-900 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl',
-            cat.tone,
-            cat.hover,
-          ]"
+          class="group relative min-h-[160px] cursor-pointer overflow-hidden rounded-2xl bg-neutral-900 shadow-sm transition-all duration-300 hover:shadow-xl"
         >
-          <span class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/50 bg-white/80 text-neutral-800 shadow-sm backdrop-blur-md transition-transform duration-300 group-hover:scale-110 dark:bg-white/10">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
+          <img
+            v-if="cat.imageUrl"
+            :src="cat.imageUrl"
+            :alt="cat.name"
+            class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+          <div v-else class="absolute inset-0 bg-gradient-to-br from-slate-800 via-neutral-800 to-slate-950" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+          <span class="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur-md transition-opacity group-hover:opacity-100">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 12h13m-5-5l5 5-5 5" />
             </svg>
           </span>
-          <span>
-            <span class="block text-base font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-blue-600 dark:text-white">{{ cat.name }}</span>
-            <span class="mt-1 inline-flex w-fit rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-neutral-600 dark:bg-white/10 dark:text-neutral-300">{{ cat.lotCount }} lots</span>
-          </span>
+          <div class="relative z-10 flex h-full flex-col justify-end p-4">
+            <span class="mb-2 flex h-9 w-9 items-center justify-center rounded-xl border border-white/30 bg-white/15 text-white backdrop-blur-md">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
+              </svg>
+            </span>
+            <span class="block text-base font-bold tracking-tight text-white">{{ cat.name }}</span>
+            <span class="mt-1 inline-flex w-fit rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-medium text-white/90 backdrop-blur-sm">{{ cat.lotCount }} lots</span>
+          </div>
         </router-link>
       </div>
     </section>
