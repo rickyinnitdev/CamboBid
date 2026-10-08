@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import AuctionCard from "@/components/auction/AuctionCard.vue";
+import CountdownTimer from "@/components/auction/CountdownTimer.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { auctionService } from "@/services/auctionService";
 import { listingService } from "@/services/listingService";
@@ -45,6 +46,13 @@ const categoryTiles = computed(() =>
     };
   }),
 );
+
+const heroAuction = computed(() => liveAuctions.value[0] || null);
+const heroImageUrl = computed(() => {
+  const images = heroAuction.value?.listings?.images;
+  if (!Array.isArray(images) || !images.length) return null;
+  return typeof images[0] === "string" ? images[0] : images[0]?.url || null;
+});
 
 onMounted(async () => {
   try {
@@ -97,22 +105,50 @@ onMounted(async () => {
           </div>
 
           <div class="relative">
-            <div class="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-blue-700/15 to-gold-500/20 blur-2xl" />
-            <div class="relative min-h-[360px] overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 p-6 shadow-2xl">
-              <div class="absolute right-6 top-6 rounded-full bg-white/20 px-4 py-2 text-sm font-black text-white backdrop-blur">516 watching</div>
-              <h2 class="text-5xl font-black tracking-tight text-white sm:text-6xl">{{ settings.brand.name }}</h2>
-              <div class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-3xl font-black text-rose-500">
-                <span class="h-4 w-4 rounded-full bg-rose-500" /> LIVE
+            <div class="absolute -inset-4 rounded-[2rem] bg-blue-900/10 blur-2xl" />
+            <div class="relative overflow-hidden rounded-2xl bg-white shadow-xl">
+              <div class="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-neutral-100">
+                <img
+                  v-if="heroImageUrl"
+                  :src="heroImageUrl"
+                  :alt="heroAuction?.listings?.title || 'Featured live auction lot'"
+                  class="h-full w-full object-cover"
+                />
+                <div v-else class="grid h-full w-full place-items-center bg-gradient-to-br from-slate-200 via-neutral-100 to-slate-300">
+                  <span class="font-mono text-sm font-bold uppercase tracking-[0.3em] text-neutral-500">Featured lot</span>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
+                <div class="absolute left-4 right-4 top-4 flex items-start justify-between gap-3">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                    <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> LIVE
+                  </span>
+                  <span class="rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-white backdrop-blur-md">
+                    <CountdownTimer
+                      v-if="heroAuction"
+                      :end-time="heroAuction.end_time"
+                      :status="heroAuction.status"
+                      size="sm"
+                      :show-badge="false"
+                    />
+                    <span v-else>02h : 15m : 42s</span>
+                  </span>
+                </div>
               </div>
-              <div class="absolute bottom-8 left-6 right-6 grid grid-cols-3 gap-4">
-                <div class="rotate-[-8deg] rounded-[2rem] bg-white/80 p-4 shadow-xl backdrop-blur">
-                  <div class="grid aspect-square place-items-center rounded-full bg-gradient-to-br from-amber-200 to-amber-500 text-4xl">$</div>
-                </div>
-                <div class="translate-y-[-34px] rounded-[2rem] bg-white/85 p-4 shadow-xl backdrop-blur">
-                  <div class="grid aspect-square place-items-center rounded-full bg-gradient-to-br from-slate-200 to-slate-500 font-black text-white">LOT</div>
-                </div>
-                <div class="rotate-[8deg] rounded-[2rem] bg-white/80 p-4 shadow-xl backdrop-blur">
-                  <div class="grid aspect-square place-items-center rounded-full bg-gradient-to-br from-yellow-200 to-orange-500 text-4xl">⌚</div>
+              <div class="rounded-b-2xl border-x border-b border-neutral-200/80 bg-white p-5 shadow-xl">
+                <h2 class="line-clamp-2 text-xl font-bold leading-snug text-slate-950">
+                  {{ heroAuction?.listings?.title || "1968 Rolex Submariner Ref. 5513" }}
+                </h2>
+                <div class="mt-4 flex items-end justify-between gap-4">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Current bid</p>
+                    <p class="mt-1 font-mono text-xl font-bold tabular-nums text-neutral-900">
+                      ${{ Number(heroAuction?.current_price || 0).toLocaleString() }}
+                    </p>
+                    <p class="mt-1 text-xs text-neutral-500">{{ heroAuction?.bids?.[0]?.count || 18 }} bids</p>
+                  </div>
+                  <router-link to="/auctions" class="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700">
+                    Join Live Lot
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -154,22 +190,22 @@ onMounted(async () => {
         <p class="font-mono text-xs uppercase tracking-[0.25em] text-blue-700">Specialist departments</p>
         <h2 class="text-3xl font-black tracking-tight text-slate-950">{{ settings.homepage.category_title }}</h2>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <router-link
           v-for="cat in categoryTiles"
           :key="cat.slug"
           :to="`/categories/${cat.slug}`"
-          class="group relative min-h-40 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 p-5 text-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+          class="group flex min-h-[120px] flex-col items-start justify-between rounded-2xl border border-neutral-200/80 bg-white p-5 text-neutral-900 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
         >
-          <img v-if="cat.imageUrl" :src="cat.imageUrl" :alt="cat.name" class="absolute inset-0 h-full w-full object-cover opacity-50 transition-transform duration-500 group-hover:scale-105" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20" />
-          <div class="relative z-10">
-          <svg class="h-8 w-8 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="cat.icon" />
-          </svg>
-          <h3 class="absolute left-0 right-0 top-20 text-lg font-bold">{{ cat.name }}</h3>
-          <p class="absolute left-0 right-0 top-28 text-xs text-neutral-300">{{ cat.lotCount }} lots</p>
-          </div>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="cat.icon" />
+            </svg>
+          </span>
+          <span>
+            <span class="block text-sm font-semibold text-neutral-900">{{ cat.name }}</span>
+            <span class="mt-0.5 block text-xs text-neutral-500">{{ cat.lotCount }} lots</span>
+          </span>
         </router-link>
       </div>
     </section>
@@ -189,15 +225,15 @@ onMounted(async () => {
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div class="rounded-[2.5rem] bg-slate-950 p-8 lg:p-12 text-white overflow-hidden relative">
+      <div class="relative rounded-2xl bg-neutral-950 p-8 text-white shadow-xl lg:p-12">
         <div class="absolute right-0 top-0 h-64 w-64 rounded-full bg-blue-700/30 blur-3xl" />
-        <div class="relative grid lg:grid-cols-2 gap-8 items-center">
+        <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold-500">For sellers</p>
             <h2 class="mt-2 text-2xl font-bold text-white lg:text-4xl">Turn rare inventory into competitive auctions.</h2>
             <p class="mt-4 text-sm leading-6 text-neutral-300">Create listings, set reserve prices, submit for approval, and let timed bidding discover the market price.</p>
           </div>
-          <div class="flex items-center lg:justify-end">
+          <div class="flex items-center lg:justify-end lg:pr-4">
             <router-link to="/seller/listings/create" class="inline-flex items-center justify-center rounded-2xl bg-gold-500 px-7 py-4 text-sm font-black text-slate-950 shadow-lg shadow-gold-500/20 transition-colors hover:bg-gold-400">Submit your first lot</router-link>
           </div>
         </div>
