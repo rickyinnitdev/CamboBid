@@ -10,14 +10,16 @@ export const useAuthStore = defineStore("auth", () => {
 
   const isAuthenticated = computed(() => !!user.value);
   const isAdmin = computed(() =>
-    ["super_admin", "auctioneer", "escrow_manager"].includes(profile.value?.role)
+    ["super_admin", "auctioneer", "escrow_manager"].includes(
+      profile.value?.role,
+    ),
   );
   const isSuperAdmin = computed(() => profile.value?.role === "super_admin");
   const isAuctioneer = computed(() =>
-    ["super_admin", "auctioneer"].includes(profile.value?.role)
+    ["super_admin", "auctioneer"].includes(profile.value?.role),
   );
   const isEscrowManager = computed(() =>
-    ["super_admin", "escrow_manager"].includes(profile.value?.role)
+    ["super_admin", "escrow_manager"].includes(profile.value?.role),
   );
   const userRole = computed(() => profile.value?.role || "casual_visitor");
 
@@ -62,7 +64,8 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       profile.value = await authService.getProfile(user.value.id);
     } catch (error) {
-      if (import.meta.env.DEV) console.error("Error refreshing profile:", error);
+      if (import.meta.env.DEV)
+        console.error("Error refreshing profile:", error);
     }
   }
 
@@ -70,6 +73,7 @@ export const useAuthStore = defineStore("auth", () => {
     if (isSuperAdmin.value) return true;
 
     const permissionMap = {
+      "withdrawals.manage": ["super_admin", "escrow_manager"],
       "users.read": ["super_admin", "auctioneer", "escrow_manager"],
       "users.update": ["super_admin"],
       "users.suspend": ["super_admin"],
@@ -103,19 +107,43 @@ export const useAuthStore = defineStore("auth", () => {
     return allowedRoles.includes(userRole.value);
   }
 
-  authService.onAuthStateChange(async (event, session) => {
-    if (event === "SIGNED_IN" && session?.user) {
-      user.value = session.user;
-      profile.value = await authService.getProfile(session.user.id);
-    } else if (event === "SIGNED_OUT") {
+  authService.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
       user.value = null;
       profile.value = null;
+      return;
+    }
+    if (session?.user) user.value = session.user;
+    if (event === "SIGNED_IN" && session?.user) {
+      const id = session.user.id;
+      setTimeout(async () => {
+        try {
+          const updated = await authService.getProfile(id);
+          if (user.value?.id === id) profile.value = updated;
+        } catch (error) {
+          if (import.meta.env.DEV)
+            console.error("Profile refresh failed", error);
+        }
+      }, 0);
     }
   });
 
   return {
-    user, profile, loading, initialized,
-    isAuthenticated, isAdmin, isSuperAdmin, isAuctioneer, isEscrowManager, userRole,
-    initialize, login, loginWithGoogle, logout, refreshProfile, hasPermission,
+    user,
+    profile,
+    loading,
+    initialized,
+    isAuthenticated,
+    isAdmin,
+    isSuperAdmin,
+    isAuctioneer,
+    isEscrowManager,
+    userRole,
+    initialize,
+    login,
+    loginWithGoogle,
+    logout,
+    refreshProfile,
+    hasPermission,
   };
 });

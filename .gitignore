@@ -10,3 +10,15 @@ DATABASE_PASSWORD
 *database-password*
 *.log
 .DS_Store
+# Local credentials, deployment metadata and private operational records
+.env.*
+!.env.example
+.vercel/
+.verification/
+backups/
+*.dump
+*.backup
+*.pem
+*.p12
+*.pfx
+docs/DEPLOYMENT_*.md

@@ -6,7 +6,7 @@ import { useAuth } from "@/composables/useAuth";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
-import { platformSettingsService } from "@/services/platformSettingsService";
+import { securityService } from "@/services/securityService";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -37,8 +37,10 @@ async function handleRegister() {
   }
   loading.value = true;
   try {
-    const terms = (await platformSettingsService.getAll()).terms;
-    if (!terms.published || !terms.version) {
+    const terms = (await securityService.policies()).find(
+      (p) => p.kind === "terms",
+    );
+    if (!terms?.version) {
       error.value = t("terms.unavailable");
       return;
     }
@@ -63,20 +65,37 @@ async function handleRegister() {
       <div class="w-full max-w-md">
         <div class="text-center mb-8">
           <p class="section-eyebrow mb-3">Join CamboBid</p>
-          <h1 class="text-3xl font-extrabold tracking-tight text-heading">{{ t("nav.register") }}</h1>
+          <h1 class="text-3xl font-extrabold tracking-tight text-heading">
+            {{ t("nav.register") }}
+          </h1>
           <p class="text-sm text-slate-600 mt-2">Create your account</p>
         </div>
 
         <div class="surface-panel p-6 sm:p-8">
           <div v-if="success" class="text-center py-8">
-            <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
-              <svg class="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            <div
+              class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-8 h-8 text-success"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <h2 class="text-lg font-semibold text-heading mb-2">Check Your Email</h2>
+            <h2 class="text-lg font-semibold text-heading mb-2">
+              Check Your Email
+            </h2>
             <p class="text-sm text-muted mb-6">
-              We've sent a confirmation link to <strong>{{ email }}</strong>. Please verify your email to continue.
+              We've sent a confirmation link to <strong>{{ email }}</strong
+              >. Please verify your email to continue.
             </p>
             <BaseButton variant="primary" @click="router.push('/login')">
               {{ t("nav.login") }}
@@ -84,7 +103,10 @@ async function handleRegister() {
           </div>
 
           <form v-else @submit.prevent="handleRegister" class="space-y-4">
-            <div v-if="error" class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
+            <div
+              v-if="error"
+              class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+            >
               {{ error }}
             </div>
 
@@ -96,13 +118,27 @@ async function handleRegister() {
             />
 
             <label class="flex items-start gap-3 text-sm text-slate-600">
-              <input v-model="termsAccepted" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600" />
+              <input
+                v-model="termsAccepted"
+                type="checkbox"
+                class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+              />
               <span>
                 {{ t("terms.accept_prefix") }}
-                <router-link to="/terms" target="_blank" class="font-semibold text-blue-700 hover:text-blue-800">
+                <router-link
+                  to="/terms"
+                  target="_blank"
+                  class="font-semibold text-blue-700 hover:text-blue-800"
+                >
                   {{ t("terms.title") }}
                 </router-link>
-                {{ t("terms.accept_suffix") }}
+                {{ t("terms.accept_suffix") }} I acknowledge the
+                <router-link
+                  to="/privacy"
+                  target="_blank"
+                  class="font-semibold text-blue-700"
+                  >Privacy Policy</router-link
+                >. Current policy versions are recorded after sign-in.
               </span>
             </label>
 
@@ -130,7 +166,12 @@ async function handleRegister() {
               required
             />
 
-            <BaseButton type="submit" variant="primary" :loading="loading" class="w-full">
+            <BaseButton
+              type="submit"
+              variant="primary"
+              :loading="loading"
+              class="w-full"
+            >
               {{ t("nav.register") }}
             </BaseButton>
           </form>
@@ -138,7 +179,10 @@ async function handleRegister() {
           <div v-if="!success" class="mt-6 text-center">
             <p class="text-sm text-muted">
               Already have an account?
-              <router-link to="/login" class="font-medium text-navy-700 hover:text-navy-800">
+              <router-link
+                to="/login"
+                class="font-medium text-navy-700 hover:text-navy-800"
+              >
                 {{ t("nav.login") }}
               </router-link>
             </p>

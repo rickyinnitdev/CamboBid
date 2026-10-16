@@ -11,7 +11,12 @@
     @apply bg-surface text-body antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold text-heading;
   }
 
@@ -19,7 +24,9 @@
     @apply bg-gold-500/30 text-heading;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply font-sans;
   }
 
@@ -180,5 +187,108 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+/* Administration surface. Existing controls and page structures are preserved. */
+.admin-shell {
+  background: #f3f6f7;
+  color: #24383d;
+}
+.admin-shell main {
+  padding: 32px;
+  max-width: 1680px;
+  width: 100%;
+  margin: 0 auto;
+}
+.admin-shell header {
+  height: 80px;
+  border-color: #e8eef0;
+  background: #ffffffed;
+  backdrop-filter: blur(12px);
+}
+.admin-shell h1 {
+  letter-spacing: -0.035em;
+  color: #182f35;
+}
+.admin-shell .card,
+.admin-shell main .bg-white {
+  border-color: #e4ebed;
+  border-radius: 18px;
+  box-shadow: 0 3px 12px #173f4403;
+}
+.admin-shell table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.admin-shell thead {
+  background: #f8fafb;
+}
+.admin-shell th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7b8d94;
+  font-weight: 600;
+  padding-top: 17px;
+  padding-bottom: 17px;
+}
+.admin-shell tbody tr {
+  transition: background 0.15s;
+}
+.admin-shell tbody tr:hover {
+  background: #f8fbfb;
+}
+.admin-shell td {
+  padding-top: 18px;
+  padding-bottom: 18px;
+  border-color: #eef2f3;
+}
+.admin-shell input,
+.admin-shell select,
+.admin-shell textarea {
+  border-color: #e1e9ec;
+  border-radius: 11px;
+}
+.admin-shell input:focus,
+.admin-shell select:focus,
+.admin-shell textarea:focus {
+  outline-color: #88b9bb;
+}
+.admin-shell .btn-primary {
+  background: #216875;
+  border-color: #216875;
+  border-radius: 11px;
+}
+.admin-shell button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.admin-sidebar {
+  height: 100dvh;
+}
+.admin-sidebar nav {
+  padding: 20px 12px;
+}
+.admin-sidebar nav button {
+  min-height: 44px;
+}
+.admin-sidebar nav button svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.6;
+}
+.admin-sidebar nav button:focus-visible {
+  outline: 2px solid #216875;
+  outline-offset: 1px;
+}
+@media (max-width: 1023px) {
+  .admin-shell main {
+    padding: 20px 14px;
+  }
+  .admin-shell header {
+    height: 68px;
+    padding-left: 18px;
+    padding-right: 18px;
   }
 }

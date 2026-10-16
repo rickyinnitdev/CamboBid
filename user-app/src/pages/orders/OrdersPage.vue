@@ -1,97 +1,212 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import UserLayout from "@/components/layout/UserLayout.vue";
-import BaseCard from "@/components/base/BaseCard.vue";
-import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
-import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import StatusBadge from "@/components/auction/StatusBadge.vue";
 import { orderService } from "@/services/orderService";
-
-const { t } = useI18n();
-const orders = ref([]);
-const loading = ref(true);
-const error = ref("");
-
-onMounted(async () => {
+const route = useRoute(),
+  router = useRouter(),
+  orders = ref([]),
+  sales = ref([]),
+  pending = ref([]),
+  loading = ref(true),
+  error = ref("");
+const tab = computed(() =>
+  ["wins", "buy_now", "sales"].includes(route.query.tab)
+    ? route.query.tab
+    : "all",
+);
+const tabs = computed(() => [
+  { id: "all", name: "All purchases", count: orders.value.length },
+  {
+    id: "wins",
+    name: "Auction wins",
+    count: orders.value.filter((o) => o.purchase_kind !== "buy_now").length,
+  },
+  {
+    id: "buy_now",
+    name: "Buy Now",
+    count: orders.value.filter((o) => o.purchase_kind === "buy_now").length,
+  },
+  { id: "sales", name: "My sales", count: sales.value.length },
+]);
+const visible = computed(() =>
+  tab.value === "sales"
+    ? sales.value
+    : orders.value.filter(
+        (o) =>
+          tab.value === "all" ||
+          (tab.value === "buy_now"
+            ? o.purchase_kind === "buy_now"
+            : o.purchase_kind !== "buy_now"),
+      ),
+);
+let timer,
+  busy = false;
+async function load() {
+  if (busy) return;
+  busy = true;
   try {
-    orders.value = await orderService.getMyOrders();
-  } catch (err) {
-    error.value = err.message || "Failed to load orders.";
+    [orders.value, sales.value, pending.value] = await Promise.all([
+      orderService.getMyOrders(),
+      orderService.getAsSellerOrders(),
+      orderService.getPendingWins(),
+    ]);
+    error.value = "";
+  } catch (e) {
+    error.value = e.message;
   } finally {
     loading.value = false;
+    busy = false;
   }
-});
-
-function getOrderTitle(order) {
-  return order.auctions?.listings?.title || "Untitled";
 }
-
-function getOrderImage(order) {
-  const images = order.auctions?.listings?.images;
-  if (Array.isArray(images) && images.length > 0) {
-    return typeof images[0] === "string" ? images[0] : images[0]?.url;
-  }
-  return null;
+onMounted(() => {
+  load();
+  timer = setInterval(() => {
+    if (!document.hidden) load();
+  }, 15000);
+});
+onUnmounted(() => clearInterval(timer));
+const money = (n) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    Number(n),
+  );
+function image(o) {
+  const img = o.auctions?.listings?.images?.[0];
+  return typeof img === "string" ? img : img?.url;
+}
+function note(o) {
+  if (o.status === "held" && o.funded_at)
+    return tab.value === "sales"
+      ? "Payment held — released to your wallet after buyer confirms delivery."
+      : "Payment confirmed and held safely. Confirm delivery only after receiving your item.";
+  if (o.status === "released")
+    return tab.value === "sales"
+      ? "Sale proceeds credited to your wallet."
+      : "Delivery confirmed; payment released to the seller.";
+  if (o.status === "pending")
+    return "Payment is required before this order is funded.";
+  if (o.status === "refunded") return "Payment refunded to the buyer’s wallet.";
+  if (o.status === "frozen")
+    return "Payment is frozen while the dispute is reviewed.";
+  return "Open the order for its payment and delivery details.";
 }
 </script>
-
 <template>
-  <UserLayout>
-    <div class="page-container max-w-4xl">
+  <UserLayout
+    ><main class="page-container max-w-5xl space-y-6">
       <div class="page-header">
         <div>
-          <p class="section-eyebrow">Account</p>
-          <h1 class="page-title">{{ t("order.title") }}</h1>
-          <p class="page-subtitle">Track purchases and escrow-protected deliveries.</p>
+          <p class="section-eyebrow">Your collection</p>
+          <h1 class="page-title">Wins &amp; purchases</h1>
+          <p class="page-subtitle">
+            Your winning auctions, instant purchases and sales, all in one
+            place.
+          </p>
         </div>
+        <router-link to="/wallet" class="text-sm text-teal-800 underline"
+          >Your wallet ↗</router-link
+        >
       </div>
-
-      <div v-if="loading" class="space-y-4">
-        <BaseSkeleton v-for="i in 4" :key="i" type="card" />
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="t in tabs"
+          :key="t.id"
+          class="px-4 py-3 rounded-xl text-sm border"
+          :class="
+            tab === t.id
+              ? 'bg-teal-800 text-white border-teal-800'
+              : 'bg-white text-slate-600 border-slate-200'
+          "
+          @click="router.replace({ query: { tab: t.id } })"
+        >
+          {{ t.name }} <span class="ml-2 opacity-60">{{ t.count }}</span>
+        </button>
       </div>
-
-      <div v-else-if="error" class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
-        {{ error }}
-      </div>
-
-      <BaseEmptyState
-        v-else-if="orders.length === 0"
-        title="No Orders"
-        description="You don't have any orders yet. Win an auction to get started!"
-        icon="auction"
+      <p
+        v-if="error"
+        role="alert"
+        class="p-4 rounded-xl bg-red-50 text-red-700"
       >
-        <template #action>
-          <router-link to="/auctions" class="mt-4 inline-flex items-center px-4 py-2 bg-navy-700 text-white rounded-lg text-sm font-medium hover:bg-navy-800 transition-colors">
-            Browse Auctions
-          </router-link>
-        </template>
-      </BaseEmptyState>
-
-      <div v-else class="space-y-4">
-        <BaseCard v-for="order in orders" :key="order.id">
-          <router-link :to="`/orders/${order.id}`" class="flex items-center gap-4 p-4 hover:bg-surface/50 transition-colors">
-            <div class="w-16 h-16 rounded-lg bg-surface overflow-hidden flex-shrink-0">
-              <img v-if="getOrderImage(order)" :src="getOrderImage(order)" class="w-full h-full object-cover" />
-              <div v-else class="w-full h-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-muted/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
+        {{ error }}
+      </p>
+      <p v-if="loading" class="p-8 text-slate-400">Loading your orders…</p>
+      <template v-else
+        ><section
+          v-if="pending.length && ['all', 'wins'].includes(tab)"
+          class="p-5 rounded-2xl bg-amber-50 border border-amber-100"
+        >
+          <h2 class="font-semibold">Finalizing your auction results</h2>
+          <p class="text-sm text-amber-900 mt-2">
+            The timer has ended. Automatic settlement normally creates the order
+            within a minute; your bid funds stay reserved until then.
+          </p>
+          <router-link
+            v-for="p in pending"
+            :key="p.id"
+            :to="'/auctions/' + p.id"
+            class="flex justify-between gap-3 mt-4 text-sm underline"
+            ><span>{{ p.listings?.title }}</span
+            ><span
+              >{{ money(p.current_price) }} · {{ p.payment_mode }}</span
+            ></router-link
+          >
+        </section>
+        <p
+          v-if="!visible.length"
+          class="bg-white border rounded-2xl p-8 text-slate-500"
+        >
+          {{
+            tab === "sales"
+              ? "Your sales and their delivery/payment status will appear here."
+              : "No matching purchases yet. Win an auction or use Buy Now to start your collection."
+          }}
+        </p>
+        <router-link
+          v-for="o in visible"
+          :key="o.id"
+          :to="'/orders/' + o.id"
+          class="block bg-white border border-slate-200 rounded-2xl p-5 hover:border-teal-400 transition"
+          ><div class="flex gap-4">
+            <div
+              class="w-20 h-20 shrink-0 rounded-xl bg-slate-100 overflow-hidden"
+            >
+              <img
+                v-if="image(o)"
+                :src="image(o)"
+                :alt="o.auctions?.listings?.title"
+                class="w-full h-full object-cover"
+              />
             </div>
-            <div class="flex-1 min-w-0">
-              <h3 class="font-semibold text-heading truncate">{{ getOrderTitle(order) }}</h3>
-              <p class="text-xs text-muted mt-0.5">
-                {{ new Date(order.created_at).toLocaleDateString() }}
+            <div class="min-w-0 flex-1">
+              <p class="text-xs uppercase tracking-wider text-teal-700">
+                {{
+                  tab === "sales"
+                    ? "Your sale"
+                    : o.purchase_kind === "buy_now"
+                      ? "Buy Now purchase"
+                      : "Auction won"
+                }}
+                · {{ o.payment_mode || "demo" }}
+              </p>
+              <h2 class="font-semibold mt-1">
+                {{ o.auctions?.listings?.title || "Auction item" }}
+              </h2>
+              <p class="text-xs text-slate-400 mt-2">
+                {{ new Date(o.created_at).toLocaleString() }}
               </p>
             </div>
-            <div class="text-right flex-shrink-0">
-              <p class="font-bold font-mono text-gold-600">${{ Number(order.amount).toLocaleString() }}</p>
-              <StatusBadge :status="order.status" type="escrow" class="mt-1" />
+            <div class="text-right">
+              <p class="font-bold">{{ money(o.amount) }}</p>
+              <StatusBadge :status="o.status" type="escrow" class="mt-2" />
             </div>
-          </router-link>
-        </BaseCard>
-      </div>
-    </div>
-  </UserLayout>
+          </div>
+          <p class="mt-4 pt-4 border-t text-sm text-slate-500">{{ note(o) }}</p>
+          <p class="mt-3 text-sm font-medium text-teal-800">
+            View order, invoice &amp; delivery details →
+          </p></router-link
+        ></template
+      >
+    </main></UserLayout
+  >
 </template>

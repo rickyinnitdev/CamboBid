@@ -1,23 +1,32 @@
 import { supabase } from "./supabase";
 
 export const searchService = {
-  async search(query, { category, type, minPrice, maxPrice, sort, page = 1, limit = 12 } = {}) {
+  async search(
+    query,
+    { category, type, minPrice, maxPrice, sort, page = 1, limit = 12 } = {},
+  ) {
     if (!query || query.trim().length === 0) {
       return { results: [], total: 0 };
     }
 
     let dbQuery = supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         id, type, status, start_time, end_time, current_price, reserve_met, created_at,
         listings!inner(
           id, title, description, images, starting_price, reserve_price,
           categories!inner(id, name, slug),
-          seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url)
+          seller:public_profiles!listings_seller_id_fkey(id, display_name, avatar_url)
         ),
         bids(count)
-      `, { count: "exact" })
-      .textSearch("title", query, { type: "websearch", referencedTable: "listings" })
+      `,
+        { count: "exact" },
+      )
+      .textSearch("title", query, {
+        type: "websearch",
+        referencedTable: "listings",
+      })
       .in("status", ["scheduled", "live", "extended", "closed"]);
 
     if (category) {
@@ -60,11 +69,16 @@ export const searchService = {
   async searchAuctions(query, { status, type, page = 1, limit = 12 } = {}) {
     let dbQuery = supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         id, type, status, start_time, end_time, current_price, bid_increment,
         listings!inner(id, title, description, images, starting_price, condition, categories(id, name, slug))
-      `, { count: "exact" })
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%`, { referencedTable: "listings" });
+      `,
+        { count: "exact" },
+      )
+      .or(`title.ilike.%${query}%,description.ilike.%${query}%`, {
+        referencedTable: "listings",
+      });
 
     if (status) {
       dbQuery = dbQuery.eq("status", status);
@@ -79,9 +93,7 @@ export const searchService = {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    dbQuery = dbQuery
-      .order("end_time", { ascending: true })
-      .range(from, to);
+    dbQuery = dbQuery.order("end_time", { ascending: true }).range(from, to);
 
     const { data, error, count } = await dbQuery;
     if (error) throw error;

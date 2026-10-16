@@ -1,7 +1,28 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { supabase } from "@/services/supabase";
 
 const routes = [
+  {path:"/admin/withdrawals",name:"AdminWithdrawals",component:()=>import("@/pages/WithdrawalsPage.vue"),meta:{requiresAuth:true,permission:"withdrawals.manage"}},
+  {path:"/admin/integrations",name:"AdminIntegrations",component:()=>import("@/pages/IntegrationsPage.vue"),meta:{requiresAuth:true,permission:"roles.manage"}},
+  {
+    path: "/admin/policies",
+    name: "AdminPolicies",
+    component: () => import("@/pages/PoliciesPage.vue"),
+    meta: { requiresAuth: true, permission: "cms.manage" },
+  },
+  {
+    path: "/admin/presentation",
+    name: "AdminPresentation",
+    component: () => import("@/pages/PresentationPage.vue"),
+    meta: { requiresAuth: true, permission: "auctions.create" },
+  },
+  {
+    path: "/admin/security",
+    name: "AdminSecurity",
+    component: () => import("@/pages/SecurityPage.vue"),
+    meta: { requiresAuth: true },
+  },
   {
     path: "/",
     redirect: "/admin",
@@ -169,6 +190,19 @@ router.beforeEach(async (to, from, next) => {
 
   if (!authStore.initialized) {
     await authStore.initialize();
+  }
+
+  if (authStore.profile?.suspended) return next({ name: "NotAllowed" });
+
+  if (
+    authStore.isAuthenticated &&
+    allowedRoles.includes(authStore.userRole) &&
+    to.name !== "AdminSecurity"
+  ) {
+    const { data, error } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (error || data.currentLevel !== "aal2")
+      return next({ name: "AdminSecurity" });
   }
 
   if (to.meta.guest) {

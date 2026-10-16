@@ -16,9 +16,9 @@ function toggleMobileSidebar() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-surface flex">
+  <div class="admin-shell min-h-screen bg-surface flex">
     <!-- Desktop Sidebar -->
-    <AdminSidebar :open="sidebarOpen" class="hidden lg:flex" />
+    <AdminSidebar :open="sidebarOpen" class="hidden lg:flex fixed inset-y-0 left-0 z-40" />
 
     <!-- Mobile Sidebar Overlay -->
     <Transition

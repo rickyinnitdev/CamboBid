@@ -8,7 +8,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req: Request) => {
@@ -29,20 +30,37 @@ serve(async (req: Request) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     // Verify JWT
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const { user_id, type, title, body, auction_id, send_email } = await req.json();
+    const { data: staff, error: staffError } =
+      await supabase.rpc("staff_session");
+    if (staffError || !staff)
+      return new Response(
+        JSON.stringify({ error: "Staff with MFA required" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    const { user_id, type, title, body, auction_id, send_email } =
+      await req.json();
 
     if (!user_id || !type || !title) {
       return new Response(
         JSON.stringify({ error: "user_id, type, and title are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -62,7 +80,10 @@ serve(async (req: Request) => {
     if (notifError) {
       return new Response(
         JSON.stringify({ error: "Failed to create notification" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -88,12 +109,16 @@ serve(async (req: Request) => {
                 <div style="background: #F8F9FC; padding: 20px; border: 1px solid #E2E8F0; border-top: none; border-radius: 0 0 8px 8px;">
                   <h2 style="color: #0F172A; margin-top: 0;">${title}</h2>
                   <p style="color: #475569; line-height: 1.6;">${body || ""}</p>
-                  ${auction_id ? `
+                  ${
+                    auction_id
+                      ? `
                     <a href="${supabaseUrl.replace("https://", "https://")}/auctions/${auction_id}"
                        style="display: inline-block; background: #E8A020; color: #0F172A; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">
                       View Auction
                     </a>
-                  ` : ""}
+                  `
+                      : ""
+                  }
                 </div>
                 <div style="text-align: center; padding: 16px; color: #94A3B8; font-size: 12px;">
                   <p>You received this email because you have an account on Auction Platform.</p>
@@ -115,7 +140,7 @@ serve(async (req: Request) => {
             },
           });
 
-          emailSent = true;
+          emailSent = false; // No email transport is configured.
         }
       } catch (emailErr) {
         console.error("Email sending failed:", emailErr);
@@ -129,13 +154,16 @@ serve(async (req: Request) => {
         notification,
         email_sent: emailSent,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (error) {
     console.error("send-notification error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

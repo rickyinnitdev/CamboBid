@@ -6,13 +6,20 @@ async function throwFunctionError(error) {
     const payload = await error.context?.json?.();
     throw new Error(payload?.details || payload?.error || error.message);
   } catch (readError) {
-    if (readError instanceof Error && readError.message !== error.message) throw readError;
+    if (readError instanceof Error && readError.message !== error.message)
+      throw readError;
     throw error;
   }
 }
 
 export const bidService = {
-  async placeBid({ auctionId, amount, proxyMaxAmount, isProxy, deviceFingerprint }) {
+  async placeBid({
+    auctionId,
+    amount,
+    proxyMaxAmount,
+    isProxy,
+    deviceFingerprint,
+  }) {
     const { data, error } = await supabase.functions.invoke("process-bid", {
       body: {
         auction_id: auctionId,
@@ -37,18 +44,22 @@ export const bidService = {
   },
 
   async getMyBids() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
     const { data, error } = await supabase
       .from("bids")
-      .select(`
+      .select(
+        `
         id, amount, is_proxy, proxy_max_amount, status, placed_at,
         auctions!inner(
           id, status, end_time, current_price, winner_id,
           listings!inner(id, title, images)
         )
-      `)
+      `,
+      )
       .eq("bidder_id", user.id)
       .order("placed_at", { ascending: false });
 
@@ -57,15 +68,9 @@ export const bidService = {
   },
 
   async getBidHistory(auctionId) {
-    const { data, error } = await supabase
-      .from("bids")
-      .select(`
-        id, amount, is_proxy, status, placed_at, bidder_id,
-        bidder:profiles!bids_bidder_id_fkey(display_name, avatar_url)
-      `)
-      .eq("auction_id", auctionId)
-      .order("amount", { ascending: false });
-
+    const { data, error } = await supabase.rpc("auction_bid_history", {
+      p_auction: auctionId,
+    });
     if (error) throw error;
     return data;
   },
@@ -73,7 +78,9 @@ export const bidService = {
   async getHighestBid(auctionId) {
     const { data, error } = await supabase
       .from("bids")
-      .select("id, amount, bidder_id, bidder:profiles!bids_bidder_id_fkey(display_name)")
+      .select(
+        "id, amount, bidder_id, bidder:public_profiles!bids_bidder_id_fkey(display_name)",
+      )
       .eq("auction_id", auctionId)
       .eq("status", "winning")
       .order("amount", { ascending: false })
@@ -85,7 +92,9 @@ export const bidService = {
   },
 
   async getMyHighestBid(auctionId) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return null;
 
     const { data, error } = await supabase

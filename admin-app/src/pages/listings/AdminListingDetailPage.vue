@@ -1,4 +1,5 @@
 <script setup>
+import ListingImage from "@/components/base/ListingImage.vue";
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
@@ -19,7 +20,7 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const { user } = useAuth();
-const { canApproveListings } = usePermission();
+const { canApproveListings, canManageAuctions } = usePermission();
 
 const listing = ref(null);
 const loading = ref(true);
@@ -45,7 +46,10 @@ onMounted(fetchListing);
 async function approveListing() {
   actionLoading.value = true;
   try {
-    listing.value = await listingService.approveListing(route.params.id, user.value.id);
+    listing.value = await listingService.approveListing(
+      route.params.id,
+      user.value.id,
+    );
     toast.success("Listing approved");
   } catch (e) {
     toast.error(e.message || "Failed to approve listing");
@@ -58,7 +62,11 @@ async function rejectListing() {
   if (!rejectReason.value.trim()) return;
   actionLoading.value = true;
   try {
-    listing.value = await listingService.rejectListing(route.params.id, user.value.id, rejectReason.value);
+    listing.value = await listingService.rejectListing(
+      route.params.id,
+      user.value.id,
+      rejectReason.value,
+    );
     showRejectModal.value = false;
     rejectReason.value = "";
     toast.success("Listing rejected");
@@ -70,7 +78,13 @@ async function rejectListing() {
 }
 
 function statusBadgeVariant(status) {
-  const map = { pending: "warning", approved: "success", rejected: "danger", live: "info", sold: "purple" };
+  const map = {
+    pending: "warning",
+    approved: "success",
+    rejected: "danger",
+    live: "info",
+    sold: "purple",
+  };
   return map[status] || "default";
 }
 </script>
@@ -80,8 +94,18 @@ function statusBadgeVariant(status) {
     <div class="space-y-6">
       <div class="flex items-center gap-4">
         <button class="text-muted hover:text-heading" @click="router.back()">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
           </svg>
         </button>
         <div class="flex-1">
@@ -94,40 +118,70 @@ function statusBadgeVariant(status) {
         <BaseCard><BaseSkeleton :rows="5" /></BaseCard>
       </div>
 
-      <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">{{ error }}</div>
+      <div
+        v-else-if="error"
+        class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+      >
+        {{ error }}
+      </div>
 
       <template v-else-if="listing">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="lg:col-span-2 space-y-6">
             <BaseCard>
               <div class="flex items-start justify-between mb-4">
-                <h2 class="text-xl font-bold text-heading">{{ listing.title }}</h2>
-                <BaseBadge :variant="statusBadgeVariant(listing.status)">{{ listing.status }}</BaseBadge>
+                <h2 class="text-xl font-bold text-heading">
+                  {{ listing.title }}
+                </h2>
+                <BaseBadge :variant="statusBadgeVariant(listing.status)">{{
+                  listing.status
+                }}</BaseBadge>
               </div>
               <p class="text-sm text-muted mb-4">{{ listing.description }}</p>
 
-              <div v-if="listing.images?.length" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                <div v-for="(img, i) in listing.images" :key="i" class="aspect-square rounded-lg bg-surface overflow-hidden">
-                  <img :src="img" class="w-full h-full object-cover" />
+              <div
+                v-if="listing.images?.length"
+                class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4"
+              >
+                <div
+                  v-for="(img, i) in listing.images"
+                  :key="i"
+                  class="aspect-square rounded-lg bg-surface overflow-hidden"
+                >
+                  <ListingImage
+                    :image="img"
+                    :alt="listing.title + ' photo ' + (i + 1)"
+                    class="w-full h-full"
+                  />
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-border">
+              <div
+                class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-border"
+              >
                 <div>
                   <p class="text-xs text-muted mb-1">Starting Price</p>
-                  <p class="text-sm font-medium text-heading">${{ Number(listing.starting_price || 0).toLocaleString() }}</p>
+                  <p class="text-sm font-medium text-heading">
+                    ${{ Number(listing.starting_price || 0).toLocaleString() }}
+                  </p>
                 </div>
                 <div>
                   <p class="text-xs text-muted mb-1">Reserve Price</p>
-                  <p class="text-sm font-medium text-heading">${{ Number(listing.reserve_price || 0).toLocaleString() }}</p>
+                  <p class="text-sm font-medium text-heading">
+                    ${{ Number(listing.reserve_price || 0).toLocaleString() }}
+                  </p>
                 </div>
                 <div>
                   <p class="text-xs text-muted mb-1">Category</p>
-                  <p class="text-sm font-medium text-heading">{{ listing.categories?.name || "N/A" }}</p>
+                  <p class="text-sm font-medium text-heading">
+                    {{ listing.categories?.name || "N/A" }}
+                  </p>
                 </div>
                 <div>
                   <p class="text-xs text-muted mb-1">Condition</p>
-                  <p class="text-sm font-medium text-heading capitalize">{{ listing.condition?.replace("_", " ") }}</p>
+                  <p class="text-sm font-medium text-heading capitalize">
+                    {{ listing.condition?.replace("_", " ") }}
+                  </p>
                 </div>
               </div>
             </BaseCard>
@@ -135,25 +189,62 @@ function statusBadgeVariant(status) {
             <BaseCard>
               <h3 class="font-semibold text-heading mb-3">Seller</h3>
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-navy-700 flex items-center justify-center">
-                  <span class="text-sm font-semibold text-white">{{ (listing.seller?.display_name || "U").charAt(0).toUpperCase() }}</span>
+                <div
+                  class="w-10 h-10 rounded-full bg-navy-700 flex items-center justify-center"
+                >
+                  <span class="text-sm font-semibold text-white">{{
+                    (listing.seller?.display_name || "U")
+                      .charAt(0)
+                      .toUpperCase()
+                  }}</span>
                 </div>
                 <div>
-                  <p class="font-medium text-heading">{{ listing.seller?.display_name || "Unknown" }}</p>
-                  <p class="text-xs text-muted">Reputation: {{ listing.seller?.reputation_score || 0 }}</p>
+                  <p class="font-medium text-heading">
+                    {{ listing.seller?.display_name || "Unknown" }}
+                  </p>
+                  <p class="text-xs text-muted">
+                    Reputation: {{ listing.seller?.reputation_score || 0 }}
+                  </p>
                 </div>
               </div>
             </BaseCard>
           </div>
 
           <div class="space-y-4">
+            <BaseCard v-if="listing.status === 'approved'">
+              <h3 class="font-semibold text-heading mb-3">Ready to start</h3>
+              <p class="text-sm text-muted mb-4">
+                This item is approved. It appears on the public auction page
+                after an auction is created and started.
+              </p>
+              <BaseButton
+                v-if="canManageAuctions"
+                class="w-full"
+                @click="
+                  router.push({
+                    path: '/admin/auctions/create',
+                    query: { listing: listing.id },
+                  })
+                "
+                >Start auction</BaseButton
+              >
+            </BaseCard>
             <BaseCard v-if="canApproveListings && listing.status === 'pending'">
               <h3 class="font-semibold text-heading mb-4">Approval Actions</h3>
               <div class="space-y-3">
-                <BaseButton variant="success" class="w-full" :loading="actionLoading" @click="approveListing">
+                <BaseButton
+                  variant="success"
+                  class="w-full"
+                  :loading="actionLoading"
+                  @click="approveListing"
+                >
                   {{ t("admin.approve") }}
                 </BaseButton>
-                <BaseButton variant="danger" class="w-full" @click="showRejectModal = true">
+                <BaseButton
+                  variant="danger"
+                  class="w-full"
+                  @click="showRejectModal = true"
+                >
                   {{ t("admin.reject") }}
                 </BaseButton>
               </div>
@@ -167,14 +258,30 @@ function statusBadgeVariant(status) {
         </div>
       </template>
 
-      <BaseModal :open="showRejectModal" title="Reject Listing" @close="showRejectModal = false">
+      <BaseModal
+        :open="showRejectModal"
+        title="Reject Listing"
+        @close="showRejectModal = false"
+      >
         <div class="space-y-4">
-          <BaseInput v-model="rejectReason" label="Reason for rejection" placeholder="Enter reason..." required />
+          <BaseInput
+            v-model="rejectReason"
+            label="Reason for rejection"
+            placeholder="Enter reason..."
+            required
+          />
         </div>
         <template #footer>
           <div class="flex justify-end gap-3">
-            <BaseButton variant="secondary" @click="showRejectModal = false">{{ t("common.cancel") }}</BaseButton>
-            <BaseButton variant="danger" :loading="actionLoading" @click="rejectListing">{{ t("admin.reject") }}</BaseButton>
+            <BaseButton variant="secondary" @click="showRejectModal = false">{{
+              t("common.cancel")
+            }}</BaseButton>
+            <BaseButton
+              variant="danger"
+              :loading="actionLoading"
+              @click="rejectListing"
+              >{{ t("admin.reject") }}</BaseButton
+            >
           </div>
         </template>
       </BaseModal>

@@ -2,22 +2,24 @@ import { supabase } from "./supabase";
 
 async function throwFunctionError(error) {
   if (!error) return;
+  let message = error.message;
   try {
     const payload = await error.context?.json?.();
-    throw new Error(payload?.details || payload?.error || error.message);
-  } catch (readError) {
-    if (readError instanceof Error && readError.message !== error.message) throw readError;
-    throw error;
+    message = payload?.details || payload?.error || payload?.message || message;
+  } catch {
+    /* Preserve transport errors when no JSON response is available. */
   }
+  throw new Error(message);
 }
 
 export const auctionService = {
   async getAuctions({ status, type, page = 1, limit = 20 } = {}) {
-    let query = supabase
-      .from("auctions")
-      .select(`
+    let query = supabase.from("auctions").select(
+      `
         *, listings!inner(id, title, images, seller_id, starting_price, seller:profiles!listings_seller_id_fkey(display_name))
-      `, { count: "exact" });
+      `,
+      { count: "exact" },
+    );
 
     if (status) query = query.eq("status", status);
     if (type) query = query.eq("type", type);
@@ -35,41 +37,29 @@ export const auctionService = {
   async getAuctionById(id) {
     const { data, error } = await supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         *, listings!inner(*, seller:profiles!listings_seller_id_fkey(display_name, avatar_url))
-      `)
+      `,
+      )
       .eq("id", id)
       .single();
     if (error) throw error;
     return data;
   },
 
-  async createAuction(auctionData) {
-    const { data, error } = await supabase
-      .from("auctions")
-      .insert({
-        ...auctionData,
-        original_end_time: auctionData.end_time,
-        current_price: auctionData.starting_price || 0,
-      })
-      .select()
-      .single();
-    if (error) throw error;
-
-    // Update listing status
-    await supabase
-      .from("listings")
-      .update({ status: "live" })
-      .eq("id", auctionData.listing_id);
-
-    // Log activity
-    await supabase.from("activity_logs").insert({
-      action: "auction_created",
-      resource_type: "auction",
-      resource_id: data.id,
-      after_snapshot: auctionData,
+  async createAuction(form) {
+    const { data, error } = await supabase.rpc("start_approved_auction", {
+      p_listing: form.listing_id,
+      p_starting: Number(form.starting_price),
+      p_reserve: form.reserve_price === "" ? null : Number(form.reserve_price),
+      p_increment: Number(form.bid_increment),
+      p_minutes: Number(form.duration_minutes),
+      p_extension: Number(form.auto_extend_minutes),
+      p_max: Number(form.max_extensions),
+      p_mode: form.payment_mode,
     });
-
+    if (error) throw error;
     return data;
   },
 
@@ -103,17 +93,22 @@ export const auctionService = {
     const { data, error } = await supabase.functions.invoke("close-auction", {
       body: { auction_id: auctionId, reason },
     });
-    if (error) throw error;
+    await throwFunctionError(error);
     return data;
   },
 
   async updateAuctionSettings(id, settings) {
-    const { data, error } = await supabase
-      .from("auctions")
-      .update(settings)
-      .eq("id", id)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc("configure_auction", {
+      p_auction: id,
+      p_increment: Number(settings.bid_increment),
+      p_reserve:
+        settings.reserve_price === "" ? null : Number(settings.reserve_price),
+      p_extension: Number(settings.auto_extend_minutes),
+      p_max:
+        settings.max_extensions === "" || settings.max_extensions == null
+          ? null
+          : Number(settings.max_extensions),
+    });
     if (error) throw error;
     return data;
   },
@@ -121,7 +116,7 @@ export const auctionService = {
   async getApprovedListings() {
     const { data, error } = await supabase
       .from("listings")
-      .select("id, title, images, starting_price, seller_id")
+      .select("id, title, images, starting_price, reserve_price, seller_id")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
     if (error) throw error;

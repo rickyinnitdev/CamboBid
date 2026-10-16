@@ -6,14 +6,17 @@ async function throwFunctionError(error) {
     const payload = await error.context?.json?.();
     throw new Error(payload?.details || payload?.error || error.message);
   } catch (readError) {
-    if (readError instanceof Error && readError.message !== error.message) throw readError;
+    if (readError instanceof Error && readError.message !== error.message)
+      throw readError;
     throw error;
   }
 }
 
 export const disputeService = {
   async fileDispute({ auctionId, reason, description, evidence }) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
     // Get auction to find respondent
@@ -43,7 +46,9 @@ export const disputeService = {
 
         if (uploadError) throw uploadError;
 
-        const { data: { signedUrl } } = await supabase.storage
+        const {
+          data: { signedUrl },
+        } = await supabase.storage
           .from("dispute-evidence")
           .createSignedUrl(fileName, 86400);
 
@@ -71,43 +76,28 @@ export const disputeService = {
 
     if (error) throw error;
 
-    // Freeze escrow if exists
-    const { data: escrow } = await supabase
-      .from("escrow_transactions")
-      .select("id")
-      .eq("auction_id", auctionId)
-      .in("status", ["pending", "held"])
-      .single();
-
-    if (escrow) {
-      const { error } = await supabase.functions.invoke("escrow-release", {
-        body: {
-          escrow_id: escrow.id,
-          action: "freeze",
-          notes: `Dispute filed: ${reason}`,
-        },
-      });
-      await throwFunctionError(error);
-    }
-
     return data;
   },
 
   async getMyDisputes() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
     const { data, error } = await supabase
       .from("disputes")
-      .select(`
+      .select(
+        `
         id, reason, description, status, created_at, resolved_at, appeal_deadline,
         auctions!inner(
           id, end_time, current_price,
           listings!inner(id, title, images)
         ),
-        filer:profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
-        respondent:profiles!disputes_respondent_id_fkey(id, display_name, avatar_url)
-      `)
+        filer:public_profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
+        respondent:public_profiles!disputes_respondent_id_fkey(id, display_name, avatar_url)
+      `,
+      )
       .or(`filer_id.eq.${user.id},respondent_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
 
@@ -116,21 +106,25 @@ export const disputeService = {
   },
 
   async getDisputeById(disputeId) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
     const { data, error } = await supabase
       .from("disputes")
-      .select(`
+      .select(
+        `
         id, reason, description, evidence, status, resolution, created_at, resolved_at, appeal_deadline,
         auctions!inner(
           id, end_time, current_price,
           listings!inner(id, title, images, description)
         ),
-        filer:profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
-        respondent:profiles!disputes_respondent_id_fkey(id, display_name, avatar_url),
-        arbitrator:profiles!disputes_arbitrator_id_fkey(id, display_name, avatar_url)
-      `)
+        filer:public_profiles!disputes_filer_id_fkey(id, display_name, avatar_url),
+        respondent:public_profiles!disputes_respondent_id_fkey(id, display_name, avatar_url),
+        arbitrator:public_profiles!disputes_arbitrator_id_fkey(id, display_name, avatar_url)
+      `,
+      )
       .eq("id", disputeId)
       .single();
 
@@ -145,7 +139,9 @@ export const disputeService = {
   },
 
   async addEvidence(disputeId, files) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
     // Get current dispute
@@ -169,7 +165,9 @@ export const disputeService = {
 
       if (uploadError) throw uploadError;
 
-      const { data: { signedUrl } } = await supabase.storage
+      const {
+        data: { signedUrl },
+      } = await supabase.storage
         .from("dispute-evidence")
         .createSignedUrl(fileName, 86400);
 

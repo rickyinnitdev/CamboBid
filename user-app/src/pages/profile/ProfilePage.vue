@@ -29,7 +29,7 @@ onMounted(async () => {
     bio.value = profile.value.bio || "";
     phone.value = profile.value.phone || "";
     location.value = profile.value.location || "";
-    avatarPreview.value = profile.value.avatar_url || null;
+    avatarPreview.value = profile.value.avatar_url || user.value?.user_metadata?.avatar_url || user.value?.user_metadata?.picture || null;
   }
 });
 

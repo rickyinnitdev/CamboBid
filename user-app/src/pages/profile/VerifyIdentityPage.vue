@@ -18,7 +18,8 @@ const success = ref("");
 
 const verificationStatus = computed(() => {
   if (profile.value?.identity_verified) return "verified";
-  if (profile.value?.identity_document_url) return "pending";
+  if (profile.value?.identity_status === "pending") return "pending";
+  if (profile.value?.identity_status === "rejected") return "rejected";
   return "not_verified";
 });
 
@@ -47,36 +48,80 @@ async function handleUpload() {
 <template>
   <UserLayout>
     <div class="page-container max-w-2xl">
-      <h1 class="text-2xl font-bold text-heading mb-2">{{ t("profile.identity_status") }}</h1>
-      <p class="text-sm text-muted mb-8">Verify your identity to unlock full bidding capabilities.</p>
+      <h1 class="text-2xl font-bold text-heading mb-2">
+        {{ t("profile.identity_status") }}
+      </h1>
+      <p class="text-sm text-muted mb-4">
+        University demo: upload a fictional sample document only. Manual review
+        does not verify government records.
+      </p>
+      <router-link
+        to="/account/security"
+        class="block mb-6 text-blue-700 underline"
+        >Confirm email and verify your authenticator before
+        uploading</router-link
+      >
+      <p v-if="profile?.identity_rejection_reason" class="mb-4 text-red-700">
+        Review feedback: {{ profile.identity_rejection_reason }}
+      </p>
 
       <BaseCard>
         <div class="p-6 space-y-6">
           <!-- Status -->
           <div class="flex items-center gap-3">
-            <span class="text-sm font-medium text-heading">Current Status:</span>
-            <BaseBadge v-if="verificationStatus === 'verified'" variant="success">{{ t("profile.verified") }}</BaseBadge>
-            <BaseBadge v-else-if="verificationStatus === 'pending'" variant="warning">Under Review</BaseBadge>
-            <BaseBadge v-else variant="danger">{{ t("profile.not_verified") }}</BaseBadge>
+            <span class="text-sm font-medium text-heading"
+              >Current Status:</span
+            >
+            <BaseBadge
+              v-if="verificationStatus === 'verified'"
+              variant="success"
+              >{{ t("profile.verified") }}</BaseBadge
+            >
+            <BaseBadge
+              v-else-if="verificationStatus === 'pending'"
+              variant="warning"
+              >Under Review</BaseBadge
+            >
+            <BaseBadge v-else variant="danger">{{
+              t("profile.not_verified")
+            }}</BaseBadge>
           </div>
 
-          <div v-if="error" class="p-3 rounded-lg bg-danger/10 text-danger text-sm">{{ error }}</div>
-          <div v-if="success" class="p-3 rounded-lg bg-success/10 text-success text-sm">{{ success }}</div>
+          <div
+            v-if="error"
+            class="p-3 rounded-lg bg-danger/10 text-danger text-sm"
+          >
+            {{ error }}
+          </div>
+          <div
+            v-if="success"
+            class="p-3 rounded-lg bg-success/10 text-success text-sm"
+          >
+            {{ success }}
+          </div>
 
           <!-- Info -->
           <div class="bg-surface rounded-lg p-4 text-sm text-muted space-y-1">
-            <p>To verify your identity, upload a clear photo or scan of one of the following:</p>
+            <p>
+              To verify your identity, upload a clear photo or scan of one of
+              the following:
+            </p>
             <ul class="list-disc list-inside ml-2 space-y-0.5">
               <li>Government-issued ID card</li>
               <li>Passport</li>
               <li>Driver's license</li>
             </ul>
-            <p class="text-xs text-muted/70 mt-2">Your document will be reviewed by our team within 24-48 hours.</p>
+            <p class="text-xs text-muted/70 mt-2">
+              An authorized project reviewer will approve or reject your sample.
+              JPG, PNG or PDF, up to 5 MB.
+            </p>
           </div>
 
           <!-- Upload -->
           <div v-if="verificationStatus !== 'verified'">
-            <label class="block text-sm font-medium text-heading mb-1.5">{{ t("profile.upload_id") }}</label>
+            <label class="block text-sm font-medium text-heading mb-1.5">{{
+              t("profile.upload_id")
+            }}</label>
             <div class="flex items-center gap-3">
               <input
                 type="file"
@@ -85,7 +130,9 @@ async function handleUpload() {
                 @change="handleFileChange"
               />
             </div>
-            <p v-if="identityFile" class="text-xs text-muted mt-2">Selected: {{ identityFile.name }}</p>
+            <p v-if="identityFile" class="text-xs text-muted mt-2">
+              Selected: {{ identityFile.name }}
+            </p>
 
             <BaseButton
               variant="primary"
@@ -99,7 +146,9 @@ async function handleUpload() {
           </div>
 
           <div v-else class="text-center py-4">
-            <p class="text-success text-sm font-medium">Your identity has been verified. Thank you!</p>
+            <p class="text-success text-sm font-medium">
+              Your identity has been verified. Thank you!
+            </p>
           </div>
         </div>
       </BaseCard>

@@ -1,19 +1,30 @@
 import { supabase } from "./supabase";
+import { invoke } from "./securityService";
 
 export const auctionService = {
-  async getAuctions({ status, type, category, sort, page = 1, limit = 12 } = {}) {
-    let query = supabase
-      .from("auctions")
-      .select(`
+  buyNow: (auctionId, expectedMinor) =>
+    invoke("buy-now", { auction_id: auctionId, expected_minor: expectedMinor }),
+  async getAuctions({
+    status,
+    type,
+    category,
+    sort,
+    page = 1,
+    limit = 12,
+  } = {}) {
+    let query = supabase.from("auctions").select(
+      `
         *,
         listings!inner(
           id, title, description, images, category_id, condition, seller_id, starting_price,
           reserve_price,
           categories(id, name, slug),
-          seller:profiles!listings_seller_id_fkey(display_name, avatar_url)
+          seller:public_profiles!listings_seller_id_fkey(display_name, avatar_url)
         ),
         bids(count)
-      `, { count: "exact" });
+      `,
+      { count: "exact" },
+    );
 
     if (status) {
       query = query.eq("status", status);
@@ -68,10 +79,12 @@ export const auctionService = {
   async getAuctionById(id) {
     const { data, error } = await supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         *,
-        listings!inner(*, seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url, reputation_score))
-      `)
+        listings!inner(*, seller:public_profiles!listings_seller_id_fkey(id, display_name, avatar_url, reputation_score))
+      `,
+      )
       .eq("id", id)
       .single();
 
@@ -82,11 +95,13 @@ export const auctionService = {
   async getUpcomingAuctions() {
     const { data, error } = await supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         *,
         listings!inner(id, title, images, starting_price, reserve_price, categories(name, slug)),
         bids(count)
-      `)
+      `,
+      )
       .eq("status", "scheduled")
       .order("start_time", { ascending: true })
       .limit(20);
@@ -98,11 +113,13 @@ export const auctionService = {
   async getLiveAuctions() {
     const { data, error } = await supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         *,
         listings!inner(id, title, images, starting_price, reserve_price, categories(name, slug)),
         bids(count)
-      `)
+      `,
+      )
       .in("status", ["live", "extended"])
       .order("end_time", { ascending: true });
 
@@ -111,12 +128,9 @@ export const auctionService = {
   },
 
   async getAuctionBids(auctionId) {
-    const { data, error } = await supabase
-      .from("bids")
-      .select("id, amount, is_proxy, status, placed_at, bidder_id, bidder:profiles!bids_bidder_id_fkey(display_name, avatar_url)")
-      .eq("auction_id", auctionId)
-      .order("amount", { ascending: false });
-
+    const { data, error } = await supabase.rpc("auction_bid_history", {
+      p_auction: auctionId,
+    });
     if (error) throw error;
     return data;
   },
@@ -127,10 +141,12 @@ export const auctionService = {
 
     const { data, error } = await supabase
       .from("auctions")
-      .select(`
+      .select(
+        `
         id, type, status, start_time, end_time, current_price,
         listings!inner(id, title, images)
-      `)
+      `,
+      )
       .gte("start_time", startDate)
       .lte("end_time", endDate)
       .order("start_time", { ascending: true });
@@ -139,7 +155,7 @@ export const auctionService = {
     return data;
   },
 
-  async subscribeToAuction(auctionId, callback) {
+  subscribeToAuction(auctionId, callback) {
     const channel = supabase
       .channel(`auction:${auctionId}`)
       .on("broadcast", { event: "new_bid" }, (payload) => {
@@ -158,7 +174,7 @@ export const auctionService = {
         },
         (payload) => {
           callback("auction_update", payload.new);
-        }
+        },
       )
       .subscribe();
 

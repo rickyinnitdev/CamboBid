@@ -1,10 +1,20 @@
 import { supabase } from "./supabase";
 
 export const listingService = {
-  async getListings({ status, category, search, sort, page = 1, limit = 12 } = {}) {
+  async getListings({
+    status,
+    category,
+    search,
+    sort,
+    page = 1,
+    limit = 12,
+  } = {}) {
     let query = supabase
       .from("listings")
-      .select("*, categories(name, slug), seller:profiles!listings_seller_id_fkey(display_name, avatar_url)", { count: "exact" });
+      .select(
+        "*, categories(name, slug), seller:public_profiles!listings_seller_id_fkey(display_name, avatar_url)",
+        { count: "exact" },
+      );
 
     if (status) {
       query = query.eq("status", status);
@@ -59,11 +69,13 @@ export const listingService = {
   async getListingById(id) {
     const { data, error } = await supabase
       .from("listings")
-      .select(`
+      .select(
+        `
         *,
         categories(id, name, slug),
-        seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url, reputation_score)
-      `)
+        seller:public_profiles!listings_seller_id_fkey(id, display_name, avatar_url, reputation_score)
+      `,
+      )
       .eq("id", id)
       .single();
 
@@ -106,10 +118,7 @@ export const listingService = {
   },
 
   async deleteListing(id) {
-    const { error } = await supabase
-      .from("listings")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("listings").delete().eq("id", id);
 
     if (error) throw error;
   },
@@ -127,9 +136,9 @@ export const listingService = {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("listing-images")
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("listing-images").getPublicUrl(fileName);
 
       uploadedImages.push({
         url: publicUrl,
@@ -167,7 +176,9 @@ export const listingService = {
   async getFeaturedListings(limit = 6) {
     const { data, error } = await supabase
       .from("listings")
-      .select("*, categories(name, slug), seller:profiles!listings_seller_id_fkey(display_name, avatar_url)")
+      .select(
+        "*, categories(name, slug), seller:public_profiles!listings_seller_id_fkey(display_name, avatar_url)",
+      )
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(limit);

@@ -6,6 +6,7 @@ export const authService = {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/account/security`,
         data: {
           display_name: displayName,
           full_name: displayName,
@@ -32,7 +33,7 @@ export const authService = {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/profile`,
+        redirectTo: `${window.location.origin}/account/security`,
       },
     });
 
@@ -47,7 +48,9 @@ export const authService = {
   },
 
   async enrollTotpMfa() {
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: "totp",
+    });
     if (error) throw error;
     return data;
   },
@@ -74,13 +77,19 @@ export const authService = {
   },
 
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
     if (error) throw error;
     return user;
   },
 
   async getSession() {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error) throw error;
     return session;
   },
@@ -109,8 +118,9 @@ export const authService = {
   },
 
   async uploadAvatar(userId, file) {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}/avatar.${fileExt}`;
+    const types={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"};
+    if(!types[file.type] || file.size>5*1024*1024) throw new Error("Use a JPG, PNG or WebP profile image up to 5 MB");
+    const fileName = `${userId}/avatar-${crypto.randomUUID()}.${types[file.type]}`;
 
     const { error: uploadError } = await supabase.storage
       .from("listing-images")
@@ -118,35 +128,35 @@ export const authService = {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("listing-images")
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("listing-images").getPublicUrl(fileName);
 
     await this.updateProfile(userId, { avatar_url: publicUrl });
     return publicUrl;
   },
 
   async uploadIdentityDocument(userId, file) {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}/identity.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
+    if (
+      !["image/jpeg", "image/png", "application/pdf"].includes(file.type) ||
+      file.size > 5 * 1024 * 1024
+    )
+      throw new Error("Use a JPG, PNG or PDF up to 5 MB");
+    const ext = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "application/pdf": "pdf",
+    }[file.type];
+    const path = userId + "/" + crypto.randomUUID() + "." + ext;
+    const { error } = await supabase.storage
       .from("identity-documents")
-      .upload(fileName, file, { upsert: true });
-
-    if (uploadError) throw uploadError;
-
-    const { data: { signedUrl }, error: signedError } = await supabase.storage
-      .from("identity-documents")
-      .createSignedUrl(fileName, 3600);
-
-    if (signedError) throw signedError;
-
-    await this.updateProfile(userId, {
-      identity_document_url: signedUrl,
+      .upload(path, file);
+    if (error) throw error;
+    const { error: submitError } = await supabase.rpc("submit_identity", {
+      p_path: path,
     });
-
-    return signedUrl;
+    if (submitError) throw submitError;
+    return path;
   },
 
   onAuthStateChange(callback) {

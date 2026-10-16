@@ -1,0 +1,11 @@
+{
+  "name": "cambobid-edge-functions",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "bakong-khqr": "1.0.20"
+  },
+  "overrides": {
+    "axios": "1.20.0"
+  }
+}

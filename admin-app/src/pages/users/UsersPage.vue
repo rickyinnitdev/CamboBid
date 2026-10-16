@@ -1,4 +1,5 @@
 <script setup>
+import UserAvatar from "@/components/base/UserAvatar.vue";
 import { ref, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -47,15 +48,29 @@ onMounted(fetchUsers);
 let searchTimeout = null;
 watch(search, () => {
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => { page.value = 1; fetchUsers(); }, 300);
+  searchTimeout = setTimeout(() => {
+    page.value = 1;
+    fetchUsers();
+  }, 300);
 });
 
-watch(roleFilter, () => { page.value = 1; fetchUsers(); });
+watch(roleFilter, () => {
+  page.value = 1;
+  fetchUsers();
+});
 
-function totalPages() { return Math.ceil(total.value / limit); }
+function totalPages() {
+  return Math.ceil(total.value / limit);
+}
 
 function roleBadgeVariant(role) {
-  const map = { super_admin: "danger", auctioneer: "purple", escrow_manager: "info", verified_bidder: "success", casual_visitor: "default" };
+  const map = {
+    super_admin: "danger",
+    auctioneer: "purple",
+    escrow_manager: "info",
+    verified_bidder: "success",
+    casual_visitor: "default",
+  };
   return map[role] || "default";
 }
 </script>
@@ -65,16 +80,25 @@ function roleBadgeVariant(role) {
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-heading">{{ t("admin.users") }}</h1>
+          <h1 class="text-2xl font-bold text-heading">
+            {{ t("admin.users") }}
+          </h1>
           <p class="text-muted mt-1">Manage platform users</p>
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3">
         <div class="flex-1">
-          <BaseInput v-model="search" :placeholder="t('common.search') + '...'" type="search" />
+          <BaseInput
+            v-model="search"
+            :placeholder="t('common.search') + '...'"
+            type="search"
+          />
         </div>
-        <select v-model="roleFilter" class="px-3 py-2 border border-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-500">
+        <select
+          v-model="roleFilter"
+          class="px-3 py-2 border border-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-500"
+        >
           <option value="">{{ t("common.all") }} Roles</option>
           <option value="super_admin">Super Admin</option>
           <option value="auctioneer">Auctioneer</option>
@@ -88,10 +112,18 @@ function roleBadgeVariant(role) {
         <BaseCard v-for="i in 5" :key="i"><BaseSkeleton :rows="2" /></BaseCard>
       </div>
 
-      <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">{{ error }}</div>
+      <div
+        v-else-if="error"
+        class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+      >
+        {{ error }}
+      </div>
 
       <div v-else-if="users.length === 0">
-        <BaseEmptyState title="No users found" description="Try adjusting your filters" />
+        <BaseEmptyState
+          title="No users found"
+          description="Try adjusting your filters"
+        />
       </div>
 
       <div v-else>
@@ -100,35 +132,81 @@ function roleBadgeVariant(role) {
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-border bg-surface">
-                  <th class="px-4 py-3 text-left font-medium text-muted">User</th>
-                  <th class="px-4 py-3 text-left font-medium text-muted">Role</th>
-                  <th class="px-4 py-3 text-left font-medium text-muted">Status</th>
-                  <th class="px-4 py-3 text-left font-medium text-muted">Joined</th>
-                  <th class="px-4 py-3 text-right font-medium text-muted">Actions</th>
+                  <th class="px-4 py-3 text-left font-medium text-muted">
+                    User
+                  </th>
+                  <th class="px-4 py-3 text-left font-medium text-muted">
+                    Role
+                  </th>
+                  <th class="px-4 py-3 text-left font-medium text-muted">
+                    Status
+                  </th>
+                  <th class="px-4 py-3 text-left font-medium text-muted">
+                    Security
+                  </th>
+                  <th class="px-4 py-3 text-left font-medium text-muted">
+                    Policies
+                  </th>
+                  <th class="px-4 py-3 text-left font-medium text-muted">
+                    Joined
+                  </th>
+                  <th class="px-4 py-3 text-right font-medium text-muted">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="user in users" :key="user.id" class="border-b border-border last:border-0 hover:bg-surface/50">
+                <tr
+                  v-for="user in users"
+                  :key="user.id"
+                  class="border-b border-border last:border-0 hover:bg-surface/50"
+                >
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-navy-700 flex items-center justify-center">
-                        <span class="text-xs font-semibold text-white">{{ (user.display_name || "U").charAt(0).toUpperCase() }}</span>
-                      </div>
+                      <UserAvatar :profile="user" class="w-8 h-8" />
                       <div>
-                        <p class="font-medium text-heading">{{ user.display_name || "Unnamed" }}</p>
+                        <p class="font-medium text-heading">
+                          {{ user.display_name || "Unnamed" }}
+                        </p>
                         <p class="text-xs text-muted">{{ user.email }}</p>
                       </div>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <BaseBadge :variant="roleBadgeVariant(user.role)">{{ user.role?.replace("_", " ") }}</BaseBadge>
+                    <BaseBadge :variant="roleBadgeVariant(user.role)">{{
+                      user.role?.replace("_", " ")
+                    }}</BaseBadge>
                   </td>
                   <td class="px-4 py-3">
-                    <BaseBadge :variant="user.suspended ? 'danger' : 'success'">{{ user.suspended ? 'Suspended' : 'Active' }}</BaseBadge>
+                    <BaseBadge
+                      :variant="user.suspended ? 'danger' : 'success'"
+                      >{{ user.suspended ? "Suspended" : "Active" }}</BaseBadge
+                    >
                   </td>
-                  <td class="px-4 py-3 text-muted">{{ new Date(user.created_at).toLocaleDateString() }}</td>
+                  <td class="px-4 py-3 text-xs leading-6">
+                    <p>
+                      Email:
+                      {{ user.email_confirmed_at ? "Verified" : "Unverified" }}
+                    </p>
+                    <p>ID: {{ user.identity_status }}</p>
+                    <p>
+                      2FA: {{ user.mfa_enabled ? "Enabled" : "Not enrolled" }}
+                    </p>
+                  </td>
+                  <td class="px-4 py-3 text-xs">
+                    {{
+                      user.policies_current ? "Current" : "Acceptance required"
+                    }}
+                  </td>
+                  <td class="px-4 py-3 text-muted">
+                    {{ new Date(user.created_at).toLocaleString() }}
+                  </td>
                   <td class="px-4 py-3 text-right">
-                    <BaseButton v-if="canManageUsers" variant="ghost" size="sm" @click="router.push(`/admin/bidders/${user.id}`)">
+                    <BaseButton
+                      variant="ghost"
+                      size="sm"
+                      @click="router.push(`/admin/bidders/${user.id}`)"
+                    >
                       {{ t("common.view") }}
                     </BaseButton>
                   </td>
@@ -138,11 +216,37 @@ function roleBadgeVariant(role) {
           </div>
         </BaseCard>
 
-        <div v-if="totalPages() > 1" class="flex items-center justify-between mt-4">
-          <p class="text-sm text-muted">Showing {{ (page - 1) * limit + 1 }}-{{ Math.min(page * limit, total) }} of {{ total }}</p>
+        <div
+          v-if="totalPages() > 1"
+          class="flex items-center justify-between mt-4"
+        >
+          <p class="text-sm text-muted">
+            Showing {{ (page - 1) * limit + 1 }}-{{
+              Math.min(page * limit, total)
+            }}
+            of {{ total }}
+          </p>
           <div class="flex gap-2">
-            <BaseButton variant="secondary" size="sm" :disabled="page <= 1" @click="page--; fetchUsers()">{{ t("common.previous") }}</BaseButton>
-            <BaseButton variant="secondary" size="sm" :disabled="page >= totalPages()" @click="page++; fetchUsers()">{{ t("common.next") }}</BaseButton>
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              :disabled="page <= 1"
+              @click="
+                page--;
+                fetchUsers();
+              "
+              >{{ t("common.previous") }}</BaseButton
+            >
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              :disabled="page >= totalPages()"
+              @click="
+                page++;
+                fetchUsers();
+              "
+              >{{ t("common.next") }}</BaseButton
+            >
           </div>
         </div>
       </div>

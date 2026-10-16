@@ -13,13 +13,15 @@ export const useAuthStore = defineStore("auth", () => {
   const isSuspended = computed(() => profile.value?.suspended === true);
   const isAdmin = computed(() => profile.value?.role === "super_admin");
   const isAuctioneer = computed(() =>
-    ["super_admin", "auctioneer"].includes(profile.value?.role)
+    ["super_admin", "auctioneer"].includes(profile.value?.role),
   );
-  const isVerifiedBidder = computed(() =>
-    profile.value?.role === "verified_bidder" && profile.value?.identity_verified
+  const isVerifiedBidder = computed(
+    () =>
+      profile.value?.role === "verified_bidder" &&
+      profile.value?.identity_verified,
   );
   const isEscrowManager = computed(() =>
-    ["super_admin", "escrow_manager"].includes(profile.value?.role)
+    ["super_admin", "escrow_manager"].includes(profile.value?.role),
   );
   const userRole = computed(() => profile.value?.role || "casual_visitor");
 
@@ -35,7 +37,8 @@ export const useAuthStore = defineStore("auth", () => {
         profile.value = await authService.getProfile(session.user.id);
       }
     } catch (error) {
-      if (import.meta.env.DEV) console.error("Auth initialization error:", error);
+      if (import.meta.env.DEV)
+        console.error("Auth initialization error:", error);
       user.value = null;
       profile.value = null;
     } finally {
@@ -44,16 +47,21 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  async function register({ email, password, displayName, termsAcceptedVersion }) {
+  async function register({
+    email,
+    password,
+    displayName,
+    termsAcceptedVersion,
+  }) {
     const data = await authService.register({
       email,
       password,
       displayName,
       termsAcceptedVersion,
     });
-    user.value = data.user;
+    user.value = data.session ? data.user : null;
 
-    if (data.user) {
+    if (data.session && data.user) {
       profile.value = await authService.getProfile(data.user.id);
     }
 
@@ -83,7 +91,8 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       profile.value = await authService.getProfile(user.value.id);
     } catch (error) {
-      if (import.meta.env.DEV) console.error("Error refreshing profile:", error);
+      if (import.meta.env.DEV)
+        console.error("Error refreshing profile:", error);
     }
   }
 
@@ -106,11 +115,21 @@ export const useAuthStore = defineStore("auth", () => {
       "users.verify_identity": ["super_admin", "auctioneer"],
       "roles.manage": ["super_admin"],
       "permissions.manage": ["super_admin"],
-      "listings.read": ["super_admin", "auctioneer", "verified_bidder", "casual_visitor"],
+      "listings.read": [
+        "super_admin",
+        "auctioneer",
+        "verified_bidder",
+        "casual_visitor",
+      ],
       "listings.create": ["super_admin", "auctioneer", "verified_bidder"],
       "listings.update": ["super_admin", "auctioneer", "verified_bidder"],
       "listings.approve": ["super_admin", "auctioneer"],
-      "auctions.read": ["super_admin", "auctioneer", "verified_bidder", "casual_visitor"],
+      "auctions.read": [
+        "super_admin",
+        "auctioneer",
+        "verified_bidder",
+        "casual_visitor",
+      ],
       "auctions.create": ["super_admin", "auctioneer"],
       "auctions.update": ["super_admin", "auctioneer"],
       "auctions.close": ["super_admin", "auctioneer"],
@@ -137,13 +156,24 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   // Listen for auth changes
-  authService.onAuthStateChange(async (event, session) => {
-    if (event === "SIGNED_IN" && session?.user) {
-      user.value = session.user;
-      profile.value = await authService.getProfile(session.user.id);
-    } else if (event === "SIGNED_OUT") {
+  authService.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
       user.value = null;
       profile.value = null;
+      return;
+    }
+    if (session?.user) user.value = session.user;
+    if (event === "SIGNED_IN" && session?.user) {
+      const id = session.user.id;
+      setTimeout(async () => {
+        try {
+          const updated = await authService.getProfile(id);
+          if (user.value?.id === id) profile.value = updated;
+        } catch (error) {
+          if (import.meta.env.DEV)
+            console.error("Profile refresh failed", error);
+        }
+      }, 0);
     }
   });
 

@@ -1,21 +1,28 @@
 # Auction & Bidding E-Commerce Platform
 
+## Wallet and security update
+
+See [Payments, security and presentation setup](docs/PAYMENTS_AND_SECURITY.md)
+for migrations 007–010, required Supabase Auth settings, demo payment deployment,
+the admin presentation helper, and verification commands. Demo payments are the
+default. Apply the new backend before publishing the updated apps.
+
 A complete, production-ready auction platform built with Vue 3, Supabase, and Tailwind CSS.
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend (User) | Vue 3 + Vite + Composition API |
-| Frontend (Admin) | Vue 3 + Vite + Composition API |
-| UI Framework | Tailwind CSS v3 |
-| State Management | Pinia |
-| Routing | Vue Router 4 |
-| Backend | Supabase (PostgreSQL + Auth + Storage + Edge Functions) |
-| Real-time | Supabase Realtime |
-| i18n | vue-i18n v9 |
-| Forms | VeeValidate + Zod |
-| Charts | ApexCharts |
+| Layer            | Technology                                              |
+| ---------------- | ------------------------------------------------------- |
+| Frontend (User)  | Vue 3 + Vite + Composition API                          |
+| Frontend (Admin) | Vue 3 + Vite + Composition API                          |
+| UI Framework     | Tailwind CSS v3                                         |
+| State Management | Pinia                                                   |
+| Routing          | Vue Router 4                                            |
+| Backend          | Supabase (PostgreSQL + Auth + Storage + Edge Functions) |
+| Real-time        | Supabase Realtime                                       |
+| i18n             | vue-i18n v9                                             |
+| Forms            | VeeValidate + Zod                                       |
+| Charts           | ApexCharts                                              |
 
 ## Project Structure
 
@@ -88,13 +95,13 @@ supabase functions deploy send-notification
 
 ## Default Roles
 
-| Role | Description |
-|---|---|
-| super_admin | Full platform access |
-| auctioneer | Manages auctions and listings |
-| verified_bidder | Verified users who can bid |
-| casual_visitor | Default new user role |
-| escrow_manager | Manages payments |
+| Role            | Description                   |
+| --------------- | ----------------------------- |
+| super_admin     | Full platform access          |
+| auctioneer      | Manages auctions and listings |
+| verified_bidder | Verified users who can bid    |
+| casual_visitor  | Default new user role         |
+| escrow_manager  | Manages payments              |
 
 ## Features
 
@@ -145,7 +152,7 @@ In Supabase Dashboard:
 Authentication → Settings → Multi-Factor Authentication
 ```
 
-Enable TOTP authenticator app support. Admin CMS settings include toggles for user/admin MFA requirements.
+Enable TOTP authenticator app support. Protected payment and staff actions require verified MFA on the backend; CMS display settings cannot bypass it.
 
 ## Deployment
 
@@ -158,7 +165,7 @@ For the user-facing production site, either set the Vercel project's **Root Dire
 3. Set environment variables:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
-4. Redeploy the latest `main` commit and confirm the deployment commit is `a17a067` or newer
+4. Redeploy the latest `main` commit and confirm the deployment uses the latest `main` commit
 
 Import `admin-app` as a separate Vercel project with its Root Directory set to `admin-app`.
 
