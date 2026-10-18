@@ -1,15 +1,21 @@
+import { quotedSearch } from "../utils/querySafety";
 import { supabase } from "./supabase";
 
 export const listingService = {
   async getListings({ status, category, search, page = 1, limit = 20 } = {}) {
     let query = supabase
       .from("listings")
-      .select("*, categories(name, slug), seller:profiles!listings_seller_id_fkey(display_name, avatar_url)", { count: "exact" });
+      .select(
+        "*, categories(name, slug), seller:profiles!listings_seller_id_fkey(display_name, avatar_url)",
+        { count: "exact" },
+      );
 
     if (status) query = query.eq("status", status);
     if (category) query = query.eq("categories.slug", category);
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+      query = query.or(
+        `title.ilike.${quotedSearch(search)},description.ilike.${quotedSearch(search)}`,
+      );
     }
 
     const from = (page - 1) * limit;
@@ -25,7 +31,9 @@ export const listingService = {
   async getListingById(id) {
     const { data, error } = await supabase
       .from("listings")
-      .select("*, categories(*), seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url, email, reputation_score)")
+      .select(
+        "*, categories(*), seller:profiles!listings_seller_id_fkey(id, display_name, avatar_url, email, reputation_score)",
+      )
       .eq("id", id)
       .single();
     if (error) throw error;

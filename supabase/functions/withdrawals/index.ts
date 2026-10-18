@@ -1,3 +1,4 @@
+import { secureServe } from "../shared/http.ts";
 import {
   createAuthClient,
   createAdminClient,
@@ -5,9 +6,14 @@ import {
   corsResponse,
   errorResponse,
 } from "../shared/utils.ts";
-import { encryptConfig, decryptConfig } from "../shared/integrations.ts";
+import {
+  encryptConfig,
+  decryptConfig,
+  protectFingerprint,
+  protectLegacyFingerprints,
+} from "../shared/integrations.ts";
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-Deno.serve(async (req) => {
+secureServe(async (req) => {
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
@@ -49,6 +55,7 @@ Deno.serve(async (req) => {
         );
       const { error: eligible } = await auth.rpc("require_eligible");
       if (eligible) return errorResponse(eligible.message, 403);
+      await protectLegacyFingerprints(admin);
       const serialized = JSON.stringify(destination);
       const fingerprint = Array.from(
         new Uint8Array(
@@ -66,7 +73,7 @@ Deno.serve(async (req) => {
         p_amount: body.amount_minor,
         p_summary: destination.bank + " · ••••" + destination.account.slice(-4),
         p_ciphertext: await encryptConfig("withdrawal:" + body.id, destination),
-        p_fingerprint: fingerprint,
+        p_fingerprint: await protectFingerprint(fingerprint),
       });
       if (error) return errorResponse(error.message, 400);
       // The full destination is never returned on create or normal history reads.
@@ -102,14 +109,12 @@ Deno.serve(async (req) => {
         "withdrawal:" + body.id,
         privateRow.ciphertext,
       );
-      const { error: auditError } = await admin
-        .from("activity_logs")
-        .insert({
-          actor_id: user.id,
-          action: "withdrawal_destination_viewed",
-          resource_type: "withdrawal",
-          resource_id: body.id,
-        });
+      const { error: auditError } = await admin.from("activity_logs").insert({
+        actor_id: user.id,
+        action: "withdrawal_destination_viewed",
+        resource_type: "withdrawal",
+        resource_id: body.id,
+      });
       if (auditError) throw auditError;
       return corsResponse(destination);
     }

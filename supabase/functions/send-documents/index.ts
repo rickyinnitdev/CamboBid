@@ -1,3 +1,4 @@
+import { secureServe } from "../shared/http.ts";
 import {
   createAdminClient,
   createAuthClient,
@@ -6,7 +7,7 @@ import {
   errorResponse,
 } from "../shared/utils.ts";
 import { deliverDocuments } from "../shared/integrations.ts";
-Deno.serve(async (req) => {
+secureServe(async (req) => {
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);

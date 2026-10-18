@@ -1,10 +1,10 @@
+import { secureServe } from "../shared/http.ts";
 // ============================================================================
 // send-notification Edge Function
 // Sends in-app and email notifications for various events
 // ============================================================================
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.116.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req: Request) => {
+secureServe(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -25,9 +25,20 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization")!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
     });
 
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
 
     // Verify JWT
     const {
@@ -51,10 +62,33 @@ serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    const { data: allowed, error: budgetError } = await adminClient.rpc(
+      "claim_api_action",
+      {
+        p_user: user.id,
+        p_action: "notification_send",
+        p_limit: 30,
+        p_window: 60,
+      },
+    );
+    if (budgetError) throw budgetError;
+    if (!allowed)
+      return new Response(
+        JSON.stringify({ error: "Notification limit reached" }),
+        { status: 429, headers: corsHeaders },
+      );
     const { user_id, type, title, body, auction_id, send_email } =
       await req.json();
 
-    if (!user_id || !type || !title) {
+    if (
+      !user_id ||
+      typeof type !== "string" ||
+      type.length > 100 ||
+      typeof title !== "string" ||
+      !title ||
+      title.length > 200 ||
+      (body && (typeof body !== "string" || body.length > 4000))
+    ) {
       return new Response(
         JSON.stringify({ error: "user_id, type, and title are required" }),
         {
@@ -98,39 +132,10 @@ serve(async (req: Request) => {
           .single();
 
         if (recipientProfile?.email) {
-          const emailPayload = {
-            to: recipientProfile.email,
-            subject: title,
-            html: `
-              <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background: #1B3A6B; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; font-size: 24px;">Auction Platform</h1>
-                </div>
-                <div style="background: #F8F9FC; padding: 20px; border: 1px solid #E2E8F0; border-top: none; border-radius: 0 0 8px 8px;">
-                  <h2 style="color: #0F172A; margin-top: 0;">${title}</h2>
-                  <p style="color: #475569; line-height: 1.6;">${body || ""}</p>
-                  ${
-                    auction_id
-                      ? `
-                    <a href="${supabaseUrl.replace("https://", "https://")}/auctions/${auction_id}"
-                       style="display: inline-block; background: #E8A020; color: #0F172A; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">
-                      View Auction
-                    </a>
-                  `
-                      : ""
-                  }
-                </div>
-                <div style="text-align: center; padding: 16px; color: #94A3B8; font-size: 12px;">
-                  <p>You received this email because you have an account on Auction Platform.</p>
-                </div>
-              </div>
-            `,
-          };
-
           // Log that email would be sent (actual email service integration happens here)
           await adminClient.from("activity_logs").insert({
             actor_id: user.id,
-            action: "notification_email_sent",
+            action: "notification_email_requested",
             resource_type: "notification",
             resource_id: notification.id,
             metadata: {

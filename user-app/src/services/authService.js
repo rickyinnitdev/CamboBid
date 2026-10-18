@@ -1,3 +1,4 @@
+import { validateFileContent } from "../utils/fileValidation";
 import { supabase } from "./supabase";
 
 export const authService = {
@@ -118,8 +119,14 @@ export const authService = {
   },
 
   async uploadAvatar(userId, file) {
-    const types={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"};
-    if(!types[file.type] || file.size>5*1024*1024) throw new Error("Use a JPG, PNG or WebP profile image up to 5 MB");
+    await validateFileContent(file);
+    const types = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+    };
+    if (!types[file.type] || file.size > 5 * 1024 * 1024)
+      throw new Error("Use a JPG, PNG or WebP profile image up to 5 MB");
     const fileName = `${userId}/avatar-${crypto.randomUUID()}.${types[file.type]}`;
 
     const { error: uploadError } = await supabase.storage
@@ -137,6 +144,7 @@ export const authService = {
   },
 
   async uploadIdentityDocument(userId, file) {
+    await validateFileContent(file, { document: true });
     if (
       !["image/jpeg", "image/png", "application/pdf"].includes(file.type) ||
       file.size > 5 * 1024 * 1024

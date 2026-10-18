@@ -180,3 +180,20 @@ supabase functions deploy
 ## License
 
 MIT
+
+
+## Security maintenance
+
+Use Node 24. The frontends use Vite 7 and Tailwind 4 with the existing theme configuration. Keep package and Deno lockfiles committed; CI audits dependencies, scans secrets, tests authorization/payment invariants and builds both apps.
+
+Read the [security review and remaining setup work](docs/SECURITY_REVIEW_2026-10-18.md) before enabling real payments. It includes hosted Auth/CAPTCHA, repository protection, backup/restore and incident-response steps. For a hosted backend used from localhost, explicitly configure the development origin in the server-only `ALLOWED_ORIGINS`; production CORS does not allow arbitrary sites.
+
+
+Local publication guard (Python 3 required):
+
+```sh
+git config core.hooksPath .githooks
+python tools/scan_secrets.py --history
+```
+
+The hooks scan before commit/push without printing matched values. CI also scans history, but a CI scan happens after a push; enable hosting-side push protection where available.

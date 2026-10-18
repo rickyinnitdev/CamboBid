@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.116.0";
 async function encryptionKey() {
   const raw = Deno.env.get("INTEGRATION_ENCRYPTION_KEY") || "";
   if (!/^[a-f0-9]{64}$/i.test(raw))
@@ -165,4 +165,58 @@ export async function deliverDocuments(
     }
   }
   return { configured: true, accepted };
+}
+
+// Derive a separate HMAC key rather than publishing guessable hashes of bank data.
+export async function protectFingerprint(digest: string): Promise<string> {
+  if (!/^[a-f0-9]{64}$/.test(digest))
+    throw new Error("Invalid fingerprint digest");
+  const raw = Deno.env.get("INTEGRATION_ENCRYPTION_KEY") || "";
+  if (!/^[a-f0-9]{64}$/i.test(raw))
+    throw new Error("Integration encryption is not configured");
+  const material = await crypto.subtle.importKey(
+    "raw",
+    new Uint8Array(raw.match(/../g)!.map((v) => parseInt(v, 16))),
+    "HKDF",
+    false,
+    ["deriveKey"],
+  );
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt: new Uint8Array(0),
+      info: new TextEncoder().encode("cambobid:withdrawal-fingerprint:v2"),
+    },
+    material,
+    { name: "HMAC", hash: "SHA-256", length: 256 },
+    false,
+    ["sign"],
+  );
+  const bytes = new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(digest)),
+  );
+  return (
+    "v2:" +
+    Array.from(bytes)
+      .map((v) => v.toString(16).padStart(2, "0"))
+      .join("")
+  );
+}
+export async function protectLegacyFingerprints(admin: SupabaseClient) {
+  const { data, error } = await admin
+    .from("withdrawal_destinations")
+    .select("request_id,fingerprint")
+    .not("fingerprint", "like", "v2:%")
+    .limit(100);
+  if (error) throw error;
+  for (const row of data || []) {
+    const fingerprint = await protectFingerprint(row.fingerprint);
+    const { error } = await admin
+      .from("withdrawal_destinations")
+      .update({ fingerprint })
+      .eq("request_id", row.request_id)
+      .eq("fingerprint", row.fingerprint);
+    if (error) throw error;
+  }
 }

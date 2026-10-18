@@ -326,7 +326,7 @@ test("account security, financial authorization and settlement", async (t) => {
       await as(admin, () =>
         rejects(
           () => sql("UPDATE auctions SET status='closed' WHERE id=$1", [a]),
-          /secure auction/,
+          /secure auction|permission denied/,
         ),
       );
       await as(admin, () =>
@@ -379,7 +379,7 @@ test("account security, financial authorization and settlement", async (t) => {
       await as(admin, () =>
         rejects(
           () => sql("UPDATE auctions SET status='live' WHERE id=$1", [a]),
-          /secure auction/,
+          /secure auction|permission denied/,
         ),
       );
     },
@@ -1045,7 +1045,7 @@ test("account security, financial authorization and settlement", async (t) => {
       );
     },
   );
-  const withdraw = (who,id,amount=100,mode='demo',fingerprint='f'.repeat(64)) => as(who,()=>value("SELECT request_withdrawal($1,$2,$3,'ABA · 1234',$4,$5)",[id,mode,amount,'encrypted-fixture-'.repeat(8),fingerprint]));
+  const withdraw = (who,id,amount=100,mode='demo',fingerprint='v2:'+'f'.repeat(64)) => as(who,()=>value("SELECT request_withdrawal($1,$2,$3,'ABA · 1234',$4,$5)",[id,mode,amount,'encrypted-fixture-'.repeat(8),fingerprint]));
   await t.test("withdrawal requests reserve once, remain private, and cancel exactly once",async()=>{
     const id=crypto.randomUUID(),before=Number(await available(user)),held=Number(await reserved(user));
     await withdraw(user,id,100);await withdraw(user,id,100);
@@ -1172,6 +1172,25 @@ test("account security, financial authorization and settlement", async (t) => {
     assert.equal(await value("SELECT status FROM payment_checkouts WHERE id=$1",[restricted]),'paid');
     await sql("UPDATE profiles SET suspended=false WHERE id=$1",[user]);
     assert.equal((await as(admin,()=>value("SELECT withdrawal_balance_report()"))).issues.length,0);
+  });
+  await t.test("upload isolation, path safety and MFA are enforced by storage RLS",async()=>{
+    const insert=(name)=>sql("INSERT INTO storage.objects(bucket_id,name) VALUES('listing-images',$1)",[name]);
+    await as(user,()=>insert(user+'/photo.jpg'));
+    for(const name of [other+'/forged.jpg',user+'/../evil.jpg',user+'/payload.svg',user+'/bad\\name.jpg'])await as(user,()=>rejects(()=>insert(name),/row-level security/));
+    await as(user,()=>rejects(()=>insert(user+'/aal1.jpg'),/row-level security/),'aal1');
+    await as(user,()=>rejects(()=>sql("INSERT INTO storage.objects(bucket_id,name) VALUES('platform-assets','logos/payload.html')"),/row-level security/));
+    await as(user,()=>rejects(()=>sql("UPDATE profiles SET display_name=$1 WHERE id=$2",['x'.repeat(101),user]),/profile_text_limits/));
+    await as(admin,()=>rejects(()=>sql("UPDATE auctions SET end_time=now()"),/permission denied/));
+    assert.equal(await value("SELECT count(*)::integer FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.prosecdef AND NOT EXISTS(SELECT 1 FROM unnest(p.proconfig) v WHERE v LIKE 'search_path=%')"),0);
+  });
+  await t.test("billable API budgets are server-only and stop exactly at the limit",async()=>{
+    await as(user,()=>rejects(()=>value("SELECT claim_api_action($1,'listing_analysis',2,3600)",[user]),/permission denied/));
+    const claim=()=>as(user,()=>value("SELECT claim_api_action($1,'listing_analysis',2,3600)",[user]),'aal2','service_role');
+    assert.equal(await claim(),true);assert.equal(await claim(),true);assert.equal(await claim(),false);
+  });
+  await t.test("public CMS refuses credential fields",async()=>{
+    for(const key of ['api_key','GEMINI_API_KEY','SUPABASE_SERVICE_ROLE_KEY','password'])await as(admin,()=>rejects(()=>sql("INSERT INTO platform_settings(key,value) VALUES('accidental_secret',$1::jsonb)",[JSON.stringify({[key]:'not-a-real-key'})]),/private Integrations/));
+    await as(admin,()=>sql("INSERT INTO platform_settings(key,value) VALUES('safe_public_test',$1::jsonb)",[JSON.stringify({heading:'Public content'})]));
   });
   await t.test(
     "policy publishing preserves acceptance history and gates new transactions",

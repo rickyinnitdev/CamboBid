@@ -1,4 +1,5 @@
 <script setup>
+import { safeRedirect } from "@/utils/querySafety";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import MfaPanel from "@/components/base/MfaPanel.vue";
@@ -8,7 +9,7 @@ const route = useRoute(),
   auth = useAuthStore(),
   error = ref("");
 async function verified() {
-  const target = String(route.query.redirect || "/");
+  const target = safeRedirect(route.query.redirect);
   await router.replace(
     target.startsWith("/") &&
       !target.startsWith("//") &&

@@ -1,3 +1,4 @@
+import { secureServe } from "../shared/http.ts";
 // Adapted from NetView's KHQR starter: server-generated QR and verified receipts.
 // Database completion owns idempotency; no browser callback can credit money.
 import { createKhqr, verifiedReceiptHash } from "../shared/payment-provider.ts";
@@ -13,7 +14,7 @@ import { paymentConfig, deliverDocuments } from "../shared/integrations.ts";
 const publicFields =
   "id,mode,amount_minor,currency,order_id,status,qr,created_at,expires_at,paid_at,auction_id,purchased_order_id,purchase_note,bid_auction_id,submitted_bid_id";
 
-Deno.serve(async (req) => {
+secureServe(async (req) => {
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
@@ -141,14 +142,17 @@ Deno.serve(async (req) => {
       }
       if (!Number.isSafeInteger(amount) || amount < 1 || amount > 100000)
         return errorResponse("Checkout must be $0.01–$1,000 in integer cents");
-      const since = new Date(Date.now() - 3600000).toISOString();
-      const { count, error: countError } = await admin
-        .from("payment_checkouts")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .gte("created_at", since);
-      if (countError) throw countError;
-      if ((count || 0) >= 20)
+      const { data: permitted, error: budgetError } = await admin.rpc(
+        "claim_api_action",
+        {
+          p_user: user.id,
+          p_action: "checkout_create",
+          p_limit: 20,
+          p_window: 3600,
+        },
+      );
+      if (budgetError) throw budgetError;
+      if (!permitted)
         return errorResponse("Checkout limit reached. Try again later", 429);
       const id = crypto.randomUUID(),
         expires = new Date(Date.now() + 300000).toISOString();

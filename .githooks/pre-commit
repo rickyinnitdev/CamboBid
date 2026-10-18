@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+scanner_python="$(git config --get cambobid.python || true)"
+if [ -z "$scanner_python" ]; then
+  if command -v python3 >/dev/null 2>&1; then scanner_python=python3; else scanner_python=python; fi
+fi
+exec "$scanner_python" tools/scan_secrets.py --staged

@@ -1,3 +1,4 @@
+import { uploadService } from "./uploadService";
 import { supabase } from "./supabase";
 
 export const listingService = {
@@ -124,30 +125,7 @@ export const listingService = {
   },
 
   async uploadImages(listingId, files) {
-    const uploadedImages = [];
-
-    for (const file of files) {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("listing-images")
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("listing-images").getPublicUrl(fileName);
-
-      uploadedImages.push({
-        url: publicUrl,
-        name: file.name,
-        path: fileName,
-      });
-    }
-
-    return uploadedImages;
+    return uploadService.uploadListingImages(listingId, files);
   },
 
   async removeImage(listingId, imagePath) {

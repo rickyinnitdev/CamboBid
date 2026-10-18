@@ -1,3 +1,4 @@
+import { validateFileContent, fileExtension } from "../utils/fileValidation";
 import { supabase } from "./supabase";
 
 async function throwFunctionError(error) {
@@ -37,7 +38,8 @@ export const disputeService = {
     const evidenceUrls = [];
     if (evidence && evidence.length > 0) {
       for (const file of evidence) {
-        const fileExt = file.name.split(".").pop();
+        await validateFileContent(file, { document: true });
+        const fileExt = fileExtension(file);
         const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
@@ -156,7 +158,8 @@ export const disputeService = {
     // Upload new evidence
     const newEvidence = [];
     for (const file of files) {
-      const fileExt = file.name.split(".").pop();
+      await validateFileContent(file, { document: true });
+      const fileExt = fileExtension(file);
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage

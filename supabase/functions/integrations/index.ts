@@ -1,3 +1,4 @@
+import { secureServe } from "../shared/http.ts";
 import {
   createAdminClient,
   createAuthClient,
@@ -6,12 +7,13 @@ import {
   errorResponse,
 } from "../shared/utils.ts";
 import {
+  protectLegacyFingerprints,
   encryptConfig,
   readConfig,
   paymentConfig,
   deliverDocuments,
 } from "../shared/integrations.ts";
-Deno.serve(async (req) => {
+secureServe(async (req) => {
   if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
@@ -31,6 +33,7 @@ Deno.serve(async (req) => {
       .single();
     if (!staff || profile?.role !== "super_admin")
       return errorResponse("Super admin with MFA required", 403);
+    await protectLegacyFingerprints(admin);
     const body = await req.json();
     if (body.action === "save") {
       if (!["bakong", "resend"].includes(body.provider))

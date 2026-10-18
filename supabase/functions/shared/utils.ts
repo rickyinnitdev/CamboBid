@@ -2,11 +2,12 @@
 // Shared utilities for Edge Functions
 // ============================================================================
 
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.116.0";
 
 // CORS headers for all Edge Functions
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Cache-Control": "no-store",
+  "X-Content-Type-Options": "nosniff",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -19,6 +20,7 @@ export function createAuthClient(req: Request): SupabaseClient {
 
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
+    auth: {persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
   });
 }
 
@@ -27,7 +29,7 @@ export function createAdminClient(): SupabaseClient {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return createClient(supabaseUrl, supabaseServiceKey, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 }
 
 // Verify user JWT and return user

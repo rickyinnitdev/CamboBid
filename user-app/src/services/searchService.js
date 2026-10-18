@@ -1,3 +1,4 @@
+import { quotedSearch } from "../utils/querySafety";
 import { supabase } from "./supabase";
 
 export const searchService = {
@@ -76,9 +77,12 @@ export const searchService = {
       `,
         { count: "exact" },
       )
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%`, {
-        referencedTable: "listings",
-      });
+      .or(
+        `title.ilike.${quotedSearch(query)},description.ilike.${quotedSearch(query)}`,
+        {
+          referencedTable: "listings",
+        },
+      );
 
     if (status) {
       dbQuery = dbQuery.eq("status", status);

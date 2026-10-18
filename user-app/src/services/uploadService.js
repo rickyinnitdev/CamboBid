@@ -1,3 +1,4 @@
+import { validateFileContent, fileExtension } from "../utils/fileValidation";
 import { supabase } from "./supabase";
 
 export const uploadService = {
@@ -7,10 +8,13 @@ export const uploadService = {
 
   validateFile(file, type = "image") {
     if (file.size > this.MAX_FILE_SIZE) {
-      throw new Error(`File too large. Maximum size is ${this.MAX_FILE_SIZE / 1024 / 1024}MB`);
+      throw new Error(
+        `File too large. Maximum size is ${this.MAX_FILE_SIZE / 1024 / 1024}MB`,
+      );
     }
 
-    const allowedTypes = type === "document" ? this.ALLOWED_DOC_TYPES : this.ALLOWED_IMAGE_TYPES;
+    const allowedTypes =
+      type === "document" ? this.ALLOWED_DOC_TYPES : this.ALLOWED_IMAGE_TYPES;
     if (!allowedTypes.includes(file.type)) {
       throw new Error(`Invalid file type. Allowed: ${allowedTypes.join(", ")}`);
     }
@@ -20,9 +24,14 @@ export const uploadService = {
 
   async uploadListingImage(listingId, file) {
     this.validateFile(file, "image");
+    await validateFileContent(file, { maxBytes: 10 * 1024 * 1024 });
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+    const fileExt = fileExtension(file);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Sign in first");
+    const fileName = `${user.id}/${listingId}/${crypto.randomUUID()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("listing-images")
@@ -30,9 +39,9 @@ export const uploadService = {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("listing-images")
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("listing-images").getPublicUrl(fileName);
 
     return {
       url: publicUrl,
@@ -64,9 +73,10 @@ export const uploadService = {
 
   async uploadIdentityDocument(userId, file) {
     this.validateFile(file, "document");
+    await validateFileContent(file, { document: true });
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}/identity.${fileExt}`;
+    const fileExt = fileExtension(file);
+    const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("identity-documents")
@@ -74,7 +84,10 @@ export const uploadService = {
 
     if (uploadError) throw uploadError;
 
-    const { data: { signedUrl }, error: signedError } = await supabase.storage
+    const {
+      data: { signedUrl },
+      error: signedError,
+    } = await supabase.storage
       .from("identity-documents")
       .createSignedUrl(fileName, 3600);
 
@@ -92,9 +105,10 @@ export const uploadService = {
 
     for (const file of files) {
       this.validateFile(file, "document");
+      await validateFileContent(file, { document: true });
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const fileExt = fileExtension(file);
+      const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("dispute-evidence")
@@ -102,7 +116,10 @@ export const uploadService = {
 
       if (uploadError) throw uploadError;
 
-      const { data: { signedUrl }, error: signedError } = await supabase.storage
+      const {
+        data: { signedUrl },
+        error: signedError,
+      } = await supabase.storage
         .from("dispute-evidence")
         .createSignedUrl(fileName, 86400);
 
@@ -120,8 +137,9 @@ export const uploadService = {
 
   async uploadAvatar(userId, file) {
     this.validateFile(file, "image");
+    await validateFileContent(file, { maxBytes: 10 * 1024 * 1024 });
 
-    const fileExt = file.name.split(".").pop();
+    const fileExt = fileExtension(file);
     const fileName = `${userId}/avatar.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
@@ -130,25 +148,26 @@ export const uploadService = {
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("listing-images")
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("listing-images").getPublicUrl(fileName);
 
     return publicUrl;
   },
 
   getPublicUrl(path, bucket = "listing-images") {
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucket).getPublicUrl(path);
 
     return publicUrl;
   },
 
   async getSignedUrl(path, bucket = "identity-documents", expiresIn = 3600) {
-    const { data: { signedUrl }, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, expiresIn);
+    const {
+      data: { signedUrl },
+      error,
+    } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
 
     if (error) throw error;
     return signedUrl;

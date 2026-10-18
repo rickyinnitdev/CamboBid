@@ -22,3 +22,5 @@ backups/
 *.p12
 *.pfx
 docs/DEPLOYMENT_*.md
+
+*.key

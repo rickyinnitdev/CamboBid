@@ -1,4 +1,5 @@
 <script setup>
+import { safeRedirect } from "@/utils/querySafety";
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -22,7 +23,7 @@ async function handleLogin() {
   loading.value = true;
   try {
     await login({ email: email.value, password: password.value });
-    const redirect = route.query.redirect || "/";
+    const redirect = safeRedirect(route.query.redirect);
     router.push(redirect);
   } catch (err) {
     error.value = err.message || "Login failed. Please check your credentials.";
@@ -49,13 +50,18 @@ async function handleGoogleLogin() {
       <div class="w-full max-w-md">
         <div class="text-center mb-8">
           <p class="section-eyebrow mb-3">Welcome back</p>
-          <h1 class="text-3xl font-extrabold tracking-tight text-heading">{{ t("nav.login") }}</h1>
+          <h1 class="text-3xl font-extrabold tracking-tight text-heading">
+            {{ t("nav.login") }}
+          </h1>
           <p class="text-sm text-slate-600 mt-2">Sign in to your account</p>
         </div>
 
         <div class="surface-panel p-6 sm:p-8">
           <form @submit.prevent="handleLogin" class="space-y-4">
-            <div v-if="error" class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
+            <div
+              v-if="error"
+              class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+            >
               {{ error }}
             </div>
 
@@ -75,25 +81,41 @@ async function handleGoogleLogin() {
               required
             />
 
-            <BaseButton type="submit" variant="primary" :loading="loading" class="w-full">
+            <BaseButton
+              type="submit"
+              variant="primary"
+              :loading="loading"
+              class="w-full"
+            >
               {{ t("nav.login") }}
             </BaseButton>
           </form>
 
           <div class="my-5 flex items-center gap-3">
             <div class="h-px flex-1 bg-border" />
-            <span class="text-xs font-semibold uppercase tracking-widest text-slate-500">or</span>
+            <span
+              class="text-xs font-semibold uppercase tracking-widest text-slate-500"
+              >or</span
+            >
             <div class="h-px flex-1 bg-border" />
           </div>
 
-          <BaseButton variant="outline" :loading="loading" class="w-full" @click="handleGoogleLogin">
+          <BaseButton
+            variant="outline"
+            :loading="loading"
+            class="w-full"
+            @click="handleGoogleLogin"
+          >
             Continue with Google
           </BaseButton>
 
           <div class="mt-6 text-center">
             <p class="text-sm text-muted">
               Don't have an account?
-              <router-link to="/register" class="font-medium text-navy-700 hover:text-navy-800">
+              <router-link
+                to="/register"
+                class="font-medium text-navy-700 hover:text-navy-800"
+              >
                 {{ t("nav.register") }}
               </router-link>
             </p>

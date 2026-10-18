@@ -1,6 +1,7 @@
+import { secureServe } from "../shared/http.ts";
 import { corsHeaders, errorResponse } from "../shared/utils.ts";
 // Proxy bids are resolved inside place_funded_bid, never as independent writes.
-Deno.serve((req) =>
+secureServe((req) =>
   req.method === "OPTIONS"
     ? new Response("ok", { headers: corsHeaders })
     : errorResponse(

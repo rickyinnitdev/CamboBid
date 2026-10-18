@@ -1,4 +1,5 @@
 <script setup>
+import { validateFileContent } from "@/utils/fileValidation";
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useToast } from "vue-toastification";
@@ -56,7 +57,7 @@ async function uploadLogo(file) {
 
   logoUploading.value = true;
   try {
-    const ext = file.name.split(".").pop();
+    const ext = await validateFileContent(file, { maxBytes: 2 * 1024 * 1024 });
     const fileName = `logos/brand-logo-${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
