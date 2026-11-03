@@ -22,6 +22,7 @@ import CountdownTimer from "@/components/auction/CountdownTimer.vue";
 import PriceDisplay from "@/components/auction/PriceDisplay.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import PkarPattern from "@/components/base/PkarPattern.vue";
+import KhmerArchitecture from "@/components/base/KhmerArchitecture.vue";
 import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import { marketplace } from "@/data/marketplace";
 import { platformSettingsService } from "@/services/platformSettingsService";
@@ -320,8 +321,9 @@ onMounted(async () => {
     </section>
 
     <!-- Live auctions ---------------------------------------------------- -->
-    <section class="section">
-      <div class="container-page">
+    <section class="section section-ivory relative overflow-hidden">
+      <KhmerArchitecture :opacity="0.19" />
+      <div class="container-page relative">
         <KhmerDivider class="mb-10" />
         <div class="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -447,8 +449,12 @@ onMounted(async () => {
     </section>
 
     <!-- Upcoming --------------------------------------------------------- -->
-    <section v-if="upcomingList.length" class="section">
-      <div class="container-page">
+    <section
+      v-if="upcomingList.length"
+      class="section relative overflow-hidden"
+    >
+      <KhmerArchitecture variant="wave" :opacity="0.14" />
+      <div class="container-page relative">
         <div class="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p class="kicker">On the calendar</p>
@@ -480,12 +486,7 @@ onMounted(async () => {
     <section
       class="section-tight relative overflow-hidden border-t border-border bg-white"
     >
-      <PkarPattern
-        class="left-auto right-0 w-1/2"
-        variant="temple"
-        :opacity="0.035"
-        :scale="88"
-      />
+      <KhmerArchitecture variant="right" :opacity="0.11" />
       <div class="container-page relative">
         <KhmerDivider class="mb-10" />
         <div class="max-w-2xl">

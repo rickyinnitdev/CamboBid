@@ -97,6 +97,18 @@
     @apply py-14 sm:py-20;
   }
 
+  /* Warm ivory paper with a faint gold wash, used for the architectural
+     Live Auctions band so it reads as printed stationery rather than UI. */
+  .section-ivory {
+    background:
+      radial-gradient(
+        120% 70% at 50% 0%,
+        rgba(192, 138, 46, 0.055),
+        transparent 62%
+      ),
+      linear-gradient(180deg, #fbfaf7 0%, #f7f4ed 58%, #fbfaf7 100%);
+  }
+
   .section-tight {
     @apply py-10 sm:py-14;
   }
