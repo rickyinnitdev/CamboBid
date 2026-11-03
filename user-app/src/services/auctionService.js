@@ -2,8 +2,12 @@ import { supabase } from "./supabase";
 import { invoke } from "./securityService";
 
 export const auctionService = {
-  buyNow: (auctionId, expectedMinor) =>
-    invoke("buy-now", { auction_id: auctionId, expected_minor: expectedMinor }),
+  buyNow: (auctionId, expectedMinor) => {
+    return invoke("buy-now", {
+      auction_id: auctionId,
+      expected_minor: expectedMinor,
+    });
+  },
   async getAuctions({
     status,
     type,

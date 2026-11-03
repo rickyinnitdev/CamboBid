@@ -67,7 +67,10 @@ export const searchService = {
     return { results: data, total: count, page, limit };
   },
 
-  async searchAuctions(query, { status, type, page = 1, limit = 12 } = {}) {
+  async searchAuctions(
+    query,
+    { status, type, category, page = 1, limit = 12 } = {},
+  ) {
     let dbQuery = supabase
       .from("auctions")
       .select(
@@ -92,6 +95,10 @@ export const searchService = {
 
     if (type) {
       dbQuery = dbQuery.eq("type", type);
+    }
+
+    if (category) {
+      dbQuery = dbQuery.eq("listings.categories.slug", category);
     }
 
     const from = (page - 1) * limit;

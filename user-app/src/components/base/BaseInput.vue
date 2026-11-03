@@ -1,12 +1,17 @@
 <script setup>
+import { computed } from "vue";
+
 const props = defineProps({
   modelValue: { type: [String, Number], default: "" },
   label: { type: String, default: "" },
   type: { type: String, default: "text" },
   placeholder: { type: String, default: "" },
   error: { type: String, default: "" },
+  hint: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   required: { type: Boolean, default: false },
+  autocomplete: { type: String, default: undefined },
+  inputmode: { type: String, default: undefined },
   min: { type: [String, Number], default: undefined },
   max: { type: [String, Number], default: undefined },
   step: { type: [String, Number], default: undefined },
@@ -17,17 +22,19 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
+
+const describedBy = computed(() => {
+  if (props.error) return `${props.id}-error`;
+  if (props.hint) return `${props.id}-hint`;
+  return undefined;
+});
 </script>
 
 <template>
   <div>
-    <label
-      v-if="label"
-      :for="id"
-      class="block text-sm font-semibold text-heading mb-1.5"
-    >
+    <label v-if="label" :for="id" class="mb-1.5 block text-sm font-medium text-heading">
       {{ label }}
-      <span v-if="required" class="text-danger">*</span>
+      <span v-if="required" class="text-danger" aria-hidden="true">*</span>
     </label>
     <input
       :id="id"
@@ -36,18 +43,25 @@ const emit = defineEmits(["update:modelValue"]);
       :placeholder="placeholder"
       :disabled="disabled"
       :required="required"
+      :autocomplete="autocomplete"
+      :inputmode="inputmode"
       :min="min"
       :max="max"
       :step="step"
+      :aria-invalid="!!error"
+      :aria-describedby="describedBy"
       :class="[
-        'block w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 transition-colors',
-        error
-          ? 'border-danger focus:border-danger focus:ring-danger/20'
-          : 'border-border focus:border-navy-500 focus:ring-navy-500/20',
-        disabled && 'opacity-50 cursor-not-allowed bg-surface',
+        'input',
+        error && 'input-error',
+        disabled && 'cursor-not-allowed bg-surface opacity-60',
       ]"
       @input="emit('update:modelValue', $event.target.value)"
     />
-    <p v-if="error" class="text-xs text-danger mt-1">{{ error }}</p>
+    <p v-if="error" :id="`${id}-error`" class="mt-1.5 text-xs text-danger">
+      {{ error }}
+    </p>
+    <p v-else-if="hint" :id="`${id}-hint`" class="mt-1.5 text-xs text-muted">
+      {{ hint }}
+    </p>
   </div>
 </template>

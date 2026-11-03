@@ -1,26 +1,27 @@
 import { supabase } from "./supabase";
 
 const CACHE_KEY = "cambobid-platform-settings";
+const LEGACY_HERO_TITLE = "Objects worth keeping. Bids worth watching.";
 
 export const defaultPlatformSettings = {
   brand: {
-    name: "BidHaus",
-    tagline: "Curated auctions for rare finds",
-    trust_score: "Excellent",
-    review_count: "140,724",
-    review_source: "Trustpilot",
-    primary_cta: "Explore auctions",
-    secondary_cta: "Start selling",
+    name: "CamboBid",
+    tagline: "Timed auctions for rare finds",
+    trust_score: "",
+    review_count: "",
+    review_source: "",
+    primary_cta: "Browse auctions",
+    secondary_cta: "Sell an item",
   },
   homepage: {
-    hero_eyebrow: "Live this week",
-    hero_title: "Bid on extraordinary objects, verified by experts",
+    hero_eyebrow: "Live now",
+    hero_title: "Bid. Win. Belong.",
     hero_subtitle:
-      "Discover watches, art, jewellery, interiors and collectibles in timed auctions with secure escrow and real-time bidding.",
-    hero_promo: "New bidder credit for every verified winner",
-    featured_title: "Ending soon",
-    category_title: "Explore specialist auctions",
-    trust_title: "Auction-grade protection from bid to delivery",
+      "Timed auctions for watches, jewellery, art and collectibles. Every lot is described up front, with payment held until delivery is confirmed.",
+    hero_promo: "",
+    featured_title: "Closing soon",
+    category_title: "Browse by category",
+    trust_title: "Built for confident bidding",
   },
   auction_rules: {
     platform_fee: 5,
@@ -135,14 +136,28 @@ export const platformSettingsService = {
 
   mergeSettings(settings) {
     const defaults = structuredClone(defaultPlatformSettings);
-    return Object.entries(settings || {}).reduce((merged, [key, value]) => {
-      // For section keys (brand, homepage, etc.), merge nested objects
-      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-        return { ...merged, [key]: { ...merged[key], ...value } };
-      }
-      // For flat string values like brand_logo_url, assign directly
-      return { ...merged, [key]: value };
-    }, defaults);
+    const merged = Object.entries(settings || {}).reduce(
+      (result, [key, value]) => {
+        // For section keys (brand, homepage, etc.), merge nested objects
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          !Array.isArray(value)
+        ) {
+          return { ...result, [key]: { ...result[key], ...value } };
+        }
+        // For flat string values like brand_logo_url, assign directly
+        return { ...result, [key]: value };
+      },
+      defaults,
+    );
+
+    // Replace the previous default motto if it is still present in the cache.
+    if (merged.homepage?.hero_title === LEGACY_HERO_TITLE) {
+      merged.homepage.hero_title = defaults.homepage.hero_title;
+    }
+
+    return merged;
   },
 };
 

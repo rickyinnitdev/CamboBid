@@ -61,134 +61,203 @@ async function handleRegister() {
 
 <template>
   <UserLayout>
-    <div class="flex items-center justify-center min-h-[70vh] px-4 py-12">
-      <div class="w-full max-w-md">
-        <div class="text-center mb-8">
-          <p class="section-eyebrow mb-3">Join CamboBid</p>
-          <h1 class="text-3xl font-extrabold tracking-tight text-heading">
-            {{ t("nav.register") }}
+    <main class="page-container">
+      <div
+        class="mx-auto grid max-w-5xl gap-10 py-4 lg:grid-cols-[1fr_440px] lg:items-center lg:py-10"
+      >
+        <section class="hidden lg:block">
+          <p class="kicker">Join CamboBid</p>
+          <h1
+            class="mt-4 max-w-md font-display text-[2.6rem] font-semibold leading-[1.05] tracking-[-0.035em] text-heading"
+          >
+            Bid on objects worth keeping.
           </h1>
-          <p class="text-sm text-slate-600 mt-2">Create your account</p>
-        </div>
+          <p class="mt-5 max-w-md text-sm leading-7 text-body">
+            Create an account to bid in live auctions, buy instantly and follow
+            every order from payment to delivery.
+          </p>
 
-        <div class="surface-panel p-6 sm:p-8">
-          <div v-if="success" class="text-center py-8">
-            <div
-              class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4"
-            >
-              <svg
-                class="w-8 h-8 text-success"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+          <dl class="mt-10 grid max-w-md grid-cols-2 gap-x-6 gap-y-5">
+            <div class="border-l border-gold-300 pl-4">
+              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+                Bidding
+              </dt>
+              <dd class="mt-1 text-sm font-semibold text-heading">
+                Straight or proxy
+              </dd>
             </div>
-            <h2 class="text-lg font-semibold text-heading mb-2">
-              Check Your Email
-            </h2>
-            <p class="text-sm text-muted mb-6">
-              We've sent a confirmation link to <strong>{{ email }}</strong
-              >. Please verify your email to continue.
+            <div class="border-l border-gold-300 pl-4">
+              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+                Currency
+              </dt>
+              <dd class="mt-1 text-sm font-semibold text-heading">USD only</dd>
+            </div>
+            <div class="border-l border-gold-300 pl-4">
+              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+                Payment
+              </dt>
+              <dd class="mt-1 text-sm font-semibold text-heading">
+                Held until delivery
+              </dd>
+            </div>
+            <div class="border-l border-gold-300 pl-4">
+              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+                Support
+              </dt>
+              <dd class="mt-1 text-sm font-semibold text-heading">
+                Dispute centre
+              </dd>
+            </div>
+          </dl>
+
+          <div class="mt-10 rounded-2xl border border-border bg-white p-5">
+            <p class="text-sm leading-6 text-body">
+              Bidding is a commitment. Every bid is final once placed, so review
+              the lot details, condition and shipping notes before you confirm.
             </p>
-            <BaseButton variant="primary" @click="router.push('/login')">
-              {{ t("nav.login") }}
-            </BaseButton>
           </div>
+        </section>
 
-          <form v-else @submit.prevent="handleRegister" class="space-y-4">
-            <div
-              v-if="error"
-              class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
-            >
-              {{ error }}
-            </div>
-
-            <BaseInput
-              v-model="displayName"
-              :label="t('profile.display_name')"
-              placeholder="John Doe"
-              required
-            />
-
-            <label class="flex items-start gap-3 text-sm text-slate-600">
-              <input
-                v-model="termsAccepted"
-                type="checkbox"
-                class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
-              />
-              <span>
-                {{ t("terms.accept_prefix") }}
-                <router-link
-                  to="/terms"
-                  target="_blank"
-                  class="font-semibold text-blue-700 hover:text-blue-800"
-                >
-                  {{ t("terms.title") }}
-                </router-link>
-                {{ t("terms.accept_suffix") }} I acknowledge the
-                <router-link
-                  to="/privacy"
-                  target="_blank"
-                  class="font-semibold text-blue-700"
-                  >Privacy Policy</router-link
-                >. Current policy versions are recorded after sign-in.
-              </span>
-            </label>
-
-            <BaseInput
-              v-model="email"
-              :label="t('profile.email')"
-              type="email"
-              placeholder="you@example.com"
-              required
-            />
-
-            <BaseInput
-              v-model="password"
-              label="Password"
-              type="password"
-              placeholder="At least 8 characters"
-              required
-            />
-
-            <BaseInput
-              v-model="confirmPassword"
-              label="Confirm Password"
-              type="password"
-              placeholder="Re-enter your password"
-              required
-            />
-
-            <BaseButton
-              type="submit"
-              variant="primary"
-              :loading="loading"
-              class="w-full"
+        <section>
+          <div class="surface-panel p-6 sm:p-8">
+            <p class="kicker lg:hidden">Join CamboBid</p>
+            <h2
+              class="mt-3 font-display text-2xl font-semibold tracking-[-0.02em] text-heading sm:text-3xl lg:mt-0"
             >
               {{ t("nav.register") }}
-            </BaseButton>
-          </form>
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-body">
+              Create your account in a minute.
+            </p>
 
-          <div v-if="!success" class="mt-6 text-center">
-            <p class="text-sm text-muted">
+            <div v-if="success" class="py-8 text-center">
+              <div
+                class="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-success"
+              >
+                <svg
+                  class="h-7 w-7"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 class="font-display text-lg font-semibold text-heading">
+                Check your email
+              </h3>
+              <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-body">
+                We've sent a confirmation link to
+                <strong class="font-semibold text-heading">{{ email }}</strong
+                >. Verify your email to continue.
+              </p>
+              <BaseButton
+                variant="primary"
+                class="mt-6"
+                @click="router.push('/login')"
+              >
+                {{ t("nav.login") }}
+              </BaseButton>
+            </div>
+
+            <form v-else class="mt-6 space-y-4" @submit.prevent="handleRegister">
+              <div
+                v-if="error"
+                role="alert"
+                class="rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+              >
+                {{ error }}
+              </div>
+
+              <BaseInput
+                v-model="displayName"
+                :label="t('profile.display_name')"
+                placeholder="Your name"
+                autocomplete="name"
+                required
+              />
+
+              <BaseInput
+                v-model="email"
+                :label="t('profile.email')"
+                type="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+
+              <BaseInput
+                v-model="password"
+                label="Password"
+                type="password"
+                placeholder="At least 8 characters"
+                autocomplete="new-password"
+                hint="Use at least 8 characters."
+                required
+              />
+
+              <BaseInput
+                v-model="confirmPassword"
+                label="Confirm password"
+                type="password"
+                placeholder="Re-enter your password"
+                autocomplete="new-password"
+                required
+              />
+
+              <label class="flex items-start gap-3 text-sm leading-6 text-body">
+                <input
+                  v-model="termsAccepted"
+                  type="checkbox"
+                  class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-navy-800 focus:ring-2 focus:ring-navy-500/30"
+                />
+                <span>
+                  {{ t("terms.accept_prefix") }}
+                  <router-link
+                    to="/terms"
+                    target="_blank"
+                    class="font-semibold text-navy-700 underline hover:text-navy-900"
+                  >
+                    {{ t("terms.title") }}
+                  </router-link>
+                  {{ t("terms.accept_suffix") }} I acknowledge the
+                  <router-link
+                    to="/privacy"
+                    target="_blank"
+                    class="font-semibold text-navy-700 underline hover:text-navy-900"
+                    >Privacy Policy</router-link
+                  >. Current policy versions are recorded after sign-in.
+                </span>
+              </label>
+
+              <BaseButton
+                type="submit"
+                variant="primary"
+                :loading="loading"
+                class="w-full"
+              >
+                {{ t("nav.register") }}
+              </BaseButton>
+            </form>
+
+            <p v-if="!success" class="mt-6 text-center text-sm text-body">
               Already have an account?
               <router-link
                 to="/login"
-                class="font-medium text-navy-700 hover:text-navy-800"
+                class="font-semibold text-navy-700 transition-colors hover:text-navy-900"
               >
                 {{ t("nav.login") }}
               </router-link>
             </p>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   </UserLayout>
 </template>

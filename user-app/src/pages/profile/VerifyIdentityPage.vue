@@ -47,111 +47,173 @@ async function handleUpload() {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-2xl">
-      <h1 class="text-2xl font-bold text-heading mb-2">
-        {{ t("profile.identity_status") }}
-      </h1>
-      <p class="text-sm text-muted mb-4">
-        University demo: upload a fictional sample document only. Manual review
-        does not verify government records.
-      </p>
-      <router-link
-        to="/account/security"
-        class="block mb-6 text-blue-700 underline"
-        >Confirm email and verify your authenticator before
-        uploading</router-link
-      >
-      <p v-if="profile?.identity_rejection_reason" class="mb-4 text-red-700">
-        Review feedback: {{ profile.identity_rejection_reason }}
-      </p>
+    <main class="page-container max-w-4xl">
+      <div class="page-header">
+        <div>
+          <p class="kicker">Account</p>
+          <h1 class="page-title mt-3">{{ t("profile.identity_status") }}</h1>
+          <p class="page-subtitle mt-3">
+            Upload a sample document for manual review. This is a university
+            demonstration and does not verify government records.
+          </p>
+        </div>
+        <router-link to="/account/security" class="btn-outline btn-sm self-start sm:self-auto">
+          Account security
+        </router-link>
+      </div>
 
-      <BaseCard>
-        <div class="p-6 space-y-6">
-          <!-- Status -->
-          <div class="flex items-center gap-3">
-            <span class="text-sm font-medium text-heading"
-              >Current Status:</span
-            >
-            <BaseBadge
-              v-if="verificationStatus === 'verified'"
-              variant="success"
-              >{{ t("profile.verified") }}</BaseBadge
-            >
-            <BaseBadge
-              v-else-if="verificationStatus === 'pending'"
-              variant="warning"
-              >Under Review</BaseBadge
-            >
-            <BaseBadge v-else variant="danger">{{
-              t("profile.not_verified")
-            }}</BaseBadge>
-          </div>
-
+      <div class="grid gap-6 lg:grid-cols-[1fr_300px]">
+        <div class="space-y-4">
           <div
-            v-if="error"
-            class="p-3 rounded-lg bg-danger/10 text-danger text-sm"
+            v-if="profile?.identity_rejection_reason"
+            role="alert"
+            class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
           >
-            {{ error }}
-          </div>
-          <div
-            v-if="success"
-            class="p-3 rounded-lg bg-success/10 text-success text-sm"
-          >
-            {{ success }}
+            Review feedback: {{ profile.identity_rejection_reason }}
           </div>
 
-          <!-- Info -->
-          <div class="bg-surface rounded-lg p-4 text-sm text-muted space-y-1">
-            <p>
-              To verify your identity, upload a clear photo or scan of one of
-              the following:
-            </p>
-            <ul class="list-disc list-inside ml-2 space-y-0.5">
-              <li>Government-issued ID card</li>
-              <li>Passport</li>
-              <li>Driver's license</li>
-            </ul>
-            <p class="text-xs text-muted/70 mt-2">
-              An authorized project reviewer will approve or reject your sample.
-              JPG, PNG or PDF, up to 5 MB.
-            </p>
-          </div>
+          <BaseCard padded>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+              <div>
+                <p class="text-[11px] font-medium uppercase tracking-wider text-muted">
+                  Current status
+                </p>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                  <BaseBadge
+                    v-if="verificationStatus === 'verified'"
+                    variant="success"
+                  >
+                    {{ t("profile.verified") }}
+                  </BaseBadge>
+                  <BaseBadge
+                    v-else-if="verificationStatus === 'pending'"
+                    variant="warning"
+                  >
+                    Under review
+                  </BaseBadge>
+                  <BaseBadge v-else-if="verificationStatus === 'rejected'" variant="danger">
+                    Rejected
+                  </BaseBadge>
+                  <BaseBadge v-else variant="default">
+                    {{ t("profile.not_verified") }}
+                  </BaseBadge>
+                  <BaseBadge
+                    v-if="profile?.demo_verification"
+                    variant="warning"
+                  >
+                    Demo verification
+                  </BaseBadge>
+                </div>
+              </div>
+              <router-link
+                to="/account/security"
+                class="text-sm font-semibold text-navy-700 hover:text-navy-900"
+              >
+                Confirm email &amp; 2FA &rarr;
+              </router-link>
+            </div>
 
-          <!-- Upload -->
-          <div v-if="verificationStatus !== 'verified'">
-            <label class="block text-sm font-medium text-heading mb-1.5">{{
-              t("profile.upload_id")
-            }}</label>
-            <div class="flex items-center gap-3">
+            <div
+              v-if="error"
+              role="alert"
+              class="mt-5 rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+            >
+              {{ error }}
+            </div>
+            <div
+              v-if="success"
+              role="status"
+              class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+            >
+              {{ success }}
+            </div>
+
+            <div class="mt-5 rounded-xl bg-surface p-4">
+              <p class="text-sm font-semibold text-heading">
+                What to upload
+              </p>
+              <ul class="mt-2 space-y-1.5 text-sm leading-6 text-body">
+                <li class="flex gap-2">
+                  <span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-500" aria-hidden="true" />
+                  Government-issued ID card
+                </li>
+                <li class="flex gap-2">
+                  <span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-500" aria-hidden="true" />
+                  Passport
+                </li>
+                <li class="flex gap-2">
+                  <span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-500" aria-hidden="true" />
+                  Driver's licence
+                </li>
+              </ul>
+              <p class="mt-3 text-xs leading-5 text-muted">
+                An authorised reviewer will approve or reject your sample. JPG,
+                PNG or PDF, up to 5 MB.
+              </p>
+            </div>
+
+            <div v-if="verificationStatus !== 'verified'" class="mt-5">
+              <label for="identity-document" class="label">
+                {{ t("profile.upload_id") }}
+              </label>
               <input
+                id="identity-document"
                 type="file"
                 accept="image/*,.pdf"
-                class="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-navy-700 file:text-white hover:file:bg-navy-800 file:cursor-pointer"
+                class="block w-full cursor-pointer rounded-lg border border-line bg-white text-sm text-body file:mr-4 file:cursor-pointer file:border-0 file:bg-navy-900 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-500"
                 @change="handleFileChange"
               />
+              <p v-if="identityFile" class="mt-2 text-xs text-muted">
+                Selected: {{ identityFile.name }}
+              </p>
+
+              <BaseButton
+                variant="primary"
+                :loading="uploading"
+                :disabled="!identityFile"
+                class="mt-4"
+                @click="handleUpload"
+              >
+                {{ t("profile.upload_id") }}
+              </BaseButton>
             </div>
-            <p v-if="identityFile" class="text-xs text-muted mt-2">
-              Selected: {{ identityFile.name }}
-            </p>
 
-            <BaseButton
-              variant="primary"
-              :loading="uploading"
-              :disabled="!identityFile"
-              class="mt-4"
-              @click="handleUpload"
-            >
-              {{ t("profile.upload_id") }}
-            </BaseButton>
-          </div>
-
-          <div v-else class="text-center py-4">
-            <p class="text-success text-sm font-medium">
-              Your identity has been verified. Thank you!
-            </p>
-          </div>
+            <div v-else class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p class="text-sm font-medium text-emerald-800">
+                Your identity has been verified. Thank you.
+              </p>
+            </div>
+          </BaseCard>
         </div>
-      </BaseCard>
-    </div>
+
+        <aside class="space-y-4">
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">
+              Why verify?
+            </h2>
+            <ul class="mt-3 space-y-3 text-sm leading-6 text-body">
+              <li>Higher bid and purchase limits may apply to verified accounts.</li>
+              <li>Sellers can see that your account has passed review.</li>
+              <li>Verification is required before some wallet actions.</li>
+            </ul>
+          </BaseCard>
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">
+              Privacy
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-body">
+              Documents are visible only to authorised reviewers and are not
+              shown publicly on your profile.
+            </p>
+            <router-link
+              to="/privacy"
+              class="mt-3 inline-flex text-sm font-semibold text-navy-700 hover:text-navy-900"
+            >
+              Read the privacy policy &rarr;
+            </router-link>
+          </BaseCard>
+        </aside>
+      </div>
+    </main>
   </UserLayout>
 </template>

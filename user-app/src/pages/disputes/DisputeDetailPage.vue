@@ -8,6 +8,7 @@ import BaseCard from "@/components/base/BaseCard.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import StatusBadge from "@/components/auction/StatusBadge.vue";
+import { formatDateTime, formatUSD } from "@/utils/format";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -68,91 +69,117 @@ function getImage() {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-3xl">
-      <div class="mb-6">
-        <button @click="router.back()" class="text-sm text-muted hover:text-heading transition-colors">&larr; {{ t("common.back") }}</button>
-      </div>
+    <main class="page-container max-w-4xl">
+      <button
+        class="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-body transition-colors hover:text-heading"
+        @click="router.back()"
+      >
+        &larr; {{ t("common.back") }}
+      </button>
 
       <div v-if="loading" class="space-y-4">
         <BaseSkeleton type="card" />
       </div>
 
-      <div v-else-if="error" class="p-4 rounded-lg bg-danger/10 text-danger text-sm">{{ error }}</div>
+      <div
+        v-else-if="error"
+        role="alert"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
+      >
+        {{ error }}
+      </div>
 
       <template v-else-if="dispute">
-        <h1 class="text-2xl font-bold text-heading mb-6">Dispute Details</h1>
+        <div class="page-header">
+          <div>
+            <p class="kicker">Dispute</p>
+            <h1 class="page-title mt-3">Dispute details</h1>
+            <p class="mt-2 text-sm text-muted">
+              Filed {{ formatDateTime(dispute.created_at) }}
+            </p>
+          </div>
+          <StatusBadge :status="dispute.status" type="dispute" class="self-start sm:self-auto" />
+        </div>
 
-        <div class="space-y-6">
-          <!-- Summary -->
-          <BaseCard>
-            <div class="p-6">
-              <div class="flex items-start justify-between mb-4">
-                <div class="flex gap-4">
-                  <div class="w-16 h-16 rounded-lg bg-surface overflow-hidden flex-shrink-0">
-                    <img v-if="getImage()" :src="getImage()" class="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h2 class="font-semibold text-heading">{{ dispute.auctions?.listings?.title }}</h2>
-                    <p class="text-sm text-muted mt-0.5">${{ Number(dispute.auctions?.current_price).toLocaleString() }}</p>
-                  </div>
+        <div class="grid gap-5 lg:grid-cols-[1fr_300px]">
+          <div class="space-y-5">
+            <BaseCard padded>
+              <div class="flex flex-wrap items-start gap-4">
+                <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface">
+                  <img
+                    v-if="getImage()"
+                    :src="getImage()"
+                    :alt="dispute.auctions?.listings?.title"
+                    class="h-full w-full object-cover"
+                  />
                 </div>
-                <StatusBadge :status="dispute.status" type="dispute" />
-              </div>
-
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-muted">Reason</span>
-                  <span class="text-heading font-medium">{{ dispute.reason }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted">Filed</span>
-                  <span class="text-heading">{{ new Date(dispute.created_at).toLocaleString() }}</span>
-                </div>
-                <div v-if="dispute.resolved_at" class="flex justify-between">
-                  <span class="text-muted">Resolved</span>
-                  <span class="text-heading">{{ new Date(dispute.resolved_at).toLocaleString() }}</span>
-                </div>
-                <div v-if="dispute.appeal_deadline" class="flex justify-between">
-                  <span class="text-muted">{{ t("dispute.appeal_deadline") }}</span>
-                  <span class="text-heading">{{ new Date(dispute.appeal_deadline).toLocaleString() }}</span>
+                <div class="min-w-0 flex-1">
+                  <h2 class="font-display text-base font-semibold text-heading">
+                    {{ dispute.auctions?.listings?.title }}
+                  </h2>
+                  <p class="numeric mt-1 text-sm text-body">
+                    {{ formatUSD(dispute.auctions?.current_price) }}
+                  </p>
                 </div>
               </div>
-            </div>
-          </BaseCard>
 
-          <!-- Description -->
-          <BaseCard v-if="dispute.description">
-            <div class="p-6">
-              <h3 class="font-semibold text-heading mb-2">Description</h3>
-              <p class="text-sm text-body whitespace-pre-wrap">{{ dispute.description }}</p>
-            </div>
-          </BaseCard>
+              <dl class="mt-5 space-y-3 border-t border-border pt-4 text-sm">
+                <div class="flex items-start justify-between gap-4">
+                  <dt class="text-body">Reason</dt>
+                  <dd class="text-right font-medium text-heading">{{ dispute.reason }}</dd>
+                </div>
+                <div class="flex items-start justify-between gap-4">
+                  <dt class="text-body">Filed</dt>
+                  <dd class="text-right text-heading">{{ formatDateTime(dispute.created_at) }}</dd>
+                </div>
+                <div v-if="dispute.resolved_at" class="flex items-start justify-between gap-4">
+                  <dt class="text-body">Resolved</dt>
+                  <dd class="text-right text-heading">{{ formatDateTime(dispute.resolved_at) }}</dd>
+                </div>
+                <div v-if="dispute.appeal_deadline" class="flex items-start justify-between gap-4">
+                  <dt class="text-body">{{ t("dispute.appeal_deadline") }}</dt>
+                  <dd class="text-right text-heading">{{ formatDateTime(dispute.appeal_deadline) }}</dd>
+                </div>
+              </dl>
+            </BaseCard>
 
-          <!-- Resolution -->
-          <BaseCard v-if="dispute.resolution">
-            <div class="p-6">
-              <h3 class="font-semibold text-heading mb-2">Resolution</h3>
-              <p class="text-sm text-body whitespace-pre-wrap">{{ dispute.resolution }}</p>
-            </div>
-          </BaseCard>
+            <BaseCard v-if="dispute.description" padded>
+              <h3 class="font-display text-base font-semibold text-heading">Description</h3>
+              <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-body">
+                {{ dispute.description }}
+              </p>
+            </BaseCard>
 
-          <!-- Evidence -->
-          <BaseCard>
-            <div class="p-6">
-              <h3 class="font-semibold text-heading mb-3">{{ t("dispute.evidence") }}</h3>
-              <div v-if="dispute.evidence?.length" class="flex flex-wrap gap-3">
-                <div v-for="(ev, i) in dispute.evidence" :key="i" class="w-20 h-20 rounded-lg border border-border overflow-hidden">
-                  <img :src="ev.url" class="w-full h-full object-cover" />
+            <BaseCard v-if="dispute.resolution" padded>
+              <h3 class="font-display text-base font-semibold text-heading">Resolution</h3>
+              <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-body">
+                {{ dispute.resolution }}
+              </p>
+            </BaseCard>
+
+            <BaseCard padded>
+              <h3 class="font-display text-base font-semibold text-heading">
+                {{ t("dispute.evidence") }}
+              </h3>
+              <div v-if="dispute.evidence?.length" class="mt-4 flex flex-wrap gap-3">
+                <div
+                  v-for="(ev, i) in dispute.evidence"
+                  :key="i"
+                  class="h-20 w-20 overflow-hidden rounded-lg border border-border"
+                >
+                  <img :src="ev.url" alt="Dispute evidence" class="h-full w-full object-cover" />
                 </div>
               </div>
-              <p v-else class="text-sm text-muted">No evidence uploaded yet.</p>
+              <p v-else class="mt-3 text-sm text-muted">No evidence uploaded yet.</p>
 
-              <div class="mt-4">
+              <div class="mt-5 border-t border-border pt-4">
+                <label for="dispute-evidence" class="label">Add evidence</label>
                 <input
+                  id="dispute-evidence"
                   type="file"
                   accept="image/*,.pdf"
                   multiple
-                  class="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-navy-700 file:text-white hover:file:bg-navy-800 file:cursor-pointer"
+                  class="block w-full cursor-pointer rounded-lg border border-line bg-white text-sm text-body file:mr-4 file:cursor-pointer file:border-0 file:bg-navy-900 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-500"
                   @change="handleEvidenceChange"
                 />
                 <BaseButton
@@ -160,27 +187,47 @@ function getImage() {
                   variant="primary"
                   size="sm"
                   :loading="addingEvidence"
-                  class="mt-2"
+                  class="mt-3"
                   @click="handleAddEvidence"
                 >
                   {{ t("dispute.add_evidence") }}
                 </BaseButton>
               </div>
-            </div>
-          </BaseCard>
+            </BaseCard>
+          </div>
 
-          <!-- Appeal -->
-          <BaseCard v-if="dispute.status === 'resolved'">
-            <div class="p-6">
-              <h3 class="font-semibold text-heading mb-2">Appeal</h3>
-              <p class="text-sm text-muted mb-4">If you disagree with the resolution, you can appeal within the deadline.</p>
-              <BaseButton variant="outline" @click="handleAppeal">
+          <aside class="space-y-4">
+            <BaseCard padded>
+              <h2 class="font-display text-base font-semibold text-heading">Case summary</h2>
+              <dl class="mt-3 space-y-3 text-sm">
+                <div>
+                  <dt class="text-xs text-muted">Status</dt>
+                  <dd class="mt-1"><StatusBadge :status="dispute.status" type="dispute" /></dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-muted">Opened</dt>
+                  <dd class="mt-1 text-heading">{{ formatDateTime(dispute.created_at) }}</dd>
+                </div>
+                <div v-if="dispute.resolved_at">
+                  <dt class="text-xs text-muted">Resolved</dt>
+                  <dd class="mt-1 text-heading">{{ formatDateTime(dispute.resolved_at) }}</dd>
+                </div>
+              </dl>
+            </BaseCard>
+
+            <BaseCard v-if="dispute.status === 'resolved'" padded>
+              <h2 class="font-display text-base font-semibold text-heading">Appeal</h2>
+              <p class="mt-2 text-sm leading-6 text-body">
+                If you disagree with the resolution, you can appeal within the
+                deadline.
+              </p>
+              <BaseButton variant="outline" class="mt-3" @click="handleAppeal">
                 {{ t("dispute.appeal_deadline") }}
               </BaseButton>
-            </div>
-          </BaseCard>
+            </BaseCard>
+          </aside>
         </div>
       </template>
-    </div>
+    </main>
   </UserLayout>
 </template>

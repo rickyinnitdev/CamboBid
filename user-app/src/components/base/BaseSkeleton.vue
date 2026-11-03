@@ -6,26 +6,34 @@ defineProps({
 </script>
 
 <template>
-  <div class="space-y-3">
+  <div class="space-y-3" aria-hidden="true">
     <template v-if="type === 'text'">
-      <div v-for="i in lines" :key="i" class="h-4 bg-muted/20 rounded animate-pulse" :style="{ width: i === lines ? '60%' : '100%' }" />
+      <div
+        v-for="i in lines"
+        :key="i"
+        class="h-4 animate-pulse rounded bg-slate-200/70"
+        :style="{ width: i === lines ? '60%' : '100%' }"
+      />
     </template>
     <template v-else-if="type === 'card'">
-      <div class="bg-white rounded-2xl border border-border/80 p-4 space-y-3">
-        <div class="h-40 bg-muted/20 rounded-lg animate-pulse" />
-        <div class="h-4 bg-muted/20 rounded animate-pulse w-3/4" />
-        <div class="h-4 bg-muted/20 rounded animate-pulse w-1/2" />
-        <div class="flex justify-between">
-          <div class="h-6 bg-muted/20 rounded animate-pulse w-24" />
-          <div class="h-6 bg-muted/20 rounded animate-pulse w-16" />
+      <div class="space-y-4 rounded-2xl border border-border bg-white p-3">
+        <div class="aspect-[4/5] animate-pulse rounded-xl bg-slate-200/70" />
+        <div class="space-y-2 px-1">
+          <div class="h-3 w-20 animate-pulse rounded bg-slate-200/70" />
+          <div class="h-4 w-4/5 animate-pulse rounded bg-slate-200/70" />
+          <div class="h-4 w-2/3 animate-pulse rounded bg-slate-200/70" />
+          <div class="flex items-end justify-between pt-2">
+            <div class="h-6 w-24 animate-pulse rounded bg-slate-200/70" />
+            <div class="h-4 w-14 animate-pulse rounded bg-slate-200/70" />
+          </div>
         </div>
       </div>
     </template>
     <template v-else-if="type === 'table'">
       <div v-for="i in lines" :key="i" class="flex gap-4">
-        <div class="h-4 bg-muted/20 rounded animate-pulse flex-1" />
-        <div class="h-4 bg-muted/20 rounded animate-pulse flex-1" />
-        <div class="h-4 bg-muted/20 rounded animate-pulse flex-1" />
+        <div class="h-4 flex-1 animate-pulse rounded bg-slate-200/70" />
+        <div class="h-4 flex-1 animate-pulse rounded bg-slate-200/70" />
+        <div class="h-4 flex-1 animate-pulse rounded bg-slate-200/70" />
       </div>
     </template>
   </div>

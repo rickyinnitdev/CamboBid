@@ -1,134 +1,196 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { useI18n } from "vue-i18n";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import AuctionCard from "@/components/auction/AuctionCard.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import { auctionService } from "@/services/auctionService";
-import { searchService } from "@/services/searchService";
+import { marketplace } from "@/data/marketplace";
 
-const { t } = useI18n();
 const route = useRoute();
 
 const auctions = ref([]);
+const categories = ref([]);
 const total = ref(0);
 const loading = ref(true);
+const error = ref("");
 const page = ref(1);
 const limit = 12;
-const categoryName = ref("");
-const slug = ref(route.params.slug);
+const slug = ref(String(route.params.slug || ""));
+const status = ref("active");
+const sort = ref("ending_soon");
+
+const statusOptions = [
+  { value: "active", label: "Active" },
+  { value: "live", label: "Live" },
+  { value: "scheduled", label: "Upcoming" },
+  { value: "closed", label: "Ended" },
+];
 
 const sortOptions = [
-  { value: "ending_soon", label: "Ending Soon" },
+  { value: "ending_soon", label: "Closing time" },
   { value: "newest", label: "Newest" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
+  { value: "price_asc", label: "Price: low to high" },
+  { value: "price_desc", label: "Price: high to low" },
 ];
-const sort = ref("ending_soon");
+
+const category = computed(() =>
+  categories.value.find((item) => item.slug === slug.value),
+);
+
+const categoryName = computed(() => {
+  if (category.value?.name) return category.value.name;
+  return slug.value
+    .replace(/-/g, " ")
+    .replace(/^\w/, (character) => character.toUpperCase());
+});
+
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit)));
 
 async function loadCategory() {
   loading.value = true;
+  error.value = "";
   try {
-    const [auctionResult] = await Promise.all([
-      auctionService.getAuctions({ category: slug.value, sort: sort.value, page: page.value, limit }),
-      searchService.getCategories(),
+    const [result, categoryData] = await Promise.all([
+      marketplace.getAuctions({
+        category: slug.value,
+        status: status.value,
+        sort: sort.value,
+        page: page.value,
+        limit,
+      }),
+      marketplace.getCategories(),
     ]);
-    auctions.value = auctionResult.auctions;
-    total.value = auctionResult.total;
-    // Get category name from categories list
-    const cats = await searchService.getCategories();
-    const cat = cats.find((c) => c.slug === slug.value);
-    categoryName.value = cat?.name || slug.value;
+    auctions.value = result.auctions;
+    total.value = result.total;
+    categories.value = categoryData;
   } catch (err) {
-    console.error("Failed to load category:", err);
+    error.value = err.message || "Failed to load this category.";
+    auctions.value = [];
+    total.value = 0;
   } finally {
     loading.value = false;
   }
 }
 
-function nextPage() {
-  if (page.value * limit < total.value) {
-    page.value++;
-    loadCategory();
-  }
-}
-function prevPage() {
-  if (page.value > 1) {
-    page.value--;
-    loadCategory();
-  }
+function goToPage(nextPage) {
+  if (nextPage < 1 || nextPage > totalPages.value) return;
+  page.value = nextPage;
+  loadCategory();
 }
 
-onMounted(loadCategory);
+watch(status, () => {
+  page.value = 1;
+  loadCategory();
+});
+
+watch(sort, () => {
+  page.value = 1;
+  loadCategory();
+});
 
 watch(
   () => route.params.slug,
   (newSlug) => {
-    slug.value = newSlug;
+    slug.value = String(newSlug || "");
     page.value = 1;
+    status.value = "active";
     loadCategory();
-  }
+  },
 );
 
-watch(sort, () => { page.value = 1; loadCategory(); });
+onMounted(loadCategory);
 </script>
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-7xl">
-      <div class="mb-8 flex flex-col md:flex-row md:items-end md:justify-between">
+    <div class="page-container pt-5 sm:pt-7">
+      <header class="page-header mb-6">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Specialist department</p>
-          <h1 class="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">{{ categoryName || slug }}</h1>
-          <p class="mt-1 text-sm text-neutral-500">{{ total }} {{ t("common.results") }}</p>
+          <p class="kicker">Category</p>
+          <h1 class="page-title mt-3">{{ categoryName }}</h1>
+          <p class="page-subtitle mt-2">
+            {{ total }} {{ total === 1 ? "lot" : "lots" }} in this department.
+            Filter by status or closing time.
+          </p>
         </div>
-        <div class="mt-4 w-full md:mt-0 md:w-44">
-          <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Sort</label>
-          <select
-            v-model="sort"
-            class="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
-          >
-            <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <div class="w-full sm:w-52">
+          <label for="category-sort" class="meta-label mb-1.5 block">Sort by</label>
+          <select id="category-sort" v-model="sort" class="select">
+            <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
           </select>
         </div>
+      </header>
+
+      <div class="mb-6 flex flex-wrap gap-1.5">
+        <button
+          v-for="option in statusOptions"
+          :key="option.value"
+          type="button"
+          :class="[
+            'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
+            status === option.value
+              ? 'bg-navy-900 text-white'
+              : 'border border-line bg-white text-body hover:border-navy-300 hover:text-heading',
+          ]"
+          :aria-pressed="status === option.value"
+          @click="status = option.value"
+        >
+          {{ option.label }}
+        </button>
       </div>
 
-      <div v-if="loading" class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div v-if="loading" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <BaseSkeleton v-for="i in 8" :key="i" type="card" />
+      </div>
+
+      <div v-else-if="error" role="alert" class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        {{ error }}
+        <button type="button" class="ml-2 font-semibold underline" @click="loadCategory">Try again</button>
       </div>
 
       <BaseEmptyState
         v-else-if="auctions.length === 0"
-        title="No Auctions in This Category"
-        description="Check back later or browse other categories."
+        title="No lots in this category"
+        description="There are no lots matching this status right now. Check back later or browse every auction."
         icon="search"
       >
         <template #action>
-          <router-link to="/auctions" class="mt-4 inline-flex items-center px-4 py-2 bg-navy-700 text-white rounded-lg text-sm font-medium hover:bg-navy-800 transition-colors">
-            Browse All Auctions
+          <router-link to="/auctions" class="mt-5 rounded-lg border border-line px-4 py-2.5 text-sm font-semibold text-heading hover:border-navy-300">
+            Browse all auctions
           </router-link>
         </template>
       </BaseEmptyState>
 
       <template v-else>
-        <div class="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AuctionCard v-for="auction in auctions" :key="auction.id" :auction="auction" />
         </div>
 
-        <div v-if="total > limit" class="flex items-center justify-between mt-8">
-          <BaseButton variant="outline" size="sm" :disabled="page <= 1" @click="prevPage">
-            {{ t("common.previous") }}
-          </BaseButton>
-          <span class="text-sm text-muted">
-            {{ t("common.page") }} {{ page }} {{ t("common.of") }} {{ Math.ceil(total / limit) }}
-          </span>
-          <BaseButton variant="outline" size="sm" :disabled="page * limit >= total" @click="nextPage">
-            {{ t("common.next") }}
-          </BaseButton>
-        </div>
+        <nav v-if="totalPages > 1" class="mt-10 flex items-center justify-between border-t border-border pt-6" aria-label="Category pagination">
+          <button
+            type="button"
+            class="rounded-lg border border-line px-3 py-2 text-sm font-medium text-heading hover:border-navy-300 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="page === 1"
+            @click="goToPage(page - 1)"
+          >
+            Previous
+          </button>
+          <p class="text-sm text-muted">
+            Page <span class="numeric font-semibold text-heading">{{ page }}</span> of
+            <span class="numeric">{{ totalPages }}</span>
+          </p>
+          <button
+            type="button"
+            class="rounded-lg border border-line px-3 py-2 text-sm font-medium text-heading hover:border-navy-300 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="page >= totalPages"
+            @click="goToPage(page + 1)"
+          >
+            Next
+          </button>
+        </nav>
       </template>
     </div>
   </UserLayout>

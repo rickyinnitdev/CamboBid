@@ -9,6 +9,7 @@ import BaseCard from "@/components/base/BaseCard.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import StatusBadge from "@/components/auction/StatusBadge.vue";
+import { formatDate, formatUSD } from "@/utils/format";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -58,15 +59,13 @@ function getImage() {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-3xl">
-      <div class="mb-6">
-        <button
-          @click="router.back()"
-          class="text-sm text-muted hover:text-heading transition-colors"
-        >
-          &larr; {{ t("common.back") }}
-        </button>
-      </div>
+    <main class="page-container max-w-4xl">
+      <button
+        class="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-body transition-colors hover:text-heading"
+        @click="router.back()"
+      >
+        &larr; {{ t("common.back") }}
+      </button>
 
       <div v-if="loading" class="space-y-4">
         <BaseSkeleton type="card" />
@@ -74,194 +73,194 @@ function getImage() {
 
       <div
         v-else-if="error"
-        class="p-4 rounded-lg bg-danger/10 text-danger text-sm"
+        role="alert"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
       >
         {{ error }}
       </div>
 
       <template v-else-if="order">
-        <h1 class="text-2xl font-bold text-heading mb-6">
-          {{ t("order.detail") }}
-        </h1>
+        <div class="page-header">
+          <div>
+            <p class="kicker">Order</p>
+            <h1 class="page-title mt-3">{{ t("order.detail") }}</h1>
+            <p class="mt-2 text-sm text-muted">
+              Placed {{ formatDate(order.created_at) }}
+            </p>
+          </div>
+          <StatusBadge :status="order.status" type="escrow" class="self-start sm:self-auto" />
+        </div>
+
         <section
           v-if="
             user?.id === order.buyer_id &&
             order.funded_at &&
             ['held', 'released'].includes(order.status)
           "
-          class="rounded-2xl bg-teal-50 border border-teal-100 p-6 mb-6"
+          class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6"
           role="status"
         >
-          <p class="text-xs uppercase tracking-widest text-teal-700">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
             {{
               order.purchase_kind === "buy_now"
                 ? "Purchase confirmed"
                 : "Auction winner"
             }}
           </p>
-          <h2 class="text-2xl font-bold text-teal-900 mt-2">
+          <h2 class="mt-2 font-display text-2xl font-semibold text-emerald-900">
             {{
               order.purchase_kind === "buy_now"
-                ? "Congratulations — it’s yours!"
-                : "Congratulations — you won!"
+                ? "Congratulations — it’s yours."
+                : "Congratulations — you won."
             }}
           </h2>
-          <p class="text-sm text-teal-900 mt-3">
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-900">
             {{
               order.status === "held"
                 ? "Your payment is confirmed and held for this order. Confirm delivery only after you receive your item."
                 : "Your delivery is confirmed and payment has been released to the seller."
             }}
           </p>
-          <router-link to="/orders" class="inline-block text-sm underline mt-3"
-            >View all wins &amp; purchases</router-link
+          <router-link
+            to="/orders"
+            class="mt-3 inline-flex text-sm font-semibold text-emerald-900 underline"
           >
+            View all wins &amp; purchases
+          </router-link>
         </section>
+
         <section
           v-if="
             user?.id === order.seller_id &&
             order.status === 'held' &&
             order.funded_at
           "
-          class="p-5 bg-blue-50 rounded-2xl mb-5 text-sm"
+          class="mb-6 rounded-2xl border border-navy-100 bg-navy-50 p-5 text-sm leading-6 text-navy-800"
         >
           Your buyer has paid. The funds are held for this order and will be
           credited to your wallet when the buyer confirms delivery.
         </section>
-        <router-link
-          :to="{ path: '/documents', query: { order: order.id } }"
-          class="inline-block mb-5 text-teal-800 underline"
-          >View invoices &amp; receipts / Print</router-link
-        >
-        <p class="mb-4 text-sm text-slate-600">
-          {{ order.payment_mode || "demo" }} funds · Held payment is released
-          after delivery confirmation.
-        </p>
-        <router-link
-          v-if="order.status === 'pending'"
-          :to="{ path: '/wallet', query: { order: order.id } }"
-          class="inline-block mb-4 rounded-xl bg-blue-800 px-5 py-3 text-white"
-          >Pay this order</router-link
-        >
+
+        <div class="mb-6 flex flex-wrap items-center gap-3">
+          <router-link
+            :to="{ path: '/documents', query: { order: order.id } }"
+            class="btn-outline btn-sm"
+          >
+            Invoices &amp; receipts
+          </router-link>
+          <router-link
+            v-if="order.status === 'pending'"
+            :to="{ path: '/wallet', query: { order: order.id } }"
+            class="btn-primary btn-sm"
+          >
+            Pay this order
+          </router-link>
+          <p class="text-sm text-muted">
+            {{ order.payment_mode || "demo" }} funds · Held payment is released
+            after delivery confirmation.
+          </p>
+        </div>
 
         <div
           v-if="success"
-          class="p-3 rounded-lg bg-success/10 text-success text-sm mb-4"
+          role="status"
+          class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
         >
           {{ success }}
         </div>
         <div
           v-if="error"
-          class="p-3 rounded-lg bg-danger/10 text-danger text-sm mb-4"
+          role="alert"
+          class="mb-4 rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
         >
           {{ error }}
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Item Info -->
-          <BaseCard>
-            <div class="p-6">
-              <h2 class="font-semibold text-heading mb-4">Item</h2>
-              <div class="flex gap-4">
-                <div
-                  class="w-20 h-20 rounded-lg bg-surface overflow-hidden flex-shrink-0"
-                >
-                  <img
-                    v-if="getImage()"
-                    :src="getImage()"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 class="font-medium text-heading">
-                    {{ order.auctions?.listings?.title }}
-                  </h3>
-                  <p class="text-sm text-muted mt-1">
-                    {{ order.auctions?.listings?.condition }}
-                  </p>
-                </div>
+        <div class="grid gap-5 md:grid-cols-2">
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">Item</h2>
+            <div class="mt-4 flex gap-4">
+              <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface">
+                <img
+                  v-if="getImage()"
+                  :src="getImage()"
+                  :alt="order.auctions?.listings?.title"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-medium text-heading">
+                  {{ order.auctions?.listings?.title }}
+                </h3>
+                <p class="mt-1 text-sm capitalize text-muted">
+                  {{ order.auctions?.listings?.condition }}
+                </p>
               </div>
             </div>
           </BaseCard>
 
-          <!-- Order Info -->
-          <BaseCard>
-            <div class="p-6 space-y-3">
-              <div class="flex justify-between">
-                <span class="text-sm text-muted">{{ t("order.status") }}</span>
-                <StatusBadge :status="order.status" type="escrow" />
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">Summary</h2>
+            <dl class="mt-4 space-y-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <dt class="text-body">{{ t("order.status") }}</dt>
+                <dd><StatusBadge :status="order.status" type="escrow" /></dd>
               </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-muted">{{ t("order.amount") }}</span>
-                <span class="font-bold font-mono text-gold-600"
-                  >${{ Number(order.amount).toLocaleString() }}</span
-                >
+              <div class="flex items-center justify-between gap-3">
+                <dt class="text-body">{{ t("order.amount") }}</dt>
+                <dd class="numeric font-semibold text-heading">{{ formatUSD(order.amount) }}</dd>
               </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-muted">Date</span>
-                <span class="text-sm text-heading">{{
-                  new Date(order.created_at).toLocaleDateString()
-                }}</span>
+              <div class="flex items-center justify-between gap-3">
+                <dt class="text-body">Date</dt>
+                <dd class="text-heading">{{ formatDate(order.created_at) }}</dd>
               </div>
-              <div v-if="order.released_at" class="flex justify-between">
-                <span class="text-sm text-muted">Released</span>
-                <span class="text-sm text-heading">{{
-                  new Date(order.released_at).toLocaleDateString()
-                }}</span>
+              <div v-if="order.released_at" class="flex items-center justify-between gap-3">
+                <dt class="text-body">Released</dt>
+                <dd class="text-heading">{{ formatDate(order.released_at) }}</dd>
+              </div>
+            </dl>
+          </BaseCard>
+
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">Seller</h2>
+            <div class="mt-4 flex items-center gap-3">
+              <div class="grid h-10 w-10 place-items-center rounded-full bg-navy-900">
+                <span class="text-sm font-semibold text-white">
+                  {{ (order.seller?.display_name || "S").charAt(0).toUpperCase() }}
+                </span>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-heading">
+                  {{ order.seller?.display_name || "Unknown" }}
+                </p>
               </div>
             </div>
           </BaseCard>
 
-          <!-- Seller Info -->
-          <BaseCard>
-            <div class="p-6">
-              <h2 class="font-semibold text-heading mb-3">Seller</h2>
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-full bg-navy-700 flex items-center justify-center"
-                >
-                  <span class="text-sm font-semibold text-white">
-                    {{
-                      (order.seller?.display_name || "S")
-                        .charAt(0)
-                        .toUpperCase()
-                    }}
-                  </span>
-                </div>
-                <div>
-                  <p class="font-medium text-heading text-sm">
-                    {{ order.seller?.display_name || "Unknown" }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </BaseCard>
-
-          <!-- Actions -->
           <BaseCard
             v-if="
               order.status === 'held' &&
               order.funded_at &&
               user?.id === order.buyer_id
             "
+            padded
           >
-            <div class="p-6">
-              <h2 class="font-semibold text-heading mb-3">Actions</h2>
-              <p class="text-sm text-muted mb-4">
-                Once you receive the item, confirm delivery to release the
-                escrow funds to the seller.
-              </p>
-              <BaseButton
-                variant="success"
-                :loading="confirming"
-                @click="handleConfirmDelivery"
-              >
-                {{ t("order.confirm_delivery") }}
-              </BaseButton>
-            </div>
+            <h2 class="font-display text-base font-semibold text-heading">Actions</h2>
+            <p class="mt-2 text-sm leading-6 text-body">
+              Once you receive the item, confirm delivery to release the escrow
+              funds to the seller.
+            </p>
+            <BaseButton
+              variant="success"
+              :loading="confirming"
+              class="mt-4"
+              @click="handleConfirmDelivery"
+            >
+              {{ t("order.confirm_delivery") }}
+            </BaseButton>
           </BaseCard>
         </div>
       </template>
-    </div>
+    </main>
   </UserLayout>
 </template>

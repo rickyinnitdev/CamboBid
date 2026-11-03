@@ -55,14 +55,32 @@ async function handleSubmit() {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-2xl">
-      <h1 class="text-2xl font-bold text-heading mb-8">{{ t("dispute.file") }}</h1>
+    <main class="page-container max-w-4xl">
+      <div class="page-header">
+        <div>
+          <p class="kicker">Resolution centre</p>
+          <h1 class="page-title mt-3">{{ t("dispute.file") }}</h1>
+          <p class="page-subtitle mt-3">
+            Describe what went wrong and attach any evidence. A reviewer will
+            respond through the case page.
+          </p>
+        </div>
+        <router-link to="/disputes" class="btn-outline btn-sm self-start sm:self-auto">
+          All disputes
+        </router-link>
+      </div>
 
-      <BaseCard>
-        <div class="p-6">
-          <div v-if="error" class="p-3 rounded-lg bg-danger/10 text-danger text-sm mb-4">{{ error }}</div>
+      <div class="grid gap-5 lg:grid-cols-[1fr_300px]">
+        <BaseCard padded>
+          <div
+            v-if="error"
+            role="alert"
+            class="mb-5 rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+          >
+            {{ error }}
+          </div>
 
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+          <form class="space-y-5" @submit.prevent="handleSubmit">
             <BaseInput
               v-model="form.auctionId"
               label="Auction ID"
@@ -71,40 +89,44 @@ async function handleSubmit() {
             />
 
             <div>
-              <label class="block text-sm font-medium text-heading mb-1.5">{{ t("dispute.reason") }} *</label>
-              <select
-                v-model="form.reason"
-                required
-                class="block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
-              >
+              <label for="dispute-reason" class="label">
+                {{ t("dispute.reason") }} <span class="text-danger" aria-hidden="true">*</span>
+              </label>
+              <select id="dispute-reason" v-model="form.reason" required class="select">
                 <option value="" disabled>Select a reason</option>
                 <option v-for="r in reasons" :key="r" :value="r">{{ r }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-heading mb-1.5">{{ t("dispute.description") }}</label>
+              <label for="dispute-description" class="label">
+                {{ t("dispute.description") }}
+              </label>
               <textarea
+                id="dispute-description"
                 v-model="form.description"
-                rows="4"
-                class="block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 transition-colors resize-none"
+                rows="5"
+                class="input resize-none"
                 placeholder="Provide details about your dispute..."
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-heading mb-1.5">{{ t("dispute.evidence") }}</label>
+              <label for="dispute-files" class="label">{{ t("dispute.evidence") }}</label>
               <input
+                id="dispute-files"
                 type="file"
                 accept="image/*,.pdf"
                 multiple
-                class="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-navy-700 file:text-white hover:file:bg-navy-800 file:cursor-pointer"
+                class="block w-full cursor-pointer rounded-lg border border-line bg-white text-sm text-body file:mr-4 file:cursor-pointer file:border-0 file:bg-navy-900 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-500"
                 @change="handleEvidenceChange"
               />
-              <p v-if="evidenceFiles.length" class="text-xs text-muted mt-2">{{ evidenceFiles.length }} file(s) selected</p>
+              <p v-if="evidenceFiles.length" class="mt-2 text-xs text-muted">
+                {{ evidenceFiles.length }} file(s) selected
+              </p>
             </div>
 
-            <div class="flex items-center gap-3 pt-2">
+            <div class="flex flex-wrap items-center gap-3 border-t border-border pt-5">
               <BaseButton type="submit" variant="danger" :loading="submitting">
                 {{ t("dispute.submit") }}
               </BaseButton>
@@ -113,8 +135,30 @@ async function handleSubmit() {
               </router-link>
             </div>
           </form>
-        </div>
-      </BaseCard>
-    </div>
+        </BaseCard>
+
+        <aside class="space-y-4">
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">
+              Before you file
+            </h2>
+            <ul class="mt-3 space-y-3 text-sm leading-6 text-body">
+              <li>Contact the seller first — most issues are resolved directly.</li>
+              <li>Include photos of the item and packaging where possible.</li>
+              <li>Keep the order number and delivery details ready.</li>
+            </ul>
+          </BaseCard>
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">
+              What happens next
+            </h2>
+            <p class="mt-2 text-sm leading-6 text-body">
+              The case is reviewed by staff. Payments related to the order may be
+              frozen while the dispute is open.
+            </p>
+          </BaseCard>
+        </aside>
+      </div>
+    </main>
   </UserLayout>
 </template>

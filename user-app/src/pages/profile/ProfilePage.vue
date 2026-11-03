@@ -18,7 +18,6 @@ const phone = ref("");
 const location = ref("");
 const avatarFile = ref(null);
 const avatarPreview = ref(null);
-const loading = ref(false);
 const saving = ref(false);
 const error = ref("");
 const success = ref("");
@@ -67,46 +66,70 @@ async function handleSave() {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-3xl">
+    <main class="page-container max-w-5xl">
       <div class="page-header">
         <div>
-          <p class="section-eyebrow">Account</p>
-          <h1 class="page-title">{{ t("profile.title") }}</h1>
-          <p class="page-subtitle">Manage your profile, contact details, and bidder identity.</p>
+          <p class="kicker">Account</p>
+          <h1 class="page-title mt-3">{{ t("profile.title") }}</h1>
+          <p class="page-subtitle mt-3">
+            Manage your profile, contact details and bidder identity.
+          </p>
         </div>
+        <router-link to="/account/security" class="btn-outline btn-sm self-start sm:self-auto">
+          Account security
+        </router-link>
       </div>
 
-      <BaseCard>
-        <div class="p-6">
-          <div v-if="error" class="p-3 rounded-lg bg-danger/10 text-danger text-sm mb-4">{{ error }}</div>
-          <div v-if="success" class="p-3 rounded-lg bg-success/10 text-success text-sm mb-4">{{ success }}</div>
+      <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <BaseCard padded>
+          <div
+            v-if="error"
+            role="alert"
+            class="mb-5 rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+          >
+            {{ error }}
+          </div>
+          <div
+            v-if="success"
+            role="status"
+            class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+          >
+            {{ success }}
+          </div>
 
-          <!-- Avatar -->
-          <div class="flex items-center gap-6 mb-8">
-            <div class="relative">
+          <div class="flex items-center gap-5 border-b border-border pb-6">
+            <div class="relative shrink-0">
               <img
                 v-if="avatarPreview"
                 :src="avatarPreview"
-                alt="Avatar"
-                class="w-20 h-20 rounded-full object-cover"
+                alt="Your profile photo"
+                class="h-20 w-20 rounded-2xl object-cover ring-1 ring-border"
               />
-              <div v-else class="w-20 h-20 rounded-full bg-navy-700 flex items-center justify-center">
-                <span class="text-2xl font-bold text-white">
+              <div
+                v-else
+                class="grid h-20 w-20 place-items-center rounded-2xl bg-navy-900"
+              >
+                <span class="font-display text-2xl font-semibold text-white">
                   {{ (displayName || "U").charAt(0).toUpperCase() }}
                 </span>
               </div>
-              <label class="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full border border-border shadow-sm flex items-center justify-center cursor-pointer hover:bg-surface">
-                <svg class="w-3.5 h-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              <label
+                class="absolute -bottom-1.5 -right-1.5 grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-border bg-white text-muted shadow-sm transition-colors hover:bg-surface hover:text-heading"
+                aria-label="Change profile photo"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <input type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+                <input type="file" accept="image/*" class="sr-only" @change="handleAvatarChange" />
               </label>
             </div>
-            <div>
-              <h3 class="font-semibold text-heading">{{ profile?.display_name }}</h3>
-              <p class="text-sm text-muted">{{ profile?.email }}</p>
-              <div class="flex items-center gap-2 mt-1">
+            <div class="min-w-0">
+              <h2 class="truncate font-display text-lg font-semibold text-heading">
+                {{ profile?.display_name || "Your profile" }}
+              </h2>
+              <p class="mt-1 truncate text-sm text-body">{{ profile?.email }}</p>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
                 <BaseBadge v-if="profile?.identity_verified" variant="success" size="sm">
                   {{ t("profile.verified") }}
                 </BaseBadge>
@@ -116,36 +139,98 @@ async function handleSave() {
                 <BaseBadge v-if="profile?.deposit_paid" variant="info" size="sm">
                   {{ t("profile.deposit_paid") }}
                 </BaseBadge>
+                <BaseBadge v-if="profile?.demo_verification" variant="warning" size="sm">
+                  Demo verification
+                </BaseBadge>
               </div>
             </div>
           </div>
 
-          <!-- Form -->
-          <form @submit.prevent="handleSave" class="space-y-4">
-            <BaseInput v-model="displayName" :label="t('profile.display_name')" required />
-            <BaseInput v-model="phone" :label="t('profile.phone')" type="tel" />
-            <BaseInput v-model="location" :label="t('profile.location')" />
+          <form class="mt-6 space-y-4" @submit.prevent="handleSave">
+            <BaseInput v-model="displayName" :label="t('profile.display_name')" autocomplete="name" required />
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <BaseInput v-model="phone" :label="t('profile.phone')" type="tel" autocomplete="tel" />
+              <BaseInput v-model="location" :label="t('profile.location')" autocomplete="address-level2" />
+            </div>
+
             <div>
-              <label class="block text-sm font-medium text-heading mb-1.5">{{ t("profile.bio") }}</label>
+              <label for="profile-bio" class="label">{{ t("profile.bio") }}</label>
               <textarea
+                id="profile-bio"
                 v-model="bio"
-                rows="3"
-                class="block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 transition-colors resize-none"
-                placeholder="Tell us about yourself..."
+                rows="4"
+                class="input resize-none"
+                placeholder="Tell buyers and sellers a little about yourself."
               />
             </div>
 
-            <div class="flex items-center gap-3 pt-2">
+            <div class="flex flex-wrap items-center gap-3 border-t border-border pt-5">
               <BaseButton type="submit" variant="primary" :loading="saving">
                 {{ t("profile.save") }}
               </BaseButton>
-              <router-link to="/verify-identity" class="text-sm font-medium text-navy-700 hover:text-navy-800">
+              <router-link
+                to="/verify-identity"
+                class="text-sm font-semibold text-navy-700 transition-colors hover:text-navy-900"
+              >
                 {{ t("profile.identity_status") }} &rarr;
               </router-link>
             </div>
           </form>
-        </div>
-      </BaseCard>
-    </div>
+        </BaseCard>
+
+        <aside class="space-y-4">
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">
+              Account status
+            </h2>
+            <dl class="mt-4 space-y-3 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <dt class="text-body">Identity</dt>
+                <dd>
+                  <BaseBadge :variant="profile?.identity_verified ? 'success' : 'warning'" size="sm">
+                    {{ profile?.identity_verified ? t("profile.verified") : t("profile.not_verified") }}
+                  </BaseBadge>
+                </dd>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <dt class="text-body">Bidder deposit</dt>
+                <dd>
+                  <BaseBadge :variant="profile?.deposit_paid ? 'success' : 'default'" size="sm">
+                    {{ profile?.deposit_paid ? "Paid" : "Not paid" }}
+                  </BaseBadge>
+                </dd>
+              </div>
+            </dl>
+            <router-link
+              to="/verify-identity"
+              class="mt-5 inline-flex text-sm font-semibold text-navy-700 hover:text-navy-900"
+            >
+              Review verification &rarr;
+            </router-link>
+          </BaseCard>
+
+          <BaseCard padded>
+            <h2 class="font-display text-base font-semibold text-heading">
+              Quick links
+            </h2>
+            <nav class="mt-3 divide-y divide-border text-sm" aria-label="Account shortcuts">
+              <router-link to="/profile/bids" class="flex items-center justify-between py-3 text-body transition-colors hover:text-heading">
+                Bid history <span aria-hidden="true" class="text-muted">&rarr;</span>
+              </router-link>
+              <router-link to="/orders" class="flex items-center justify-between py-3 text-body transition-colors hover:text-heading">
+                Wins &amp; purchases <span aria-hidden="true" class="text-muted">&rarr;</span>
+              </router-link>
+              <router-link to="/wallet" class="flex items-center justify-between py-3 text-body transition-colors hover:text-heading">
+                Wallet <span aria-hidden="true" class="text-muted">&rarr;</span>
+              </router-link>
+              <router-link to="/documents" class="flex items-center justify-between py-3 text-body transition-colors hover:text-heading">
+                Invoices &amp; receipts <span aria-hidden="true" class="text-muted">&rarr;</span>
+              </router-link>
+            </nav>
+          </BaseCard>
+        </aside>
+      </div>
+    </main>
   </UserLayout>
 </template>

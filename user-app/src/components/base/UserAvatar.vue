@@ -21,7 +21,7 @@ watch(source, () => {
 </script>
 <template>
   <span
-    class="inline-flex shrink-0 overflow-hidden rounded-full bg-teal-100 text-teal-900 items-center justify-center font-semibold"
+    class="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-navy-100 font-semibold text-navy-800"
     role="img"
     :aria-label="name || profile?.display_name || 'Profile'"
     ><img

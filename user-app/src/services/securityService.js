@@ -43,8 +43,9 @@ export const securityService = {
     if (error) throw error;
     return data;
   },
-  accept: (terms, privacy) =>
-    rpc("accept_policies", { p_terms: terms, p_privacy: privacy }),
+  accept: (terms, privacy) => {
+    return rpc("accept_policies", { p_terms: terms, p_privacy: privacy });
+  },
   async factors() {
     const { data, error } = await supabase.auth.mfa.listFactors();
     if (error) throw error;

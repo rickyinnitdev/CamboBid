@@ -7,11 +7,7 @@ const authStore = useAuthStore();
 const settingsStore = useSettingsStore();
 
 onMounted(async () => {
-  // Run both in parallel — neither depends on the other
-  await Promise.all([
-    authStore.initialize(),
-    settingsStore.fetchSettings(),
-  ]);
+  await Promise.all([authStore.initialize(), settingsStore.fetchSettings()]);
 });
 </script>
 
@@ -27,9 +23,5 @@ onMounted(async () => {
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-.font-mono {
-  font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
 }
 </style>

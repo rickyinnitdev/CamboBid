@@ -198,238 +198,300 @@ onUnmounted(() => {
 <template>
   <UserLayout>
     <div v-if="!ready" class="page-container py-16" role="status">
-      <p v-if="error" role="alert" class="text-red-700">{{ error }}</p>
-      <p v-else>Loading your wallet and payment history…</p>
-      <button v-if="error" class="underline mt-4" @click="reloadWallet">
+      <p v-if="error" role="alert" class="text-sm text-danger">{{ error }}</p>
+      <p v-else class="text-sm text-body">Loading your wallet and payment history…</p>
+      <button v-if="error" class="btn-outline btn-sm mt-4" @click="reloadWallet">
         Reload wallet
       </button>
     </div>
-    <main v-else class="wallet-shell page-container space-y-6">
-      <div class="flex flex-wrap justify-between items-center gap-4">
+
+    <main v-else class="page-container space-y-6">
+      <div class="page-header">
         <div>
-          <p class="eyebrow">CamboBid finance</p>
-          <h1 class="text-3xl font-bold mt-2">Your wallet, at a glance.</h1>
-          <p class="text-slate-500 mt-2">
+          <p class="kicker">CamboBid finance</p>
+          <h1 class="page-title mt-3">Your wallet</h1>
+          <p class="page-subtitle mt-3">
             Top up, follow your bids and keep every payment in view.
           </p>
         </div>
-        <router-link to="/account/security" class="wallet-link"
-          >Account security ↗</router-link
-        >
+        <router-link to="/account/security" class="btn-outline btn-sm self-start sm:self-auto">
+          Account security
+        </router-link>
       </div>
-      <div
-        class="flex flex-wrap justify-between gap-3 bg-white/70 rounded-2xl p-3"
-      >
-        <div class="flex gap-2">
+
+      <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-white p-2">
+        <div class="flex gap-1" role="group" aria-label="Wallet environment">
           <button
             v-for="m in ['demo', 'live']"
             :key="m"
-            class="rounded-xl px-5 py-2 text-sm"
-            :class="mode === m ? 'bg-teal-800 text-white' : 'text-slate-500'"
+            class="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+            :class="
+              mode === m
+                ? 'bg-navy-900 text-white'
+                : 'text-body hover:bg-surface hover:text-heading'
+            "
+            :aria-pressed="mode === m"
             @click="mode = m"
           >
             {{ m === "demo" ? "Demo wallet" : "Live wallet" }}
           </button>
         </div>
-        <p class="text-xs text-slate-500 self-center px-2">
+        <p class="px-2 text-xs text-muted">
           Checkout environment:
-          <strong class="uppercase">{{ activeMode }}</strong>
+          <strong class="font-semibold uppercase text-heading">{{ activeMode }}</strong>
         </p>
       </div>
-      <p
+
+      <div
         v-if="error"
         role="alert"
-        class="rounded-xl bg-red-50 p-4 text-red-700"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
       >
         {{ error }}
-        <span v-if="checkout?.status === 'pending'"
-          >Your checkout is saved. Verification will retry automatically; do not
-          pay again.</span
-        >
-      </p>
-      <p
+        <span v-if="checkout?.status === 'pending'">
+          Your checkout is saved. Verification will retry automatically; do not
+          pay again.
+        </span>
+      </div>
+
+      <div
         v-if="status && !eligible"
-        class="rounded-xl bg-amber-50 p-4 text-sm text-amber-900"
+        class="rounded-xl border border-gold-200 bg-gold-50 p-4 text-sm leading-6 text-gold-900"
       >
         Complete email confirmation, ID approval, policy agreement and
         authenticator verification in
-        <router-link to="/account/security" class="underline font-semibold"
-          >Account security</router-link
+        <router-link to="/account/security" class="font-semibold underline">
+          Account security</router-link
         >
         to top up or pay.
-      </p>
+      </div>
+
       <section
         v-if="pendingEarnings > 0"
-        class="rounded-2xl bg-blue-50 border border-blue-100 p-5 flex flex-wrap justify-between gap-3"
+        class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-navy-100 bg-navy-50 p-5"
       >
         <div>
-          <p class="font-semibold">
+          <p class="font-semibold text-navy-900">
             Pending sale proceeds: {{ money(pendingEarnings) }}
           </p>
-          <p class="text-sm text-slate-600 mt-2">
+          <p class="mt-1.5 text-sm leading-6 text-navy-800">
             Held in escrow. These funds enter your available wallet after the
             buyer confirms delivery or staff resolves a dispute.
           </p>
         </div>
         <router-link
           to="/orders?tab=sales"
-          class="text-sm text-blue-800 underline self-center"
-          >View my sales →</router-link
+          class="text-sm font-semibold text-navy-700 underline hover:text-navy-900"
         >
+          View my sales &rarr;
+        </router-link>
       </section>
-      <div class="grid gap-6 lg:grid-cols-5">
-        <section class="wallet-panel lg:col-span-3">
-          <div class="flex justify-between">
-            <h2 class="font-semibold">CamboBid account</h2>
-            <span class="text-xs text-slate-400 uppercase"
-              >{{ mode }} · USD</span
-            >
+
+      <div class="grid gap-5 lg:grid-cols-5">
+        <section class="surface-panel p-5 sm:p-6 lg:col-span-3">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="font-display text-lg font-semibold text-heading">
+              CamboBid account
+            </h2>
+            <span class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              {{ mode }} · USD
+            </span>
           </div>
-          <div class="wallet-card mt-6">
-            <div class="flex justify-between">
-              <span class="font-bold text-lg">CamboBid</span
-              ><span class="text-xs uppercase tracking-widest">{{
-                mode === "live" ? "KHQR wallet" : "Demo wallet"
-              }}</span>
+
+          <div class="wallet-card mt-5">
+            <div class="flex items-start justify-between gap-4">
+              <span class="font-display text-lg font-semibold text-white">CamboBid</span>
+              <span class="text-[10px] uppercase tracking-[0.18em] text-white/60">
+                {{ mode === "live" ? "KHQR wallet" : "Demo wallet" }}
+              </span>
             </div>
-            <p class="text-xs text-teal-100 mt-10">Available to bid</p>
-            <p class="text-4xl font-semibold mt-2">
+            <p class="mt-10 text-xs text-white/60">Available to bid</p>
+            <p class="numeric mt-1.5 font-display text-4xl font-semibold text-white">
               {{ money(account.available) }}
             </p>
-            <div class="flex justify-between text-xs mt-8 text-teal-100">
-              <span>SECURE WALLET</span
-              ><span>USD / {{ mode?.toUpperCase() }}</span>
+            <div class="mt-8 flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-white/50">
+              <span>Secure wallet</span>
+              <span>USD / {{ mode?.toUpperCase() }}</span>
             </div>
           </div>
-          <p class="mt-5 text-xs text-slate-500">
+
+          <p class="mt-4 text-xs leading-5 text-muted">
             {{
               mode === "demo"
                 ? "Demo funds have no cash value and never move bank money."
-                : "Live balances reflect confirmed bank receipts. Request a withdrawal below; authorized staff transfer the funds to your bank account."
+                : "Live balances reflect confirmed bank receipts. Request a withdrawal below; authorised staff transfer the funds to your bank account."
             }}
           </p>
         </section>
-        <section
-          class="wallet-panel lg:col-span-2 flex flex-col justify-center text-center"
-        >
-          <p class="text-sm text-slate-500">Your total balance</p>
-          <p class="text-4xl font-bold text-teal-800 mt-4">
+
+        <section class="surface-panel flex flex-col justify-center p-5 text-center sm:p-6 lg:col-span-2">
+          <p class="text-xs font-medium uppercase tracking-wider text-muted">
+            Your total balance
+          </p>
+          <p class="numeric mt-3 font-display text-4xl font-semibold text-heading">
             {{ money(total) }}
           </p>
-          <p class="text-xs text-slate-400 mt-3">
+          <p class="mt-2 text-xs text-muted">
             Available + reserved · {{ mode }} funds
           </p>
-          <div class="grid grid-cols-4 gap-2 bg-slate-50 rounded-2xl p-3 mt-7">
-            <a href="#withdrawals" class="wallet-action"
-              ><span>↗</span>Withdraw</a
-            >
-            <a href="#topup" class="wallet-action"><span>＋</span>Top up</a
-            ><router-link to="/documents" class="wallet-action"
-              ><span>▤</span>Invoices</router-link
-            ><router-link to="/orders" class="wallet-action"
-              ><span>↗</span>Orders</router-link
-            >
+
+          <div class="mt-6 grid grid-cols-4 gap-1.5 rounded-xl bg-surface p-2">
+            <a href="#withdrawals" class="wallet-action">
+              <span class="wallet-action-icon" aria-hidden="true">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v12m0 0l4-4m-4 4l-4-4M5 20h14" />
+                </svg>
+              </span>
+              Withdraw
+            </a>
+            <a href="#topup" class="wallet-action">
+              <span class="wallet-action-icon" aria-hidden="true">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 20V8m0 0l4 4m-4-4l-4 4M5 4h14" />
+                </svg>
+              </span>
+              Top up
+            </a>
+            <router-link to="/documents" class="wallet-action">
+              <span class="wallet-action-icon" aria-hidden="true">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7h8M8 11h8M8 15h5m-8 6h14a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+              </span>
+              Invoices
+            </router-link>
+            <router-link to="/orders" class="wallet-action">
+              <span class="wallet-action-icon" aria-hidden="true">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </span>
+              Orders
+            </router-link>
           </div>
         </section>
       </div>
-      <div class="grid gap-6 lg:grid-cols-5">
-        <section class="wallet-panel lg:col-span-3">
-          <div class="flex flex-wrap justify-between gap-3">
-            <h2 class="font-semibold self-center">Recent transactions</h2>
+
+      <div class="grid gap-5 lg:grid-cols-5">
+        <section class="surface-panel p-5 sm:p-6 lg:col-span-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="font-display text-lg font-semibold text-heading">
+              Recent transactions
+            </h2>
             <input
               v-model="search"
               aria-label="Search wallet activity"
               placeholder="Search activity…"
-              class="border rounded-xl px-3 py-2 text-sm max-w-full"
+              class="input max-w-[200px] py-2 text-xs"
             />
           </div>
-          <p class="text-xs text-slate-500 mt-3 mb-5">
+          <p class="mt-2 text-xs leading-5 text-muted">
             Bids reserve funds. Outbid reservations are released; winning funds
             are held in escrow.
           </p>
-          <p v-if="!activity.length" class="py-8 text-sm text-slate-400">
+
+          <p v-if="!activity.length" class="py-8 text-sm text-muted">
             No matching transactions yet.
           </p>
           <div
             v-for="l in activity"
             :key="l.id"
-            class="flex flex-wrap justify-between items-center gap-3 py-4 border-t border-slate-100"
+            class="flex flex-wrap items-center justify-between gap-3 border-t border-border py-4 first:border-t-0 first:pt-2"
           >
-            <div class="flex gap-3 items-center">
+            <div class="flex items-center gap-3">
               <span
-                class="w-10 h-10 rounded-xl bg-teal-50 text-teal-800 grid place-items-center"
-                >{{ l.available_delta > 0 ? "↙" : "↗" }}</span
+                class="grid h-9 w-9 place-items-center rounded-lg"
+                :class="
+                  l.available_delta > 0
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-surface text-body'
+                "
+                aria-hidden="true"
               >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    :d="
+                      l.available_delta > 0
+                        ? 'M12 4v12m0 0l4-4m-4 4l-4-4M5 20h14'
+                        : 'M12 20V8m0 0l4 4m-4-4l-4 4M5 4h14'
+                    "
+                  />
+                </svg>
+              </span>
               <div>
-                <p class="text-sm font-medium capitalize">
+                <p class="text-sm font-medium capitalize text-heading">
                   {{ l.reason.replaceAll("_", " ") }}
                 </p>
-                <p class="text-xs text-slate-400 mt-1">
+                <p class="mt-0.5 text-xs text-muted">
                   {{ new Date(l.created_at).toLocaleString() }}
                 </p>
               </div>
             </div>
             <div class="text-right text-sm">
               <p
-                :class="
-                  l.available_delta > 0 ? 'text-teal-700' : 'text-slate-700'
-                "
+                class="numeric font-semibold"
+                :class="l.available_delta > 0 ? 'text-success' : 'text-heading'"
               >
-                {{ l.available_delta > 0 ? "+" : ""
-                }}{{ money(l.available_delta) }}
+                {{ l.available_delta > 0 ? "+" : "" }}{{ money(l.available_delta) }}
               </p>
-              <p class="text-xs text-slate-400 mt-1">
+              <p class="mt-0.5 text-xs text-muted">
                 Reserved {{ money(l.reserved_delta) }}
               </p>
             </div>
           </div>
         </section>
-        <section class="wallet-panel lg:col-span-2 text-center">
-          <h2 class="font-semibold text-left">Balance allocation</h2>
-          <div
-            class="allocation mx-auto my-8"
-            :style="{ '--share': share + '%' }"
-          >
+
+        <section class="surface-panel p-5 text-center sm:p-6 lg:col-span-2">
+          <h2 class="text-left font-display text-lg font-semibold text-heading">
+            Balance allocation
+          </h2>
+          <div class="allocation mx-auto my-7" :style="{ '--share': share + '%' }">
             <div>
-              <p class="text-3xl font-bold">{{ share }}%</p>
-              <p class="text-xs text-slate-500 mt-1">Available</p>
+              <p class="numeric font-display text-3xl font-semibold text-heading">
+                {{ share }}%
+              </p>
+              <p class="mt-1 text-xs text-muted">Available</p>
             </div>
           </div>
-          <div class="grid grid-cols-2 text-sm">
+          <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="text-slate-400 text-xs">Available</p>
-              <p class="font-semibold mt-2">{{ money(account.available) }}</p>
+              <p class="text-xs text-muted">Available</p>
+              <p class="numeric mt-1.5 font-semibold text-heading">
+                {{ money(account.available) }}
+              </p>
             </div>
             <div>
-              <p class="text-slate-400 text-xs">Reserved funds</p>
-              <p class="font-semibold mt-2">{{ money(account.reserved) }}</p>
+              <p class="text-xs text-muted">Reserved funds</p>
+              <p class="numeric mt-1.5 font-semibold text-heading">
+                {{ money(account.reserved) }}
+              </p>
             </div>
           </div>
         </section>
       </div>
-      <div class="grid gap-6 md:grid-cols-2">
-        <form
-          id="topup"
-          class="wallet-panel space-y-4"
-          @submit.prevent="create"
-        >
-          <p class="eyebrow">
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <form id="topup" class="surface-panel space-y-4 p-5 sm:p-6" @submit.prevent="create">
+          <p class="kicker">
             {{ route.query.auction ? "Buy Now with KHQR" : "Secure checkout" }}
           </p>
-          <p v-if="route.query.auction" class="text-sm">
+          <p v-if="route.query.auction" class="text-sm leading-6 text-body">
             Pay ${{ (Number(route.query.quote) / 100).toFixed(2) }} directly
             with KHQR. No top-up step needed. If the item becomes unavailable
             before verification, the received amount goes to your wallet.
           </p>
           <p
             v-if="activeMode === 'live' && !liveEnabled"
-            class="text-sm text-amber-800"
+            class="rounded-lg border border-gold-200 bg-gold-50 p-3 text-sm text-gold-900"
             role="status"
           >
             New real payments are paused. Existing receipts can still be
             checked.
           </p>
-          <h2 class="text-xl font-bold">
+          <h2 class="font-display text-xl font-semibold text-heading">
             {{
               route.query.auction
                 ? "Pay for this item"
@@ -438,7 +500,7 @@ onUnmounted(() => {
                   : "Top up your wallet"
             }}
           </h2>
-          <p class="text-sm text-slate-500">
+          <p class="text-sm leading-6 text-body">
             {{
               route.query.order
                 ? "Your order determines the payable amount."
@@ -447,25 +509,31 @@ onUnmounted(() => {
           </p>
           <label
             v-if="!route.query.order && !route.query.auction"
-            class="block text-sm"
-            >Amount (USD)<input
-              v-model="amount"
-              type="number"
-              min="0.01"
-              max="1000"
-              step="0.01"
-              required
-              class="block w-full mt-2 border rounded-xl p-3"
-          /></label>
+            for="wallet-amount"
+            class="label"
+          >
+            Amount (USD)
+          </label>
+          <input
+            v-if="!route.query.order && !route.query.auction"
+            id="wallet-amount"
+            v-model="amount"
+            type="number"
+            min="0.01"
+            max="1000"
+            step="0.01"
+            required
+            class="input"
+          />
           <div
             v-if="!route.query.order && !route.query.auction"
-            class="flex gap-2"
+            class="flex flex-wrap gap-2"
           >
             <button
               v-for="n in ['0.01', '0.10', '1', '5']"
               :key="n"
               type="button"
-              class="border rounded-lg px-3 py-2 text-sm"
+              class="btn-outline btn-sm"
               @click="amount = n"
             >
               ${{ n }}
@@ -475,94 +543,87 @@ onUnmounted(() => {
             :disabled="
               busy || !eligible || (activeMode === 'live' && !liveEnabled)
             "
-            class="rounded-xl bg-teal-800 text-white px-5 py-3 disabled:opacity-40"
+            class="btn-primary w-full"
           >
             Create {{ activeMode }} checkout
           </button>
-          <p class="text-xs text-slate-400">
+          <p class="text-xs leading-5 text-muted">
             Live checkout uses our Bakong KHQR. Demo checkout uses a simulation
             button.
           </p>
         </form>
-        <section
-          v-if="checkout"
-          class="wallet-panel space-y-4"
-          aria-live="polite"
-        >
-          <div class="flex justify-between items-center">
-            <p class="eyebrow">{{ checkout.mode }} checkout</p>
-            <span class="text-xs uppercase text-slate-500">{{
-              checkout.status
-            }}</span>
+
+        <section v-if="checkout" class="surface-panel space-y-4 p-5 sm:p-6" aria-live="polite">
+          <div class="flex items-center justify-between gap-3">
+            <p class="kicker">{{ checkout.mode }} checkout</p>
+            <span class="text-xs font-semibold uppercase tracking-wide text-muted">
+              {{ checkout.status }}
+            </span>
           </div>
-          <h2 class="text-3xl font-bold">{{ money(checkout.amount_minor) }}</h2>
-          <p class="break-all text-xs text-slate-400">{{ checkout.id }}</p>
-          <template v-if="checkout.status === 'pending'"
-            ><p class="text-sm">
+          <h2 class="numeric font-display text-3xl font-semibold text-heading">
+            {{ money(checkout.amount_minor) }}
+          </h2>
+          <p class="break-all text-xs text-muted">{{ checkout.id }}</p>
+
+          <template v-if="checkout.status === 'pending'">
+            <p class="text-sm text-body">
               Expires in {{ Math.floor(remaining / 60) }}:{{
                 String(remaining % 60).padStart(2, "0")
               }}
             </p>
             <div v-if="qr" class="khqr mx-auto">
-              <div class="bg-red-600 text-white px-5 py-3 text-lg font-bold">
+              <div class="bg-danger px-5 py-3 text-center text-lg font-bold text-white">
                 KHQR
               </div>
-              <img
-                :src="qr"
-                alt="Live Bakong KHQR payment code"
-                class="w-full"
-              />
-              <p class="text-center text-xs pb-4">
+              <img :src="qr" alt="Live Bakong KHQR payment code" class="w-full" />
+              <p class="pb-4 text-center text-xs text-muted">
                 Scan with a KHQR-compatible banking app
               </p>
             </div>
-            <p v-else class="bg-slate-50 rounded-xl p-8 text-center text-sm">
+            <p v-else class="rounded-xl bg-surface p-8 text-center text-sm text-body">
               Demo payment — no bank QR or money transfer.
             </p>
             <div class="flex flex-wrap gap-3">
+              <button :disabled="busy" class="btn-outline" @click="check">
+                Check payment
+              </button>
               <button
-                :disabled="busy"
-                class="border rounded-xl px-4 py-3 text-sm"
-                @click="check"
-              >
-                Check payment</button
-              ><button
                 v-if="checkout.mode === 'demo'"
                 :disabled="busy || remaining === 0"
-                class="bg-teal-800 text-white rounded-xl px-4 py-3 text-sm disabled:opacity-40"
+                class="btn-primary"
                 @click="simulate"
               >
                 Simulate successful payment
               </button>
             </div>
-            <p v-if="checkout.mode === 'live'" class="text-xs text-slate-500">
+            <p v-if="checkout.mode === 'live'" class="text-xs leading-5 text-muted">
               Automatic checks will retry shortly. You can also use Check
               payment.
-            </p></template
-          >
-          <p v-else-if="checkout.status === 'paid'" class="text-teal-800">
-            Payment confirmed. Your balance or order is updated.
-            <span v-if="checkout.purchase_note" class="block mt-2">{{
-              checkout.purchase_note
-            }}</span>
+            </p>
+          </template>
+
+          <div v-else-if="checkout.status === 'paid'" class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+            <p class="font-medium">Payment confirmed.</p>
+            <p class="mt-1">Your balance or order is updated.</p>
+            <span v-if="checkout.purchase_note" class="mt-2 block">{{ checkout.purchase_note }}</span>
             <router-link
               v-if="checkout.purchased_order_id"
               :to="'/orders/' + checkout.purchased_order_id"
-              class="block underline mt-2"
-              >View your purchase →</router-link
+              class="mt-2 block font-semibold underline"
             >
-            <router-link to="/documents" class="underline"
-              >View receipt</router-link
-            >
-          </p>
-          <p
-            v-else-if="checkout.status === 'reconciliation'"
-            class="text-amber-800"
-          >
+              View your purchase &rarr;
+            </router-link>
+            <router-link to="/documents" class="mt-1 block font-semibold underline">
+              View receipt
+            </router-link>
+          </div>
+
+          <div v-else-if="checkout.status === 'reconciliation'" class="rounded-xl border border-gold-200 bg-gold-50 p-4 text-sm text-gold-900">
             This receipt needs staff reconciliation. Contact your project
             administrator.
-          </p>
-          <div v-else class="text-sm space-y-3">
+          </div>
+
+          <div v-else class="space-y-3 text-sm text-body">
             <p>
               This QR has expired. If you already paid, check its receipt before
               creating another payment.
@@ -570,162 +631,157 @@ onUnmounted(() => {
             <button
               v-if="checkout.mode === 'live'"
               :disabled="busy"
-              class="underline"
+              class="btn-outline btn-sm"
               @click="check"
             >
               Check payment receipt
             </button>
           </div>
         </section>
+
         <section
           v-else
-          class="wallet-panel flex flex-col justify-center text-center"
+          class="surface-panel flex flex-col justify-center p-8 text-center"
         >
-          <span class="text-5xl text-teal-800 mb-5">▦</span>
-          <h2 class="font-semibold">Your payment QR appears here</h2>
-          <p class="text-sm text-slate-400 mt-3">
+          <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-navy-50 text-navy-700">
+            <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" />
+            </svg>
+          </span>
+          <h2 class="mt-4 font-display text-lg font-semibold text-heading">
+            Your payment QR appears here
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-body">
             Choose an amount to create a secure, expiring checkout.
           </p>
         </section>
       </div>
+
       <WithdrawalPanel
         :mode="mode"
         :available="Number(account.available)"
         :eligible="!!eligible"
         @changed="run(load)"
       />
-      <section class="wallet-panel">
-        <h2 class="font-semibold mb-4">Recent checkouts</h2>
-        <p v-if="!overview.payments.length" class="text-sm text-slate-400">
-          No checkouts yet.
-        </p>
-        <button
-          v-for="p in overview.payments"
-          :key="p.id"
-          class="flex w-full flex-wrap justify-between gap-3 py-4 border-t text-sm text-left"
-          @click="run(() => show(p))"
-        >
-          <span
-            >{{ p.mode }} · {{ money(p.amount_minor) }} ·
-            {{ p.order_id ? "Order payment" : "Top-up" }}</span
-          ><span class="text-slate-500"
-            >{{ p.status }} ·
-            {{ new Date(p.created_at).toLocaleString() }}</span
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <section class="surface-panel p-5 sm:p-6">
+          <h2 class="font-display text-lg font-semibold text-heading">
+            Recent checkouts
+          </h2>
+          <p v-if="!overview.payments.length" class="py-6 text-sm text-muted">
+            No checkouts yet.
+          </p>
+          <button
+            v-for="p in overview.payments"
+            :key="p.id"
+            class="flex w-full flex-wrap items-center justify-between gap-3 border-t border-border py-3.5 text-left text-sm first:border-t-0"
+            @click="run(() => show(p))"
           >
-        </button>
-      </section>
-      <section class="wallet-panel">
-        <div class="flex justify-between mb-5">
-          <h2 class="font-semibold">Invoice activity</h2>
-          <router-link to="/documents" class="wallet-link"
-            >View all ↗</router-link
+            <span class="font-medium text-heading">
+              {{ p.mode }} · {{ money(p.amount_minor) }} ·
+              {{ p.order_id ? "Order payment" : "Top-up" }}
+            </span>
+            <span class="text-xs text-muted">
+              {{ p.status }} · {{ new Date(p.created_at).toLocaleString() }}
+            </span>
+          </button>
+        </section>
+
+        <section class="surface-panel p-5 sm:p-6">
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <h2 class="font-display text-lg font-semibold text-heading">
+              Invoice activity
+            </h2>
+            <router-link
+              to="/documents"
+              class="text-sm font-semibold text-navy-700 hover:text-navy-900"
+            >
+              View all &rarr;
+            </router-link>
+          </div>
+          <p
+            v-if="!documents.filter((d) => d.mode === mode).length"
+            class="py-4 text-sm text-muted"
           >
-        </div>
-        <p
-          v-if="!documents.filter((d) => d.mode === mode).length"
-          class="text-sm text-slate-400 py-4"
-        >
-          Invoices and confirmed payment receipts will appear here.
-        </p>
-        <router-link
-          v-for="d in documents.filter((d) => d.mode === mode).slice(0, 6)"
-          :key="d.id"
-          :to="'/documents/' + d.id"
-          class="flex flex-wrap justify-between gap-3 py-4 border-t text-sm"
-          ><span class="font-medium">{{ d.number }}</span
-          ><span class="text-slate-500">{{ d.snapshot.item }}</span
-          ><span class="capitalize text-teal-700">{{ d.kind }}</span
-          ><span>{{ money(d.amount_minor) }}</span></router-link
-        >
-      </section>
-    </main></UserLayout
-  >
+            Invoices and confirmed payment receipts will appear here.
+          </p>
+          <router-link
+            v-for="d in documents.filter((d) => d.mode === mode).slice(0, 6)"
+            :key="d.id"
+            :to="'/documents/' + d.id"
+            class="flex flex-wrap items-center justify-between gap-3 border-t border-border py-3.5 text-sm first:border-t-0"
+          >
+            <span class="font-medium text-heading">{{ d.number }}</span>
+            <span class="min-w-0 flex-1 truncate text-body">{{ d.snapshot.item }}</span>
+            <span class="capitalize text-navy-700">{{ d.kind }}</span>
+            <span class="numeric font-medium text-heading">{{ money(d.amount_minor) }}</span>
+          </router-link>
+        </section>
+      </div>
+    </main>
+  </UserLayout>
 </template>
 <style scoped>
-.wallet-shell {
-  max-width: 1200px;
-  background: #eef4f5;
-  border-radius: 30px;
-  margin-top: 28px;
-  margin-bottom: 32px;
-  padding: 32px;
-}
-.wallet-panel {
-  background: white;
-  border: 1px solid #e7eef0;
-  border-radius: 24px;
-  padding: 26px;
-}
-.eyebrow {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.13em;
-  color: #216875;
-  font-weight: 600;
-}
 .wallet-card {
   color: white;
-  border-radius: 22px;
-  padding: 26px;
+  border-radius: 1rem;
+  padding: 1.5rem;
   background:
-    radial-gradient(ellipse at 90% 90%, #2a7d8777 0 36%, transparent 37%),
-    linear-gradient(120deg, #216875, #113f4b);
-  box-shadow: 0 15px 30px #23586720;
+    radial-gradient(ellipse at 92% 88%, rgba(192, 138, 46, 0.28) 0 34%, transparent 35%),
+    linear-gradient(120deg, #163e5f, #0b1b2b);
+  box-shadow: 0 18px 40px -18px rgba(11, 27, 43, 0.55);
 }
+
 .wallet-action {
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: 8px;
-  font-size: 12px;
-  color: #245965;
+  gap: 0.4rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.25rem;
+  font-size: 11px;
+  font-weight: 500;
+  color: #475467;
+  transition: background-color 0.2s, color 0.2s;
 }
-.wallet-action span {
+
+.wallet-action:hover {
+  background: #fff;
+  color: #0b1b2b;
+}
+
+.wallet-action-icon {
   display: grid;
   place-items: center;
-  background: white;
-  width: 42px;
-  height: 40px;
-  border-radius: 12px;
-  font-size: 22px;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #163e5f;
 }
-.wallet-link {
-  font-size: 13px;
-  color: #216875;
-  font-weight: 600;
-}
+
 .allocation {
-  width: 200px;
-  height: 200px;
+  width: 190px;
+  height: 190px;
   border-radius: 50%;
-  background: conic-gradient(#216875 var(--share), #eaf0f1 0);
-  padding: 17px;
+  background: conic-gradient(#163e5f var(--share), #eef3f8 0);
+  padding: 16px;
 }
+
 .allocation > div {
-  background: white;
+  background: #fff;
   border-radius: 50%;
   height: 100%;
   display: flex;
   justify-content: center;
   flex-direction: column;
 }
+
 .khqr {
   max-width: 280px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border: 1px solid #e4e8ee;
+  border-radius: 1rem;
   overflow: hidden;
-}
-@media (max-width: 640px) {
-  .wallet-shell {
-    margin: 0;
-    border-radius: 0;
-    padding: 20px 14px;
-  }
-  .wallet-panel {
-    padding: 20px;
-  }
-  .wallet-card {
-    padding: 22px;
-  }
 }
 </style>

@@ -74,20 +74,20 @@ onUnmounted(() => {
 <template>
   <section
     v-if="payment"
-    class="rounded-2xl border border-teal-200 bg-white p-4 space-y-4"
+    class="surface-panel space-y-4 p-4 sm:p-5"
     aria-label="Auction KHQR checkout"
   >
-    <div class="flex justify-between gap-3">
-      <h3 class="font-semibold">
+    <div class="flex items-start justify-between gap-3">
+      <h3 class="font-display text-base font-semibold text-heading">
         {{ payment.bid_auction_id ? "Bid with KHQR" : "Buy Now with KHQR" }}
       </h3>
-      <strong>{{ money(payment.amount_minor) }}</strong>
+      <strong class="numeric text-heading">{{ money(payment.amount_minor) }}</strong>
     </div>
-    <p class="text-xs text-slate-500 break-all">
+    <p class="break-all text-xs text-muted">
       {{ payment.id }} · {{ payment.status }}
     </p>
     <template v-if="payment.status === 'pending'">
-      <p class="text-sm">
+      <p class="text-sm leading-6 text-body">
         Scan with your ABA, ACLEDA or another KHQR-compatible banking app.
         {{
           remaining > 0
@@ -97,12 +97,12 @@ onUnmounted(() => {
       </p>
       <div
         v-if="qr && remaining > 0"
-        class="mx-auto max-w-[280px] overflow-hidden border rounded-xl"
+        class="mx-auto max-w-[280px] overflow-hidden rounded-xl border border-border"
       >
-        <div class="bg-red-600 text-white font-bold px-4 py-2">KHQR</div>
+        <div class="bg-danger px-4 py-2 font-bold text-white">KHQR</div>
         <img :src="qr" alt="Auction KHQR payment code" class="w-full" />
       </div>
-      <p class="text-xs text-slate-500">
+      <p class="text-xs leading-5 text-muted">
         {{
           payment.bid_auction_id
             ? "Your chosen bid is submitted only after the payment is verified. If it is too low or the auction ends, your money stays in your wallet."
@@ -110,19 +110,19 @@ onUnmounted(() => {
         }}
       </p>
     </template>
-    <p v-if="error" role="alert" class="text-red-700 text-sm">
+    <p v-if="error" role="alert" class="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
       {{ error }} Your checkout is saved. Checking will retry; do not pay again.
     </p>
     <p
       v-if="payment.status === 'paid'"
       role="status"
-      class="text-teal-800 text-sm"
+      class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
     >
       {{ payment.purchase_note || "Payment verified." }}
     </p>
     <p
       v-if="payment.status === 'reconciliation'"
-      class="text-sm text-amber-800"
+      class="rounded-lg border border-gold-200 bg-gold-50 p-3 text-sm text-gold-900"
     >
       Your verified late receipt needs staff reconciliation. Do not pay again.
     </p>
@@ -130,7 +130,7 @@ onUnmounted(() => {
       v-if="['pending', 'expired'].includes(payment.status)"
       :disabled="busy"
       type="button"
-      class="border rounded-xl px-4 py-2 text-sm disabled:opacity-50"
+      class="btn-outline btn-sm disabled:opacity-50"
       @click="check"
     >
       {{ busy ? "Checking payment…" : "Check payment" }}
@@ -138,8 +138,8 @@ onUnmounted(() => {
     <router-link
       v-if="payment.purchased_order_id"
       :to="'/orders/' + payment.purchased_order_id"
-      class="block underline text-teal-800"
-      >View your purchase →</router-link
+      class="block text-sm font-semibold text-navy-700 underline hover:text-navy-900"
+      >View your purchase &rarr;</router-link
     >
     <router-link
       v-if="
@@ -148,10 +148,10 @@ onUnmounted(() => {
         !payment.submitted_bid_id
       "
       to="/wallet"
-      class="block underline text-teal-800"
-      >View credited wallet funds →</router-link
+      class="block text-sm font-semibold text-navy-700 underline hover:text-navy-900"
+      >View credited wallet funds &rarr;</router-link
     >
-    <p class="text-xs text-slate-400">
+    <p class="text-xs leading-5 text-muted">
       You can leave this page while verification runs. Your checkout remains in
       your payment history.
     </p>

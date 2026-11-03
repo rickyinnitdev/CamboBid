@@ -69,24 +69,41 @@ async function verify() {
 }
 </script>
 <template>
-  <section class="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
-    <h2 class="text-lg font-bold">Authenticator verification</h2>
-    <p v-if="!verified" class="text-sm text-slate-600">
-      Use Google Authenticator, Microsoft Authenticator or another TOTP app.
-      Verify a code after signing in to unlock protected actions.
+  <section class="surface-panel p-5 sm:p-6">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 class="font-display text-lg font-semibold text-heading">
+          Authenticator verification
+        </h2>
+        <p v-if="!verified" class="mt-1.5 max-w-xl text-sm leading-6 text-body">
+          Use Google Authenticator, Microsoft Authenticator or another TOTP app.
+          Verify a code after signing in to unlock protected actions.
+        </p>
+      </div>
+      <span
+        class="badge"
+        :class="verified ? 'bg-emerald-50 text-emerald-800' : 'bg-surface text-muted'"
+      >
+        {{ verified ? "Verified" : "Not verified" }}
+      </span>
+    </div>
+
+    <p v-if="error" role="alert" class="mt-4 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">
+      {{ error }}
     </p>
-    <p v-if="error" role="alert" class="text-sm text-red-700">{{ error }}</p>
+
     <div
       v-if="verified"
       role="status"
-      class="rounded-xl bg-green-50 p-4 text-green-800"
+      class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
     >
       <p class="font-semibold">Authenticator verified</p>
-      <p class="mt-1 text-sm">
+      <p class="mt-1 leading-6">
         Two-factor authentication is complete for this session. Continue with
         your account security steps or wallet.
       </p>
     </div>
+
     <button
       v-if="
         ready &&
@@ -94,37 +111,43 @@ async function verify() {
         !enrollment &&
         !factors.some((f) => f.status === 'verified')
       "
-      class="rounded-xl bg-blue-800 px-4 py-3 text-white disabled:opacity-50"
+      class="btn-primary mt-4"
       :disabled="busy"
       @click="enroll"
     >
       Set up authenticator
     </button>
-    <div v-if="enrollment && !verified" class="space-y-3">
+
+    <div v-if="enrollment && !verified" class="mt-5 space-y-3">
       <img
         :src="qrSource"
         alt="Scan this authenticator setup QR privately"
-        class="h-48 w-48"
+        class="h-48 w-48 rounded-xl border border-border bg-white p-2"
       />
-      <details class="text-sm">
-        <summary>Can't scan? Enter setup key</summary>
-        <code class="break-all select-all">{{ enrollment.totp.secret }}</code>
+      <details class="text-sm text-body">
+        <summary class="cursor-pointer font-medium text-heading">
+          Can't scan? Enter setup key
+        </summary>
+        <code class="mt-2 block break-all rounded-lg bg-surface p-3 text-xs select-all">{{ enrollment.totp.secret }}</code>
       </details>
-      <p class="text-xs text-amber-800">
+      <p class="rounded-lg border border-gold-200 bg-gold-50 p-3 text-xs leading-5 text-gold-900">
         Keep the setup key private. Do not show this screen during a public
         presentation.
       </p>
     </div>
+
     <form
       v-if="
         !verified &&
         (enrollment || factors.some((f) => f.status === 'verified'))
       "
-      class="flex flex-wrap gap-3"
+      class="mt-5 flex flex-wrap items-end gap-3"
       @submit.prevent="verify"
     >
-      <label class="text-sm"
-        >Six-digit code<input
+      <div>
+        <label for="mfa-code" class="label">Six-digit code</label>
+        <input
+          id="mfa-code"
           v-model="code"
           aria-label="Authenticator code"
           autocomplete="one-time-code"
@@ -132,12 +155,10 @@ async function verify() {
           pattern="[0-9]{6}"
           maxlength="6"
           required
-          class="mt-1 block rounded-xl border p-3"
-      /></label>
-      <button
-        :disabled="busy"
-        class="self-end rounded-xl bg-blue-800 px-4 py-3 text-white disabled:opacity-50"
-      >
+          class="input w-36 tracking-[0.3em]"
+        />
+      </div>
+      <button :disabled="busy" class="btn-primary">
         Verify code
       </button>
     </form>

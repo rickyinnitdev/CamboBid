@@ -4,7 +4,7 @@ import UserLayout from "@/components/layout/UserLayout.vue";
 import { platformSettingsService } from "@/services/platformSettingsService";
 
 const settings = ref(platformSettingsService.getCached().terms);
-const loading = ref(true);
+const loading = ref(!settings.value?.content);
 const error = ref("");
 
 const paragraphs = computed(() =>
@@ -33,38 +33,54 @@ onMounted(loadTerms);
 <template>
   <UserLayout>
     <main class="page-container max-w-4xl">
-      <div class="mb-8">
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Legal</p>
-        <h1 class="mt-2 text-3xl sm:text-4xl font-black text-slate-950">{{ settings.title }}</h1>
-        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
-          <span v-if="settings.version">Version {{ settings.version }}</span>
-          <span v-if="settings.effective_date">Effective {{ settings.effective_date }}</span>
+      <div class="page-header">
+        <div>
+          <p class="kicker">Legal</p>
+          <h1 class="page-title mt-3">{{ settings.title }}</h1>
+          <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+            <span v-if="settings.version">Version {{ settings.version }}</span>
+            <span v-if="settings.effective_date">Effective {{ settings.effective_date }}</span>
+          </div>
+        </div>
+        <router-link to="/" class="btn-outline btn-sm self-start sm:self-auto">
+          Back to CamboBid
+        </router-link>
+      </div>
+
+      <div v-if="loading" class="surface-panel space-y-3 p-6 sm:p-10">
+        <div class="h-5 w-48 animate-pulse rounded bg-slate-200/70" />
+        <div class="space-y-3 pt-3">
+          <div v-for="i in 6" :key="i" class="h-4 animate-pulse rounded bg-slate-200/70" />
         </div>
       </div>
 
-      <div v-if="loading" class="rounded-3xl bg-white border border-slate-200 p-8 animate-pulse">
-        <div class="h-5 w-48 rounded bg-slate-200 mb-6" />
-        <div class="space-y-3">
-          <div v-for="i in 6" :key="i" class="h-4 rounded bg-slate-100" />
-        </div>
-      </div>
-
-      <div v-else-if="error" class="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div
+        v-else-if="error"
+        role="alert"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-5 text-sm text-danger"
+      >
         {{ error }}
       </div>
 
-      <article v-else class="rounded-3xl bg-white border border-slate-200 p-6 sm:p-10 shadow-sm">
-        <div v-if="isDraft" class="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          This document is currently a draft. The final approved Terms & Conditions must be published before production use.
+      <article v-else class="surface-panel p-6 sm:p-10">
+        <div
+          v-if="isDraft"
+          class="mb-8 rounded-xl border border-gold-200 bg-gold-50 p-4 text-sm leading-6 text-gold-900"
+        >
+          This document is currently a draft. The final approved Terms &
+          Conditions must be published before production use.
         </div>
-        <div class="space-y-6 text-[15px] leading-7 text-slate-700">
+        <div class="space-y-5 text-[15px] leading-8 text-body">
           <p v-for="(paragraph, index) in paragraphs" :key="index" class="whitespace-pre-line">
             {{ paragraph }}
           </p>
         </div>
-        <p v-if="settings.contact_email" class="mt-8 border-t border-slate-100 pt-6 text-sm text-slate-500">
+        <p v-if="settings.contact_email" class="mt-8 border-t border-border pt-6 text-sm text-body">
           Questions about these terms?
-          <a :href="`mailto:${settings.contact_email}`" class="font-semibold text-blue-700 hover:text-blue-800">
+          <a
+            :href="`mailto:${settings.contact_email}`"
+            class="font-semibold text-navy-700 hover:text-navy-900"
+          >
             {{ settings.contact_email }}
           </a>
         </p>

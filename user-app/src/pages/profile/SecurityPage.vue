@@ -43,6 +43,7 @@ async function refresh() {
     const { error: e } = await supabase.auth.refreshSession();
     if (e) throw e;
     await load();
+    success.value = "Security status refreshed.";
   });
 }
 async function resend() {
@@ -53,123 +54,178 @@ async function resend() {
 }
 </script>
 <template>
-  <UserLayout
-    ><main class="page-container max-w-3xl space-y-6">
-      <div>
-        <p class="section-eyebrow">Your account</p>
-        <h1 class="text-3xl font-bold">Security &amp; verification</h1>
-        <p class="mt-2 text-slate-600">
-          Complete these steps before bidding, topping up or paying an order.
-        </p>
+  <UserLayout>
+    <main class="page-container max-w-4xl space-y-6">
+      <div class="page-header">
+        <div>
+          <p class="kicker">Your account</p>
+          <h1 class="page-title mt-3">Security &amp; verification</h1>
+          <p class="page-subtitle mt-3">
+            Complete these steps before bidding, topping up or paying an order.
+          </p>
+        </div>
+        <router-link to="/wallet" class="btn-outline btn-sm self-start sm:self-auto">
+          Continue to wallet
+        </router-link>
       </div>
-      <p
+
+      <div
         v-if="error"
         role="alert"
-        class="rounded-xl bg-red-50 p-4 text-red-700"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
       >
         {{ error }}
-      </p>
-      <p
+      </div>
+      <div
         v-if="success"
         role="status"
-        class="rounded-xl bg-green-50 p-4 text-green-800"
+        class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
       >
         {{ success }}
-      </p>
-      <section v-if="status" class="rounded-2xl border bg-white p-6 space-y-3">
-        <p v-if="status.suspended" class="text-red-700">
-          This account is suspended. Contact your project administrator.
-        </p>
-        <p>
-          Email:
-          <strong>{{
-            status.email_confirmed_at ? "Verified" : "Needs confirmation"
-          }}</strong>
-        </p>
-        <p>
-          Identity:
-          <strong>{{ status.identity_status.replaceAll("_", " ") }}</strong> ·
-          <router-link to="/verify-identity" class="text-blue-700 underline"
-            >Submit / view identity review</router-link
+      </div>
+
+      <section v-if="status" class="surface-panel p-5 sm:p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="font-display text-lg font-semibold text-heading">
+              Account readiness
+            </h2>
+            <p class="mt-1 text-sm text-body">
+              Four checks are required before you can transact.
+            </p>
+          </div>
+          <span
+            class="badge"
+            :class="status.suspended ? 'bg-red-50 text-red-700' : 'bg-navy-50 text-navy-800'"
           >
-        </p>
-        <p>
-          2FA:
-          <strong>{{
-            status.mfa_enabled ? "Enrolled" : "Not enrolled"
-          }}</strong>
-          · Session:
-          <strong>{{
-            status.session_verified ? "Verified with 2FA" : "Code required"
-          }}</strong>
-        </p>
-        <p>
-          Policies:
-          <strong>{{
-            status.policies_current
-              ? "Current versions accepted"
-              : "Acceptance required"
-          }}</strong>
-        </p>
-        <div class="flex gap-4">
-          <button
-            v-if="!status.email_confirmed_at"
-            :disabled="busy"
-            class="text-blue-700 underline"
-            @click="resend"
-          >
-            Resend confirmation</button
-          ><button
-            :disabled="busy"
-            class="text-blue-700 underline"
-            @click="refresh"
-          >
-            Refresh account status
-          </button>
+            {{ status.suspended ? "Suspended" : "Active account" }}
+          </span>
         </div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-border p-4">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              Email
+            </p>
+            <p class="mt-1.5 text-sm font-semibold text-heading">
+              {{ status.email_confirmed_at ? "Verified" : "Needs confirmation" }}
+            </p>
+            <button
+              v-if="!status.email_confirmed_at"
+              :disabled="busy"
+              class="mt-2 text-xs font-semibold text-navy-700 underline hover:text-navy-900 disabled:opacity-50"
+              @click="resend"
+            >
+              Resend confirmation
+            </button>
+          </div>
+
+          <div class="rounded-xl border border-border p-4">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              Identity
+            </p>
+            <p class="mt-1.5 text-sm font-semibold capitalize text-heading">
+              {{ status.identity_status.replaceAll("_", " ") }}
+            </p>
+            <router-link
+              to="/verify-identity"
+              class="mt-2 inline-flex text-xs font-semibold text-navy-700 underline hover:text-navy-900"
+            >
+              Submit / view review
+            </router-link>
+          </div>
+
+          <div class="rounded-xl border border-border p-4">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              Two-factor authentication
+            </p>
+            <p class="mt-1.5 text-sm font-semibold text-heading">
+              {{ status.mfa_enabled ? "Enrolled" : "Not enrolled" }}
+            </p>
+            <p class="mt-1 text-xs text-muted">
+              Session:
+              {{ status.session_verified ? "verified with 2FA" : "code required" }}
+            </p>
+          </div>
+
+          <div class="rounded-xl border border-border p-4">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              Policies
+            </p>
+            <p class="mt-1.5 text-sm font-semibold text-heading">
+              {{ status.policies_current ? "Current versions accepted" : "Acceptance required" }}
+            </p>
+          </div>
+        </div>
+
+        <button
+          :disabled="busy"
+          class="mt-4 text-xs font-semibold text-navy-700 underline hover:text-navy-900 disabled:opacity-50"
+          @click="refresh"
+        >
+          Refresh account status
+        </button>
       </section>
-      <section class="rounded-2xl border bg-white p-6 space-y-4">
-        <h2 class="text-lg font-bold">Terms &amp; Privacy Policy</h2>
-        <p class="text-sm text-slate-600">
+
+      <section class="surface-panel p-5 sm:p-6">
+        <h2 class="font-display text-lg font-semibold text-heading">
+          Terms &amp; Privacy Policy
+        </h2>
+        <p class="mt-1.5 text-sm leading-6 text-body">
           Review each current version. Acceptance is recorded with your user ID,
           policy version and server time.
         </p>
-        <details
-          v-for="p in policies"
-          :key="p.kind"
-          class="rounded-xl border p-4"
-        >
-          <summary class="cursor-pointer font-semibold">
-            {{ p.title }} · {{ p.version }}
-          </summary>
-          <p class="mt-4 whitespace-pre-line text-sm leading-7">
-            {{ p.content }}
-          </p>
-        </details>
+
+        <div class="mt-5 space-y-3">
+          <details
+            v-for="p in policies"
+            :key="p.kind"
+            class="group rounded-xl border border-border p-4"
+          >
+            <summary
+              class="cursor-pointer list-none text-sm font-semibold text-heading marker:hidden"
+            >
+              <span class="flex items-center justify-between gap-3">
+                <span>{{ p.title }} · {{ p.version }}</span>
+                <svg
+                  class="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </summary>
+            <p class="mt-4 whitespace-pre-line text-sm leading-7 text-body">
+              {{ p.content }}
+            </p>
+          </details>
+        </div>
+
         <template v-if="status && !status.policies_current">
-          <label class="flex gap-3 text-sm"
-            ><input v-model="terms" type="checkbox" />I agree to the current
-            Terms &amp; Conditions.</label
-          >
-          <label class="flex gap-3 text-sm"
-            ><input v-model="privacy" type="checkbox" />I acknowledge the
-            current Privacy Policy and document review process.</label
-          >
+          <div class="mt-5 space-y-3">
+            <label class="flex items-start gap-3 text-sm leading-6 text-body">
+              <input v-model="terms" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-navy-800 focus:ring-2 focus:ring-navy-500/30" />
+              <span>I agree to the current Terms &amp; Conditions.</span>
+            </label>
+            <label class="flex items-start gap-3 text-sm leading-6 text-body">
+              <input v-model="privacy" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-navy-800 focus:ring-2 focus:ring-navy-500/30" />
+              <span>I acknowledge the current Privacy Policy and document review process.</span>
+            </label>
+          </div>
           <button
             :disabled="!terms || !privacy || busy || policies.length !== 2"
-            class="rounded-xl bg-blue-800 px-4 py-3 text-white disabled:opacity-50"
+            class="btn-primary mt-5"
             @click="accept"
           >
             Save agreement
           </button>
         </template>
       </section>
+
       <MfaPanel @verified="run(load)" />
-      <router-link
-        to="/wallet"
-        class="inline-block rounded-xl bg-blue-800 px-5 py-3 text-white"
-        >Continue to wallet</router-link
-      >
-    </main></UserLayout
-  >
+    </main>
+  </UserLayout>
 </template>

@@ -31,15 +31,16 @@ export const walletService = {
       payments: results[2].data,
     };
   },
-  create: (amountMinor, orderId, auctionId) =>
-    invoke("payments", {
+  create: (amountMinor, orderId, auctionId) => {
+    return invoke("payments", {
       action: "create",
       amount_minor: amountMinor,
       order_id: orderId,
       auction_id: auctionId,
-    }),
-  createBid: (amountMinor, auctionId, signal) =>
-    invoke(
+    });
+  },
+  createBid: (amountMinor, auctionId, signal) => {
+    return invoke(
       "payments",
       {
         action: "create",
@@ -47,13 +48,19 @@ export const walletService = {
         bid_auction_id: auctionId,
       },
       signal,
-    ),
-  createPurchase: (amountMinor, auctionId, signal) =>
-    invoke(
+    );
+  },
+  createPurchase: (amountMinor, auctionId, signal) => {
+    return invoke(
       "payments",
       { action: "create", amount_minor: amountMinor, auction_id: auctionId },
       signal,
-    ),
-  check: (id, signal) => invoke("payments", { action: "check", id }, signal),
-  simulate: (id) => invoke("payments", { action: "simulate", id }),
+    );
+  },
+  check: (id, signal) => {
+    return invoke("payments", { action: "check", id }, signal);
+  },
+  simulate: (id) => {
+    return invoke("payments", { action: "simulate", id });
+  },
 };

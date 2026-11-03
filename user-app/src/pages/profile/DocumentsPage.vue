@@ -2,7 +2,9 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import { documentService } from "@/services/documentService";
+import { formatDate, formatUSD } from "@/utils/format";
 const route = useRoute(),
   documents = ref([]),
   emails = ref([]),
@@ -20,10 +22,7 @@ onMounted(async () => {
     error.value = e.message;
   }
 });
-const money = (n) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    Number(n) / 100,
-  );
+const money = (n) => formatUSD(Number(n) / 100);
 const emailStatus = (id) =>
   emails.value.find((e) => e.document_id === id)?.status || "not queued";
 async function send(id) {
@@ -46,80 +45,110 @@ async function send(id) {
 }
 </script>
 <template>
-  <UserLayout
-    ><main class="page-container max-w-6xl">
+  <UserLayout>
+    <main class="page-container max-w-6xl">
       <div class="page-header">
         <div>
-          <p class="section-eyebrow">Your records</p>
-          <h1 class="page-title">Invoices &amp; receipts</h1>
-          <p class="page-subtitle">
+          <p class="kicker">Your records</p>
+          <h1 class="page-title mt-3">Invoices &amp; receipts</h1>
+          <p class="page-subtitle mt-3">
             View, print or save a PDF using your browser’s print dialog.
           </p>
         </div>
-        <router-link to="/wallet" class="btn-secondary"
-          >Your wallet</router-link
-        >
+        <router-link to="/wallet" class="btn-outline btn-sm self-start sm:self-auto">
+          Your wallet
+        </router-link>
       </div>
-      <p v-if="error" class="p-4 bg-red-50 text-red-700" role="alert">
+
+      <div
+        v-if="error"
+        role="alert"
+        class="mb-5 rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
+      >
         {{ error }}
-      </p>
-      <p v-if="message" class="p-4 bg-teal-50 text-teal-900" role="status">
-        {{ message }}
-      </p>
-      <div class="bg-white rounded-2xl border overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-50 text-slate-500">
-            <tr>
-              <th class="p-5">Document</th>
-              <th>Item</th>
-              <th>Amount</th>
-              <th>Environment</th>
-              <th>Email</th>
-              <th class="p-5">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="d in documents" :key="d.id" class="border-t">
-              <td class="p-5">
-                <router-link
-                  :to="'/documents/' + d.id"
-                  class="font-semibold text-teal-800"
-                  >{{ d.number }}</router-link
-                >
-                <p class="text-xs text-slate-500 capitalize mt-1">
-                  {{ d.kind }} ·
-                  {{ new Date(d.created_at).toLocaleDateString() }}
-                </p>
-              </td>
-              <td class="pr-4">{{ d.snapshot.item }}</td>
-              <td class="pr-4 whitespace-nowrap">
-                {{ money(d.amount_minor) }}
-              </td>
-              <td class="pr-4 uppercase text-xs">{{ d.mode }}</td>
-              <td class="pr-4">{{ emailStatus(d.id) }}</td>
-              <td class="p-5 whitespace-nowrap">
-                <router-link :to="'/documents/' + d.id" class="underline"
-                  >View / print</router-link
-                ><button
-                  :disabled="busy"
-                  class="ml-4 underline disabled:opacity-40"
-                  @click="send(d.id)"
-                >
-                  Email copy
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p v-if="!documents.length" class="p-8 text-slate-500">
-          No documents yet. Winning orders create invoices; confirmed payments
-          create receipts.
-        </p>
       </div>
-      <p class="text-sm text-slate-500 mt-5">
+      <div
+        v-if="message"
+        role="status"
+        class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
+      >
+        {{ message }}
+      </div>
+
+      <BaseEmptyState
+        v-if="!documents.length"
+        title="No documents yet"
+        description="Winning orders create invoices; confirmed payments create receipts."
+        icon="inbox"
+      >
+        <template #action>
+          <router-link to="/orders" class="btn-primary btn-sm mt-5">
+            View your orders
+          </router-link>
+        </template>
+      </BaseEmptyState>
+
+      <div v-else class="surface-panel overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Document</th>
+                <th scope="col">Item</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Environment</th>
+                <th scope="col">Email</th>
+                <th scope="col" class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border bg-white">
+              <tr v-for="d in documents" :key="d.id">
+                <td class="px-5 py-4">
+                  <router-link
+                    :to="'/documents/' + d.id"
+                    class="font-semibold text-navy-700 hover:text-navy-900"
+                  >
+                    {{ d.number }}
+                  </router-link>
+                  <p class="mt-1 text-xs capitalize text-muted">
+                    {{ d.kind }} · {{ formatDate(d.created_at) }}
+                  </p>
+                </td>
+                <td class="px-4 py-4 text-sm text-body">{{ d.snapshot.item }}</td>
+                <td class="numeric whitespace-nowrap px-4 py-4 text-sm font-medium text-heading">
+                  {{ money(d.amount_minor) }}
+                </td>
+                <td class="px-4 py-4 text-xs uppercase tracking-wide text-muted">
+                  {{ d.mode }}
+                </td>
+                <td class="px-4 py-4 text-sm capitalize text-body">
+                  {{ emailStatus(d.id) }}
+                </td>
+                <td class="whitespace-nowrap px-5 py-4 text-right text-sm">
+                  <router-link
+                    :to="'/documents/' + d.id"
+                    class="font-semibold text-navy-700 hover:text-navy-900"
+                  >
+                    View / print
+                  </router-link>
+                  <button
+                    :disabled="busy"
+                    class="ml-4 font-semibold text-body underline hover:text-heading disabled:opacity-40"
+                    @click="send(d.id)"
+                  >
+                    Email copy
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="mt-5 text-xs leading-5 text-muted">
         “Accepted” means the email provider accepted the message; it does not
         confirm delivery to the inbox.
       </p>
-    </main></UserLayout
-  >
+    </main>
+  </UserLayout>
 </template>

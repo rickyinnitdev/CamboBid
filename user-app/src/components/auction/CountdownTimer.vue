@@ -1,9 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import dayjs from "dayjs";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 const props = defineProps({
-  endTime: { type: String, required: true },
+  endTime: { type: String, default: "" },
   status: { type: String, default: "live" },
   showBadge: { type: Boolean, default: true },
   size: { type: String, default: "md" },
@@ -12,49 +11,42 @@ const props = defineProps({
 const now = ref(Date.now());
 let timer = null;
 
-const timeRemaining = computed(() => {
-  const end = dayjs(props.endTime);
-  const diff = end.diff(now.value);
-
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true, total: 0 };
-
-  return {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
-    expired: false,
-    total: diff,
-  };
+const remaining = computed(() => {
+  if (!props.endTime) return 0;
+  const end = new Date(props.endTime).getTime();
+  if (!Number.isFinite(end)) return 0;
+  return Math.max(0, end - now.value);
 });
 
-const isUrgent = computed(() => timeRemaining.value.total > 0 && timeRemaining.value.total < 15 * 60 * 1000);
-const isCritical = computed(() => timeRemaining.value.total > 0 && timeRemaining.value.total < 10000);
-const isExtended = computed(() => props.status === "extended");
-const isEnded = computed(() => props.status === "closed" || timeRemaining.value.expired);
+const expired = computed(() => remaining.value <= 0 || props.status === "closed");
+const urgent = computed(
+  () => !expired.value && remaining.value <= 60 * 60 * 1000,
+);
+const critical = computed(
+  () => !expired.value && remaining.value <= 10 * 60 * 1000,
+);
 
-const formattedTime = computed(() => {
-  const t = timeRemaining.value;
-  if (t.expired) return "Ended";
+const formatted = computed(() => {
+  if (expired.value) return "Ended";
+  const totalSeconds = Math.floor(remaining.value / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
 
-  const parts = [];
-  if (t.days > 0) parts.push(`${t.days}d`);
-  if (t.hours > 0 || t.days > 0) parts.push(`${String(t.hours).padStart(2, "0")}h`);
-  parts.push(`${String(t.minutes).padStart(2, "0")}m`);
-  parts.push(`${String(t.seconds).padStart(2, "0")}s`);
-  return parts.join(" ");
+  if (days > 0) return `${days}d ${String(hours).padStart(2, "0")}h`;
+  if (hours > 0) return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m`;
+  return `${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
 });
 
-const displayText = computed(() => {
-  if (isEnded.value) return "ENDED";
-  if (isExtended.value) return `EXTENDED · ${formattedTime.value}`;
-  return formattedTime.value;
-});
+const accessibleLabel = computed(() =>
+  expired.value ? "Auction ended" : `Time remaining: ${formatted.value}`,
+);
 
 const sizeClasses = {
-  sm: "text-sm font-mono",
-  md: "text-lg font-mono font-semibold",
-  lg: "text-2xl font-mono font-bold",
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-xl",
 };
 
 onMounted(() => {
@@ -69,17 +61,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex min-w-0 max-w-full justify-end overflow-hidden">
-    <span
-      :class="[
-        sizeClasses[size],
-        'block min-w-0 max-w-full truncate tabular-nums tracking-tight',
-        showBadge && (isEnded || isExtended || isUrgent) ? 'rounded px-2 py-0.5 text-xs font-semibold' : '',
-        isEnded ? 'bg-neutral-100 text-neutral-500' : isExtended ? 'bg-amber-50 text-amber-700' : isCritical ? 'bg-rose-50 text-rose-700 animate-flash-fast' : isUrgent ? 'bg-amber-50 text-amber-700' : 'text-neutral-900',
-      ]"
-      :title="displayText"
-    >
-      {{ displayText }}
-    </span>
-  </div>
+  <span
+    :class="[
+      'numeric inline-flex items-center font-semibold tabular-nums',
+      sizeClasses[size],
+      expired ? 'text-slate-500' : critical ? 'text-red-700' : urgent ? 'text-amber-700' : 'text-heading',
+    ]"
+    :aria-label="accessibleLabel"
+    :title="accessibleLabel"
+    role="timer"
+  >
+    {{ formatted }}
+  </span>
 </template>

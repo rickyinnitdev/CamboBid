@@ -111,112 +111,151 @@ async function handleSubmit() {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-3xl">
-      <h1 class="text-2xl font-bold text-heading mb-8">{{ t("listing.edit") }}</h1>
+    <main class="page-container max-w-5xl">
+      <div class="page-header">
+        <div>
+          <p class="kicker">Seller studio</p>
+          <h1 class="page-title mt-3">{{ t("listing.edit") }}</h1>
+          <p class="page-subtitle mt-3">
+            Update the item details, pricing or photos. Changes are saved to the
+            listing.
+          </p>
+        </div>
+        <router-link to="/seller/listings" class="btn-outline btn-sm self-start sm:self-auto">
+          Your listings
+        </router-link>
+      </div>
 
       <div v-if="loading" class="space-y-4">
         <BaseSkeleton type="card" />
       </div>
 
-      <div v-else-if="error" class="p-4 rounded-lg bg-danger/10 text-danger text-sm">{{ error }}</div>
+      <div
+        v-else-if="error"
+        role="alert"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
+      >
+        {{ error }}
+      </div>
 
-      <BaseCard v-else>
-        <div class="p-6">
-          <div v-if="error" class="p-3 rounded-lg bg-danger/10 text-danger text-sm mb-4">{{ error }}</div>
+      <BaseCard v-else padded>
+        <div
+          v-if="error"
+          role="alert"
+          class="mb-5 rounded-xl border border-danger/20 bg-danger/5 p-3 text-sm text-danger"
+        >
+          {{ error }}
+        </div>
 
-          <form @submit.prevent="handleSubmit" class="space-y-6">
-            <BaseInput
-              v-model="form.title"
-              :label="t('listing.title')"
-              required
-            />
+        <form class="space-y-6" @submit.prevent="handleSubmit">
+          <section class="space-y-4">
+            <h2 class="font-display text-base font-semibold text-heading">Item details</h2>
+
+            <BaseInput v-model="form.title" :label="t('listing.title')" required />
 
             <div>
-              <label class="block text-sm font-medium text-heading mb-1.5">{{ t("listing.description") }} *</label>
+              <label for="edit-description" class="label">
+                {{ t("listing.description") }} <span class="text-danger" aria-hidden="true">*</span>
+              </label>
               <textarea
+                id="edit-description"
                 v-model="form.description"
-                rows="4"
+                rows="5"
                 required
-                class="block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 transition-colors resize-none"
+                class="input resize-none"
               />
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-medium text-heading mb-1.5">{{ t("listing.category") }}</label>
-                <select
-                  v-model="form.category_id"
-                  class="block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
-                >
+                <label for="edit-category" class="label">{{ t("listing.category") }}</label>
+                <select id="edit-category" v-model="form.category_id" class="select">
                   <option value="">Select category</option>
                   <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-heading mb-1.5">{{ t("listing.condition") }}</label>
-                <select
-                  v-model="form.condition"
-                  class="block w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
-                >
+                <label for="edit-condition" class="label">{{ t("listing.condition") }}</label>
+                <select id="edit-condition" v-model="form.condition" class="select">
                   <option v-for="opt in conditionOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                 </select>
               </div>
             </div>
+          </section>
 
-            <div class="grid grid-cols-3 gap-4">
+          <section class="space-y-4 border-t border-border pt-6">
+            <h2 class="font-display text-base font-semibold text-heading">Pricing</h2>
+            <div class="grid gap-4 sm:grid-cols-3">
               <BaseInput v-model="form.starting_price" :label="t('listing.starting_price')" type="number" required />
               <BaseInput v-model="form.reserve_price" :label="t('listing.reserve_price')" type="number" />
               <BaseInput v-model="form.buy_it_now_price" :label="t('listing.buy_it_now_price')" type="number" />
             </div>
+          </section>
 
-            <!-- Existing Images -->
+          <section class="space-y-4 border-t border-border pt-6">
+            <h2 class="font-display text-base font-semibold text-heading">Photos</h2>
+
             <div v-if="existingImages.length">
-              <label class="block text-sm font-medium text-heading mb-1.5">Current Images</label>
+              <p class="label">Current photos</p>
               <div class="flex flex-wrap gap-3">
-                <div v-for="(img, i) in existingImages" :key="i" class="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
-                  <img :src="img.url || img" class="w-full h-full object-cover" />
+                <div
+                  v-for="(img, i) in existingImages"
+                  :key="i"
+                  class="relative h-20 w-20 overflow-hidden rounded-lg border border-border"
+                >
+                  <img :src="img.url || img" alt="" class="h-full w-full object-cover" />
                   <button
                     type="button"
-                    class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-danger/80 text-white flex items-center justify-center text-xs"
+                    class="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-navy-900/80 text-xs text-white"
+                    :aria-label="`Remove image ${i + 1}`"
                     @click="removeExistingImage(i)"
-                  >×</button>
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
             </div>
 
-            <!-- New Images -->
             <div>
-              <label class="block text-sm font-medium text-heading mb-1.5">Add New Images</label>
+              <label for="edit-images" class="label">Add new photos</label>
               <input
+                id="edit-images"
                 type="file"
                 accept="image/*"
                 multiple
-                class="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-navy-700 file:text-white hover:file:bg-navy-800 file:cursor-pointer"
+                class="block w-full cursor-pointer rounded-lg border border-line bg-white text-sm text-body file:mr-4 file:cursor-pointer file:border-0 file:bg-navy-900 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-500"
                 @change="handleNewImages"
               />
-              <div v-if="newImagePreviews.length" class="flex flex-wrap gap-3 mt-3">
-                <div v-for="(preview, i) in newImagePreviews" :key="i" class="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
-                  <img :src="preview" class="w-full h-full object-cover" />
+              <div v-if="newImagePreviews.length" class="mt-3 flex flex-wrap gap-3">
+                <div
+                  v-for="(preview, i) in newImagePreviews"
+                  :key="i"
+                  class="relative h-20 w-20 overflow-hidden rounded-lg border border-border"
+                >
+                  <img :src="preview" alt="" class="h-full w-full object-cover" />
                   <button
                     type="button"
-                    class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-danger/80 text-white flex items-center justify-center text-xs"
+                    class="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-navy-900/80 text-xs text-white"
+                    :aria-label="`Remove new image ${i + 1}`"
                     @click="removeNewImage(i)"
-                  >×</button>
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
             </div>
+          </section>
 
-            <div class="flex items-center gap-3 pt-2">
-              <BaseButton type="submit" variant="primary" :loading="submitting">
-                {{ t("common.save") }}
-              </BaseButton>
-              <router-link to="/seller/listings">
-                <BaseButton variant="ghost">{{ t("common.cancel") }}</BaseButton>
-              </router-link>
-            </div>
-          </form>
-        </div>
+          <div class="flex flex-wrap items-center gap-3 border-t border-border pt-5">
+            <BaseButton type="submit" variant="primary" :loading="submitting">
+              {{ t("common.save") }}
+            </BaseButton>
+            <router-link to="/seller/listings">
+              <BaseButton variant="ghost">{{ t("common.cancel") }}</BaseButton>
+            </router-link>
+          </div>
+        </form>
       </BaseCard>
-    </div>
+    </main>
   </UserLayout>
 </template>

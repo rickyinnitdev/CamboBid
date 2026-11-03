@@ -2,7 +2,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import UserLayout from "@/components/layout/UserLayout.vue";
-import BaseCard from "@/components/base/BaseCard.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
@@ -107,23 +106,31 @@ onUnmounted(() => {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-3xl">
+    <main class="page-container max-w-3xl">
       <div class="page-header">
         <div>
-          <p class="section-eyebrow">Account</p>
-          <h1 class="page-title">{{ t("nav.notifications") }}</h1>
-          <p class="page-subtitle">Stay up to date on bids, auctions, and account activity.</p>
+          <p class="kicker">Account</p>
+          <h1 class="page-title mt-3">{{ t("nav.notifications") }}</h1>
+          <p class="page-subtitle mt-3">
+            Stay up to date on bids, auctions and account activity.
+          </p>
         </div>
-        <BaseButton variant="ghost" size="sm" @click="handleMarkAllRead">Mark all read</BaseButton>
+        <BaseButton variant="outline" size="sm" class="self-start sm:self-auto" @click="handleMarkAllRead">
+          Mark all read
+        </BaseButton>
       </div>
 
-      <!-- Filter -->
-      <div class="flex items-center gap-2 mb-6">
+      <div class="mb-6 flex items-center gap-2" role="group" aria-label="Notification filter">
         <button
           v-for="opt in [{ value: 'all', label: 'All' }, { value: 'unread', label: 'Unread' }]"
           :key="opt.value"
-          class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-          :class="filter === opt.value ? 'bg-navy-700 text-white' : 'bg-surface text-muted hover:text-heading'"
+          class="rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors"
+          :class="
+            filter === opt.value
+              ? 'border-navy-900 bg-navy-900 text-white'
+              : 'border-border bg-white text-body hover:border-navy-300 hover:text-heading'
+          "
+          :aria-pressed="filter === opt.value"
           @click="filter = opt.value; loadNotifications()"
         >
           {{ opt.label }}
@@ -136,8 +143,8 @@ onUnmounted(() => {
 
       <BaseEmptyState
         v-else-if="notifications.length === 0"
-        title="No Notifications"
-        description="You're all caught up!"
+        title="No notifications"
+        description="You're all caught up."
         icon="inbox"
       />
 
@@ -145,41 +152,57 @@ onUnmounted(() => {
         <div
           v-for="notif in notifications"
           :key="notif.id"
-          class="rounded-2xl border border-border/80 p-4 flex items-start gap-3 overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md"
-          :class="notif.read ? 'bg-white' : 'bg-navy-700/5 border-navy-700/20'"
+          class="flex items-start gap-3 rounded-2xl border p-4 transition-colors"
+          :class="
+            notif.read
+              ? 'border-border bg-white'
+              : 'border-navy-200 bg-navy-50/60'
+          "
         >
-          <div class="relative w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
-            :class="notif.read ? 'bg-surface' : 'bg-navy-700/10'"
+          <div
+            class="relative grid h-9 w-9 shrink-0 place-items-center rounded-full"
+            :class="notif.read ? 'bg-surface text-muted' : 'bg-navy-100 text-navy-700'"
           >
-            <span v-if="!notif.read" class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-navy-700 ring-2 ring-white" />
-            <svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            <span
+              v-if="!notif.read"
+              class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-gold-500 ring-2 ring-white"
+              aria-hidden="true"
+            />
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </div>
-          <div class="flex-1 min-w-0">
+
+          <div class="min-w-0 flex-1">
             <router-link
               v-if="getNotificationLink(notif)"
               :to="getNotificationLink(notif)"
-              class="block min-w-0 text-sm font-semibold text-heading hover:text-navy-700 transition-colors break-words"
+              class="block break-words text-sm font-semibold text-heading transition-colors hover:text-navy-700"
             >
               {{ getNotificationTitle(notif) }}
             </router-link>
-            <p v-else class="min-w-0 text-sm font-semibold text-heading break-words">{{ getNotificationTitle(notif) }}</p>
-            <p v-if="getNotificationBody(notif)" class="mt-1 min-w-0 text-sm leading-5 text-muted break-words line-clamp-2">
+            <p v-else class="break-words text-sm font-semibold text-heading">
+              {{ getNotificationTitle(notif) }}
+            </p>
+            <p
+              v-if="getNotificationBody(notif)"
+              class="mt-1 line-clamp-2 break-words text-sm leading-6 text-body"
+            >
               {{ getNotificationBody(notif) }}
             </p>
             <p class="mt-2 text-xs text-muted">{{ timeAgo(notif.created_at) }}</p>
           </div>
-          <div class="flex flex-shrink-0 items-center gap-1 self-center">
+
+          <div class="flex shrink-0 items-center gap-1 self-center">
             <button
               v-if="!notif.read"
-              class="text-xs text-navy-700 hover:text-navy-800 px-2 py-1"
+              class="rounded-md px-2 py-1 text-xs font-medium text-navy-700 transition-colors hover:bg-white hover:text-navy-900"
               @click="handleMarkRead(notif.id)"
             >
               Mark read
             </button>
             <button
-              class="text-xs text-muted hover:text-danger px-2 py-1"
+              class="rounded-md px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-danger"
               @click="handleDelete(notif.id)"
             >
               Delete
@@ -187,6 +210,6 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </UserLayout>
 </template>

@@ -15,15 +15,18 @@ export const withdrawalService = {
     if (error) throw error;
     return data;
   },
-  create: (id, mode, amountMinor, destination) =>
-    invoke("withdrawals", {
+  create: (id, mode, amountMinor, destination) => {
+    return invoke("withdrawals", {
       action: "create",
       id,
       mode,
       amount_minor: amountMinor,
       destination,
-    }),
-  cancel: (id) => rpc("cancel_withdrawal", { p_id: id }),
+    });
+  },
+  cancel: (id) => {
+    return rpc("cancel_withdrawal", { p_id: id });
+  },
   async events(id) {
     const { data, error } = await supabase
       .from("withdrawal_events")

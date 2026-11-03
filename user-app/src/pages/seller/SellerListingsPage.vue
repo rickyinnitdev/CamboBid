@@ -9,6 +9,7 @@ import BaseCard from "@/components/base/BaseCard.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import StatusBadge from "@/components/auction/StatusBadge.vue";
+import { formatUSD } from "@/utils/format";
 
 const { t } = useI18n();
 const { user } = useAuth();
@@ -56,73 +57,100 @@ function getImage(listing) {
 
 <template>
   <UserLayout>
-    <div class="page-container max-w-5xl">
-      <div class="flex items-center justify-between mb-8">
+    <main class="page-container max-w-5xl">
+      <div class="page-header">
         <div>
-          <h1 class="text-2xl font-bold text-heading">{{ t("nav.my_listings") }}</h1>
-          <p class="text-sm text-muted mt-1">{{ listings.length }} {{ t("common.results") }}</p>
+          <p class="kicker">Seller studio</p>
+          <h1 class="page-title mt-3">{{ t("nav.my_listings") }}</h1>
+          <p class="page-subtitle mt-3">
+            Manage your listings, review status and keep item details current.
+          </p>
         </div>
-        <router-link to="/seller/listings/create">
-          <BaseButton variant="primary" size="sm">{{ t("listing.create") }}</BaseButton>
+        <router-link to="/seller/listings/create" class="btn-primary btn-sm self-start sm:self-auto">
+          {{ t("listing.create") }}
         </router-link>
       </div>
 
-      <div v-if="loading" class="space-y-4">
+      <div v-if="loading" class="space-y-3">
         <BaseSkeleton v-for="i in 4" :key="i" type="card" />
       </div>
 
-      <div v-else-if="error" class="p-4 rounded-lg bg-danger/10 text-danger text-sm">
+      <div
+        v-else-if="error"
+        role="alert"
+        class="rounded-xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger"
+      >
         {{ error }}
-        <BaseButton variant="outline" size="sm" class="ml-4" @click="loadListings">Retry</BaseButton>
+        <BaseButton variant="outline" size="sm" class="ml-4" @click="loadListings">
+          Retry
+        </BaseButton>
       </div>
 
       <BaseEmptyState
         v-else-if="listings.length === 0"
-        title="No Listings"
-        description="You haven't created any listings yet."
+        title="No listings"
+        description="You haven't created any listings yet. Add your first item to start selling."
         icon="auction"
       >
         <template #action>
-          <router-link to="/seller/listings/create" class="mt-4 inline-flex items-center px-4 py-2 bg-navy-700 text-white rounded-lg text-sm font-medium hover:bg-navy-800 transition-colors">
+          <router-link to="/seller/listings/create" class="btn-primary btn-sm mt-5">
             {{ t("listing.create") }}
           </router-link>
         </template>
       </BaseEmptyState>
 
-      <div v-else class="space-y-4">
-        <BaseCard v-for="listing in listings" :key="listing.id">
-          <div class="flex items-center gap-4 p-4">
-            <div class="w-16 h-16 rounded-lg bg-surface overflow-hidden flex-shrink-0">
-              <img v-if="getImage(listing)" :src="getImage(listing)" class="w-full h-full object-cover" />
-              <div v-else class="w-full h-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-muted/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+      <template v-else>
+        <p class="mb-4 text-sm text-body">
+          <strong class="font-semibold text-heading">{{ listings.length }}</strong>
+          {{ listings.length === 1 ? "listing" : "listings" }}
+        </p>
+
+        <div class="space-y-3">
+          <BaseCard v-for="listing in listings" :key="listing.id" hover>
+            <div class="flex flex-wrap items-center gap-4 p-4">
+              <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface">
+                <img
+                  v-if="getImage(listing)"
+                  :src="getImage(listing)"
+                  :alt="listing.title"
+                  class="h-full w-full object-cover"
+                />
+                <div v-else class="grid h-full w-full place-items-center">
+                  <svg class="h-6 w-6 text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <h2 class="truncate text-sm font-semibold text-heading">
+                  {{ listing.title }}
+                </h2>
+                <p class="mt-1 text-xs text-muted">
+                  {{ listing.categories?.name || "Uncategorised" }} ·
+                  <span class="numeric">{{ formatUSD(listing.starting_price) }}</span>
+                </p>
+              </div>
+
+              <StatusBadge :status="listing.status" type="listing" class="shrink-0" />
+
+              <div class="flex shrink-0 items-center gap-1">
+                <router-link :to="`/seller/listings/${listing.id}/edit`">
+                  <BaseButton variant="ghost" size="sm">{{ t("common.edit") }}</BaseButton>
+                </router-link>
+                <BaseButton
+                  variant="ghost"
+                  size="sm"
+                  :disabled="deleting === listing.id"
+                  @click="handleDelete(listing.id)"
+                >
+                  <span class="text-danger">{{ t("common.delete") }}</span>
+                </BaseButton>
               </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <h3 class="font-semibold text-heading truncate">{{ listing.title }}</h3>
-              <p class="text-xs text-muted mt-0.5">
-                {{ listing.categories?.name }} • ${{ Number(listing.starting_price).toLocaleString() }}
-              </p>
-            </div>
-            <StatusBadge :status="listing.status" type="listing" class="flex-shrink-0" />
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <router-link :to="`/seller/listings/${listing.id}/edit`">
-                <BaseButton variant="ghost" size="sm">{{ t("common.edit") }}</BaseButton>
-              </router-link>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                :disabled="deleting === listing.id"
-                @click="handleDelete(listing.id)"
-              >
-                <span class="text-danger">{{ t("common.delete") }}</span>
-              </BaseButton>
-            </div>
-          </div>
-        </BaseCard>
-      </div>
-    </div>
+          </BaseCard>
+        </div>
+      </template>
+    </main>
   </UserLayout>
 </template>
