@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import { documentService } from "@/services/documentService";
 import { formatDate, formatUSD } from "@/utils/format";
@@ -47,6 +48,7 @@ async function send(id) {
 <template>
   <UserLayout>
     <main class="page-container max-w-6xl">
+      <KhmerDivider class="mb-6" />
       <div class="page-header">
         <div>
           <p class="kicker">Your records</p>

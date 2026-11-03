@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
@@ -107,6 +108,7 @@ onUnmounted(() => {
 <template>
   <UserLayout>
     <main class="page-container max-w-3xl">
+      <KhmerDivider class="mb-6" />
       <div class="page-header">
         <div>
           <p class="kicker">Account</p>

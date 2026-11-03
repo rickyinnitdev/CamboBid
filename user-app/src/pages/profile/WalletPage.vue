@@ -4,6 +4,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import QRCode from "qrcode";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import { walletService } from "@/services/walletService";
 import { securityService } from "@/services/securityService";
 import { orderService } from "@/services/orderService";
@@ -206,6 +207,7 @@ onUnmounted(() => {
     </div>
 
     <main v-else class="page-container space-y-6">
+      <KhmerDivider />
       <div class="page-header">
         <div>
           <p class="kicker">CamboBid finance</p>

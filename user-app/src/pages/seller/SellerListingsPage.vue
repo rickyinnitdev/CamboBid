@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useAuth } from "@/composables/useAuth";
 import { listingService } from "@/services/listingService";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
@@ -58,6 +59,7 @@ function getImage(listing) {
 <template>
   <UserLayout>
     <main class="page-container max-w-5xl">
+      <KhmerDivider class="mb-6" />
       <div class="page-header">
         <div>
           <p class="kicker">Seller studio</p>

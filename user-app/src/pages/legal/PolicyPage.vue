@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { securityService } from "@/services/securityService";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import { formatDate } from "@/utils/format";
 const route = useRoute(),
   document = ref(null),
@@ -62,6 +63,8 @@ watch(() => route.path, load);
           Back to CamboBid
         </router-link>
       </div>
+
+      <KhmerDivider class="mb-6" />
 
       <div v-if="loading" class="surface-panel space-y-3 p-6 sm:p-10">
         <div class="h-5 w-40 animate-pulse rounded bg-slate-200/70" />

@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useAuth } from "@/composables/useAuth";
 import { authService } from "@/services/authService";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseBadge from "@/components/base/BaseBadge.vue";
@@ -48,6 +49,7 @@ async function handleUpload() {
 <template>
   <UserLayout>
     <main class="page-container max-w-4xl">
+      <KhmerDivider class="mb-6" />
       <div class="page-header">
         <div>
           <p class="kicker">Account</p>

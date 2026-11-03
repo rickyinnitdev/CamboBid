@@ -5,6 +5,7 @@ import UserLayout from "@/components/layout/UserLayout.vue";
 import AuctionCard from "@/components/auction/AuctionCard.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import { marketplace } from "@/data/marketplace";
 
 const route = useRoute();
@@ -128,6 +129,7 @@ onMounted(async () => {
 <template>
   <UserLayout>
     <div class="page-container pt-5 sm:pt-7">
+      <KhmerDivider class="mb-6" />
       <header class="page-header mb-6">
         <div>
           <p class="kicker">Search</p>

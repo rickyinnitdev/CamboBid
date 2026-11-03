@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { supabase } from "@/services/supabase";
 import { securityService } from "@/services/securityService";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import MfaPanel from "@/components/base/MfaPanel.vue";
 const status = ref(null),
   policies = ref([]),
@@ -56,6 +57,7 @@ async function resend() {
 <template>
   <UserLayout>
     <main class="page-container max-w-4xl space-y-6">
+      <KhmerDivider />
       <div class="page-header">
         <div>
           <p class="kicker">Your account</p>

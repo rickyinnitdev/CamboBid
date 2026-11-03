@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
@@ -40,6 +41,7 @@ function getDisputeImage(dispute) {
 <template>
   <UserLayout>
     <main class="page-container max-w-4xl">
+      <KhmerDivider class="mb-6" />
       <div class="page-header">
         <div>
           <p class="kicker">Resolution centre</p>

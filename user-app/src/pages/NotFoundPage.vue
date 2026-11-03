@@ -2,14 +2,16 @@
 import { useRouter } from "vue-router";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import KhmerArchitecture from "@/components/base/KhmerArchitecture.vue";
 
 const router = useRouter();
 </script>
 
 <template>
   <UserLayout>
-    <main class="page-container">
-      <div class="mx-auto flex min-h-[58vh] max-w-lg flex-col items-center justify-center text-center">
+    <main class="page-container relative">
+      <KhmerArchitecture variant="corners" :opacity="0.07" />
+      <div class="relative mx-auto flex min-h-[58vh] max-w-lg flex-col items-center justify-center text-center">
         <p class="font-display text-[6rem] font-semibold leading-none tracking-[-0.06em] text-navy-100">
           404
         </p>

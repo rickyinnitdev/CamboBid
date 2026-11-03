@@ -163,39 +163,21 @@ const showOrnaments = computed(() => props.variant === "full");
             <path d="M60 26c-3 5-3 9 0 13 3-4 3-8 0-13Z" opacity=".5" />
           </g>
         </pattern>
-
-        <linearGradient
-          :id="`${uid}-wave-fade`"
-          x1="0"
-          y1="0"
-          x2="0"
-          y2="1"
-        >
-          <stop offset="0" stop-color="white" stop-opacity=".2" />
-          <stop offset=".5" stop-color="white" stop-opacity=".45" />
-          <stop offset="1" stop-color="white" stop-opacity="1" />
-        </linearGradient>
-        <mask :id="`${uid}-wave-mask`">
-          <rect
-            width="100%"
-            height="100%"
-            :fill="`url(#${uid}-wave-fade)`"
-          />
-        </mask>
       </defs>
     </svg>
 
-    <!-- Faint Khmer wave field, weighted toward the lower half ---------- -->
+    <!-- Faint Khmer wave field, weighted toward the lower half. A CSS mask
+         is used for the fade because an SVG <mask> referenced across inline
+         SVGs resolves empty in some browsers. -->
     <svg
       v-if="showWaves"
-      class="absolute inset-0 h-full w-full"
+      class="khmer-wave-field absolute inset-0 h-full w-full"
       xmlns="http://www.w3.org/2000/svg"
     >
       <rect
         width="100%"
         height="100%"
         :fill="`url(#${uid}-waves)`"
-        :mask="`url(#${uid}-wave-mask)`"
         opacity=".75"
       />
     </svg>

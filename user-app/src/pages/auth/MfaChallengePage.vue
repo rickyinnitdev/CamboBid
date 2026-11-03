@@ -3,6 +3,7 @@ import { safeRedirect } from "@/utils/querySafety";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import MfaPanel from "@/components/base/MfaPanel.vue";
+import KhmerArchitecture from "@/components/base/KhmerArchitecture.vue";
 import { useAuthStore } from "@/stores/auth";
 const route = useRoute(),
   router = useRouter(),
@@ -29,7 +30,7 @@ async function logout() {
 </script>
 <template>
   <main class="relative grid min-h-screen place-items-center overflow-hidden bg-surface p-5 sm:p-8">
-    <div class="pkar-field pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden="true" />
+    <KhmerArchitecture variant="full" :opacity="0.06" />
     <section class="relative w-full max-w-lg">
       <router-link
         to="/"

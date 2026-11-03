@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UserAvatar from "@/components/base/UserAvatar.vue";
 import PkarPattern from "@/components/base/PkarPattern.vue";
+import KhmerArchitecture from "@/components/base/KhmerArchitecture.vue";
 import { useAuth } from "@/composables/useAuth";
 import { notificationService } from "@/services/notificationService";
 import {
@@ -895,7 +896,15 @@ onUnmounted(() => {
       </Transition>
     </header>
 
-    <main id="main-content" class="relative flex-1">
+    <main id="main-content" class="relative isolate flex-1">
+      <!-- Faint Khmer wave field shared by every page. It sits behind the
+           page content so it never competes with headings, forms or cards. -->
+      <div
+        class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 overflow-hidden"
+        aria-hidden="true"
+      >
+        <KhmerArchitecture variant="wave" :opacity="0.09" />
+      </div>
       <slot />
     </main>
 
@@ -910,6 +919,7 @@ onUnmounted(() => {
         :opacity="0.045"
         :scale="96"
       />
+      <KhmerArchitecture variant="wave" :opacity="0.07" color="#EAD3A2" />
       <div class="container-page relative">
         <div class="grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>

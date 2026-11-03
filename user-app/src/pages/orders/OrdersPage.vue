@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UserLayout from "@/components/layout/UserLayout.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import StatusBadge from "@/components/auction/StatusBadge.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import { orderService } from "@/services/orderService";
@@ -94,6 +95,7 @@ function note(o) {
 <template>
   <UserLayout>
     <main class="page-container max-w-5xl space-y-6">
+      <KhmerDivider />
       <div class="page-header">
         <div>
           <p class="kicker">Your collection</p>

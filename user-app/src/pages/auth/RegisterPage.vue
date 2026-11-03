@@ -6,6 +6,7 @@ import { useAuth } from "@/composables/useAuth";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import { securityService } from "@/services/securityService";
 
 const { t } = useI18n();
@@ -76,6 +77,8 @@ async function handleRegister() {
             Create an account to bid in live auctions, buy instantly and follow
             every order from payment to delivery.
           </p>
+
+          <KhmerDivider class="mt-8 max-w-sm" />
 
           <dl class="mt-10 grid max-w-md grid-cols-2 gap-x-6 gap-y-5">
             <div class="border-l border-gold-300 pl-4">

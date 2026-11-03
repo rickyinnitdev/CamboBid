@@ -7,6 +7,7 @@ import { useAuth } from "@/composables/useAuth";
 import UserLayout from "@/components/layout/UserLayout.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import KhmerDivider from "@/components/base/KhmerDivider.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -61,6 +62,8 @@ async function handleGoogleLogin() {
             Sign in to follow live auctions, manage your bids and keep every
             payment in one place.
           </p>
+
+          <KhmerDivider class="mt-8 max-w-sm" />
 
           <ul class="mt-9 space-y-4">
             <li class="flex items-start gap-3">
