@@ -36,7 +36,6 @@ import {
 
 const settings = ref(platformSettingsService.getCached());
 const HERO_MOTTO = "Bid. Win. Belong.";
-const LEGACY_HERO_TITLE = "Objects worth keeping. Bids worth watching.";
 const live = ref([]);
 const endingSoon = ref([]);
 const upcoming = ref([]);
@@ -54,10 +53,10 @@ const categoryIcons = {
   handicrafts: CubeIcon,
 };
 
-const heroTitle = computed(() => {
-  const title = settings.value.homepage?.hero_title;
-  return !title || title === LEGACY_HERO_TITLE ? HERO_MOTTO : title;
-});
+// The motto is a fixed brand element. Editorial platform settings may drive
+// the eyebrow, subtitle and section titles, but they must not replace the
+// hero headline with an older seeded marketing line.
+const heroTitle = HERO_MOTTO;
 
 const featured = computed(
   () =>
