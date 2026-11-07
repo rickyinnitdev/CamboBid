@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { supabase } from "@/services/supabase";
+import { isDevAdminSession } from "@/services/devAdmin";
 
 const routes = [
   {path:"/admin/withdrawals",name:"AdminWithdrawals",component:()=>import("@/pages/WithdrawalsPage.vue"),meta:{requiresAuth:true,permission:"withdrawals.manage"}},
@@ -197,7 +198,8 @@ router.beforeEach(async (to, from, next) => {
   if (
     authStore.isAuthenticated &&
     allowedRoles.includes(authStore.userRole) &&
-    to.name !== "AdminSecurity"
+    to.name !== "AdminSecurity" &&
+    !isDevAdminSession()
   ) {
     const { data, error } =
       await supabase.auth.mfa.getAuthenticatorAssuranceLevel();

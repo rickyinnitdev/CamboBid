@@ -5,10 +5,19 @@ import { useI18n } from "vue-i18n";
 import { useAuth } from "@/composables/useAuth";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import {
+  DEV_ADMIN_EMAIL,
+  DEV_ADMIN_ENABLED,
+  DEV_ADMIN_PASSWORD,
+} from "@/services/devAdmin";
 
 const { t } = useI18n();
 const router = useRouter();
 const { login, loginWithGoogle } = useAuth();
+
+const devAdminEnabled = DEV_ADMIN_ENABLED;
+const devAdminEmail = DEV_ADMIN_EMAIL;
+const devAdminPassword = DEV_ADMIN_PASSWORD;
 
 const email = ref("");
 const password = ref("");
@@ -39,6 +48,22 @@ async function handleGoogleLogin() {
     await loginWithGoogle();
   } catch (e) {
     error.value = e.message || "Google sign-in failed";
+    loading.value = false;
+  }
+}
+
+async function handleDevLogin() {
+  loading.value = true;
+  error.value = "";
+  try {
+    await login({
+      email: devAdminEmail,
+      password: devAdminPassword,
+    });
+    router.push("/admin");
+  } catch (e) {
+    error.value = e.message || "Dev admin login failed";
+  } finally {
     loading.value = false;
   }
 }
@@ -98,6 +123,30 @@ async function handleGoogleLogin() {
         <BaseButton variant="outline" :loading="loading" class="w-full" @click="handleGoogleLogin">
           Continue with Google
         </BaseButton>
+
+        <div
+          v-if="devAdminEnabled"
+          class="mt-6 rounded-lg border border-dashed border-amber-300 bg-amber-50 p-4"
+        >
+          <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">
+            Development only
+          </p>
+          <p class="mt-1 text-xs leading-5 text-amber-800">
+            Hard-coded admin access for local UI work. This bypass is excluded
+            from production builds.
+          </p>
+          <button
+            type="button"
+            class="mt-3 w-full rounded-lg bg-navy-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="loading"
+            @click="handleDevLogin"
+          >
+            Enter dev admin panel
+          </button>
+          <p class="mt-2 text-[11px] text-amber-700">
+            {{ devAdminEmail }} · {{ devAdminPassword }}
+          </p>
+        </div>
       </div>
     </div>
   </div>

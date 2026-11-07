@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { ref, onMounted, onUnmounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { notificationService } from "@/services/notificationService";
+import { isDevAdminSession } from "@/services/devAdmin";
 
 const emit = defineEmits(["toggle-sidebar", "toggle-mobile-sidebar"]);
 const route = useRoute();
@@ -13,14 +14,14 @@ const unreadCount = ref(0);
 let notifChannel = null;
 
 async function fetchUnreadCount() {
-  if (user.value) {
+  if (user.value && !isDevAdminSession()) {
     unreadCount.value = await notificationService.getUnreadCount();
   }
 }
 
 onMounted(async () => {
   await fetchUnreadCount();
-  if (user.value) {
+  if (user.value && !isDevAdminSession()) {
     notifChannel = await notificationService.subscribeToNotifications(() => {
       fetchUnreadCount();
     });
