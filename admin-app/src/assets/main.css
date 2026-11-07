@@ -2,37 +2,56 @@
 @config "../../tailwind.config.js";
 
 @utility btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45;
+}
 
 @utility card {
-    @apply bg-card rounded-xl shadow-sm border border-border;
-  }
+  @apply rounded-xl border border-border bg-card;
+}
 
 @utility badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
 
 @layer base {
+  :root {
+    --ink: #101e2b;
+    --paper: #f4f5f2;
+    --card: #fcfcfa;
+    --stone: #dde2dc;
+    --gold: #c08a2e;
+    --verdigris: #3f6b5e;
+    --laterite: #9a4b33;
+  }
+
   * {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-surface text-body antialiased;
+    @apply bg-paper font-sans text-body antialiased;
+    font-feature-settings: "kern" 1;
   }
 
   h1,
-  h2,
+  h2 {
+    @apply font-display font-medium text-heading;
+    letter-spacing: -0.02em;
+  }
+
   h3,
   h4,
   h5,
   h6 {
-    @apply font-semibold text-heading;
+    @apply font-sans font-semibold text-heading;
   }
 
   ::selection {
-    @apply bg-gold-500/30 text-heading;
+    @apply bg-gold-500/25 text-ink;
   }
 
   input,
@@ -42,35 +61,49 @@
   }
 
   .font-mono {
-    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-family: "IBM Plex Mono", "Fira Code", monospace;
+  }
+
+  :focus-visible {
+    outline-color: #446c8c;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
-
-
+  /* Controls ------------------------------------------------------------ */
   .btn-primary {
-    @apply btn bg-navy-700 text-white hover:bg-navy-800 focus:ring-navy-500;
+    @apply btn bg-navy-700 text-white hover:bg-navy-800 focus-visible:ring-navy-500;
   }
 
   .btn-gold {
-    @apply btn bg-gold-500 text-navy-900 hover:bg-gold-600 focus:ring-gold-400 font-semibold;
+    @apply btn bg-gold-500 font-semibold text-ink hover:bg-gold-600 focus-visible:ring-gold-400;
   }
 
   .btn-danger {
-    @apply btn bg-danger text-white hover:bg-red-700 focus:ring-red-500;
+    @apply btn bg-laterite text-white hover:bg-[#833e2a] focus-visible:ring-laterite;
   }
 
   .btn-success {
-    @apply btn bg-success text-white hover:bg-green-700 focus:ring-green-500;
+    @apply btn bg-verdigris text-white hover:bg-[#345a4f] focus-visible:ring-verdigris;
   }
 
   .btn-outline {
-    @apply btn border border-border bg-white text-body hover:bg-surface focus:ring-navy-500;
+    @apply btn border border-[#CBD4CC] bg-card text-body hover:border-navy-300 hover:text-heading focus-visible:ring-navy-500;
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-body hover:bg-surface focus:ring-navy-500;
+    @apply btn bg-transparent text-body hover:bg-navy-50 hover:text-heading focus-visible:ring-navy-500;
   }
 
   .btn-sm {
@@ -81,56 +114,60 @@
     @apply px-6 py-3 text-base;
   }
 
-
-
+  /* Surfaces ------------------------------------------------------------ */
   .card-hover {
-    @apply card hover:shadow-md transition-shadow duration-200;
+    @apply card transition-colors duration-150 hover:border-navy-200;
   }
 
+  .surface-panel {
+    @apply rounded-xl border border-border bg-card;
+  }
 
-
+  /* Status -------------------------------------------------------------- */
   .badge-live {
-    @apply badge bg-success/10 text-success;
+    @apply badge bg-verdigris/10 text-verdigris;
   }
 
   .badge-draft {
-    @apply badge bg-muted/20 text-muted;
+    @apply badge bg-navy-50 text-muted;
   }
 
   .badge-pending {
-    @apply badge bg-warning/10 text-warning;
+    @apply badge bg-gold-500/12 text-gold-800;
   }
 
   .badge-approved {
-    @apply badge bg-success/10 text-success;
+    @apply badge bg-verdigris/10 text-verdigris;
   }
 
   .badge-rejected {
-    @apply badge bg-danger/10 text-danger;
+    @apply badge bg-laterite/10 text-laterite;
   }
 
   .badge-sold {
-    @apply badge bg-gold-500/10 text-gold-700;
+    @apply badge bg-gold-500/12 text-gold-800;
   }
 
+  /* Forms --------------------------------------------------------------- */
   .input {
-    @apply block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-heading placeholder:text-muted focus:border-navy-500 focus:outline-none focus:ring-2 focus:ring-navy-500/20 transition-colors;
+    @apply block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-heading transition-colors placeholder:text-muted focus:border-navy-500 focus:outline-none focus:ring-2 focus:ring-navy-500/15;
   }
 
   .input-error {
-    @apply border-danger focus:border-danger focus:ring-danger/20;
+    @apply border-laterite focus:border-laterite focus:ring-laterite/15;
   }
 
   .label {
-    @apply block text-sm font-medium text-heading mb-1.5;
+    @apply mb-1.5 block text-[13px] font-medium text-heading;
   }
 
   .error-text {
-    @apply text-xs text-danger mt-1;
+    @apply mt-1 text-xs text-laterite;
   }
 
+  /* Tables -------------------------------------------------------------- */
   .table-container {
-    @apply overflow-x-auto rounded-xl border border-border;
+    @apply overflow-x-auto rounded-xl border border-border bg-card;
   }
 
   .table {
@@ -138,39 +175,66 @@
   }
 
   .table th {
-    @apply bg-surface px-4 py-3 text-left text-xs font-semibold text-heading uppercase tracking-wider;
+    @apply bg-paper px-4 py-3 text-left text-[11px] font-semibold tracking-[0.04em] text-muted;
   }
 
   .table td {
     @apply px-4 py-3 text-sm text-body;
   }
 
-  .table tr:hover td {
-    @apply bg-surface/50;
+  .table tbody tr {
+    @apply transition-colors;
   }
 
+  .table tbody tr:hover td {
+    @apply bg-navy-50/40;
+  }
+
+  /* Feedback ------------------------------------------------------------ */
   .skeleton {
-    @apply animate-pulse bg-muted/20 rounded;
+    @apply animate-pulse rounded bg-navy-100/50;
   }
 
   .empty-state {
     @apply flex flex-col items-center justify-center py-12 text-center;
   }
 
+  /* Page rhythm --------------------------------------------------------- */
   .page-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+    @apply mx-auto w-full max-w-[1560px] px-4 py-8 sm:px-6 lg:px-8;
   }
 
   .page-header {
-    @apply mb-8;
+    @apply mb-7 flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between;
   }
 
   .page-title {
-    @apply text-2xl font-bold text-heading;
+    @apply font-display text-[1.9rem] font-medium leading-tight tracking-[-0.025em] text-heading sm:text-[2.15rem];
   }
 
   .page-subtitle {
-    @apply text-sm text-muted mt-1;
+    @apply mt-1.5 max-w-2xl text-sm leading-6 text-muted;
+  }
+
+  .data-label {
+    @apply text-xs font-medium text-muted;
+  }
+
+  .numeric {
+    @apply font-mono tabular-nums;
+  }
+
+  /* Ledger rows used by the dashboard and summary panels. */
+  .ledger-row {
+    @apply flex items-baseline justify-between gap-4 border-b border-border/70 py-3 last:border-b-0;
+  }
+
+  .ledger-row dt {
+    @apply text-sm text-muted;
+  }
+
+  .ledger-row dd {
+    @apply font-mono text-sm font-medium tabular-nums text-heading;
   }
 }
 
@@ -180,7 +244,7 @@
   }
 
   .animate-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.35s ease-out;
   }
 
   @keyframes fadeIn {
@@ -195,105 +259,300 @@
   }
 }
 
-/* Administration surface. Existing controls and page structures are preserved. */
+/* ---------------------------------------------------------------------- *
+ * Administration shell
+ * Ink rail, paper desk, gold marker. Kept as plain CSS so every existing
+ * page inherits the surface without rewriting its markup.
+ * ---------------------------------------------------------------------- */
 .admin-shell {
-  background: #f3f6f7;
-  color: #24383d;
+  background: var(--paper);
+  color: #44535b;
 }
+
 .admin-shell main {
-  padding: 32px;
-  max-width: 1680px;
   width: 100%;
+  max-width: 1560px;
   margin: 0 auto;
+  padding: 32px 40px 56px;
 }
-.admin-shell header {
-  height: 80px;
-  border-color: #e8eef0;
-  background: #ffffffed;
-  backdrop-filter: blur(12px);
+
+.admin-shell .admin-topbar {
+  height: 68px;
+  border-color: var(--stone);
+  background: #fcfcfaeb;
+  backdrop-filter: blur(14px);
 }
+
 .admin-shell h1 {
-  letter-spacing: -0.035em;
-  color: #182f35;
+  color: #101e2b;
 }
+
 .admin-shell .card,
 .admin-shell main .bg-white {
-  border-color: #e4ebed;
-  border-radius: 18px;
-  box-shadow: 0 3px 12px #173f4403;
+  border-color: var(--stone);
+  border-radius: 14px;
+  box-shadow: none;
 }
+
 .admin-shell table {
   border-collapse: separate;
   border-spacing: 0;
 }
+
 .admin-shell thead {
-  background: #f8fafb;
+  background: #f4f5f2;
 }
+
 .admin-shell th {
+  padding-top: 14px;
+  padding-bottom: 14px;
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #7b8d94;
   font-weight: 600;
-  padding-top: 17px;
-  padding-bottom: 17px;
+  letter-spacing: 0.04em;
+  color: #78868c;
 }
+
 .admin-shell tbody tr {
   transition: background 0.15s;
 }
+
 .admin-shell tbody tr:hover {
-  background: #f8fbfb;
+  background: #f7f8f5;
 }
+
 .admin-shell td {
-  padding-top: 18px;
-  padding-bottom: 18px;
-  border-color: #eef2f3;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-color: #e8ece6;
 }
+
 .admin-shell input,
 .admin-shell select,
 .admin-shell textarea {
-  border-color: #e1e9ec;
-  border-radius: 11px;
+  border-color: var(--stone);
+  border-radius: 8px;
+  background: #fff;
 }
+
 .admin-shell input:focus,
 .admin-shell select:focus,
 .admin-shell textarea:focus {
-  outline-color: #88b9bb;
+  outline: none;
+  border-color: #446c8c;
+  box-shadow: 0 0 0 3px rgb(68 108 140 / 0.12);
 }
+
 .admin-shell .btn-primary {
-  background: #216875;
-  border-color: #216875;
-  border-radius: 11px;
+  background: #163e5f;
+  border-color: #163e5f;
+  border-radius: 8px;
 }
+
+.admin-shell .btn-primary:hover {
+  background: #102f49;
+}
+
 .admin-shell button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* Harmonise legacy status tints with the laterite / verdigris / gold palette
+   so older pages inherit the new surface without rewriting their markup. */
+.admin-shell .bg-red-50,
+.admin-shell .bg-rose-50 {
+  background-color: rgb(154 75 51 / 0.06);
+}
+.admin-shell .border-red-200,
+.admin-shell .border-rose-200 {
+  border-color: rgb(154 75 51 / 0.25);
+}
+.admin-shell .text-red-700,
+.admin-shell .text-red-600,
+.admin-shell .text-rose-700 {
+  color: #9a4b33;
+}
+.admin-shell .bg-green-50,
+.admin-shell .bg-emerald-50 {
+  background-color: rgb(63 107 94 / 0.07);
+}
+.admin-shell .border-green-200,
+.admin-shell .border-emerald-200 {
+  border-color: rgb(63 107 94 / 0.25);
+}
+.admin-shell .text-green-700,
+.admin-shell .text-green-600,
+.admin-shell .text-emerald-700 {
+  color: #3f6b5e;
+}
+.admin-shell .bg-yellow-50,
+.admin-shell .bg-amber-50 {
+  background-color: rgb(192 138 46 / 0.1);
+}
+.admin-shell .border-yellow-200,
+.admin-shell .border-amber-200 {
+  border-color: rgb(192 138 46 / 0.3);
+}
+.admin-shell .text-yellow-700,
+.admin-shell .text-amber-700,
+.admin-shell .text-amber-800 {
+  color: #8a5d1c;
+}
+.admin-shell .bg-blue-50 {
+  background-color: rgb(22 62 95 / 0.06);
+}
+.admin-shell .border-blue-200 {
+  border-color: rgb(22 62 95 / 0.2);
+}
+.admin-shell .text-blue-700,
+.admin-shell .text-blue-600 {
+  color: #163e5f;
+}
+
+/* Sidebar -------------------------------------------------------------- */
 .admin-sidebar {
   height: 100dvh;
+  background:
+    radial-gradient(120% 60% at 0% 0%, rgba(192, 138, 46, 0.08), transparent 55%),
+    #101e2b;
+  color: #c6d0d6;
+  border-right: 1px solid rgba(192, 138, 46, 0.22);
 }
+
 .admin-sidebar nav {
-  padding: 20px 12px;
+  padding: 8px 10px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(198, 208, 214, 0.18) transparent;
+  overscroll-behavior: contain;
 }
+
+/* Minimal scrollbar that reads as part of the ink rail rather than chrome. */
+.admin-sidebar nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar nav::-webkit-scrollbar-track {
+  margin-block: 8px;
+  background: transparent;
+}
+
+.admin-sidebar nav::-webkit-scrollbar-button,
+.admin-sidebar nav::-webkit-scrollbar-button:single-button,
+.admin-sidebar nav::-webkit-scrollbar-button:vertical:start:decrement,
+.admin-sidebar nav::-webkit-scrollbar-button:vertical:end:increment {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.admin-sidebar nav::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(198, 208, 214, 0.14);
+  background-clip: content-box;
+}
+
+.admin-sidebar nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(198, 208, 214, 0.3);
+  background-clip: content-box;
+}
+
+.admin-sidebar nav::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .admin-sidebar nav button {
-  min-height: 44px;
+  min-height: 38px;
 }
+
 .admin-sidebar nav button svg {
   width: 18px;
   height: 18px;
-  stroke-width: 1.6;
+  stroke-width: 1.5;
 }
+
+.admin-sidebar .nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke-width: 1.5;
+}
+
 .admin-sidebar nav button:focus-visible {
-  outline: 2px solid #216875;
+  outline: 2px solid #c08a2e;
   outline-offset: 1px;
 }
+
+.admin-sidebar .nav-group-label {
+  padding: 14px 12px 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #7f919b;
+}
+
+.admin-sidebar .nav-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  font-weight: 450;
+  color: #b9c6cd;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.admin-sidebar .nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f4f5;
+}
+
+.admin-sidebar .nav-item.is-active {
+  background: rgba(192, 138, 46, 0.14);
+  color: #f4e3c2;
+}
+
+.admin-sidebar .nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 2px;
+  background: #c08a2e;
+}
+
+.admin-sidebar .nav-item svg {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* Header --------------------------------------------------------------- */
+.admin-header-search {
+  border: 1px solid var(--stone);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.admin-header-user {
+  border-left: 1px solid var(--stone);
+}
+
 @media (max-width: 1023px) {
   .admin-shell main {
-    padding: 20px 14px;
+    padding: 20px 14px 44px;
   }
-  .admin-shell header {
-    height: 68px;
-    padding-left: 18px;
-    padding-right: 18px;
+
+  .admin-shell .admin-topbar {
+    height: 62px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }

@@ -1,23 +1,13 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useI18n } from "vue-i18n";
 import { useAuth } from "@/composables/useAuth";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
-import {
-  DEV_ADMIN_EMAIL,
-  DEV_ADMIN_ENABLED,
-  DEV_ADMIN_PASSWORD,
-} from "@/services/devAdmin";
+import KhmerMark from "@/components/base/KhmerMark.vue";
 
-const { t } = useI18n();
 const router = useRouter();
 const { login, loginWithGoogle } = useAuth();
-
-const devAdminEnabled = DEV_ADMIN_ENABLED;
-const devAdminEmail = DEV_ADMIN_EMAIL;
-const devAdminPassword = DEV_ADMIN_PASSWORD;
 
 const email = ref("");
 const password = ref("");
@@ -51,103 +41,135 @@ async function handleGoogleLogin() {
     loading.value = false;
   }
 }
-
-async function handleDevLogin() {
-  loading.value = true;
-  error.value = "";
-  try {
-    await login({
-      email: devAdminEmail,
-      password: devAdminPassword,
-    });
-    router.push("/admin");
-  } catch (e) {
-    error.value = e.message || "Dev admin login failed";
-  } finally {
-    loading.value = false;
-  }
-}
 </script>
 
 <template>
-  <div class="min-h-screen bg-navy-900 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 rounded-2xl bg-gold-500 flex items-center justify-center mx-auto mb-4">
-          <svg class="w-9 h-9 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+  <div class="min-h-screen bg-paper lg:grid lg:grid-cols-[1.05fr_1fr]">
+    <!-- Identity panel -->
+    <aside class="relative hidden overflow-hidden bg-ink p-12 text-white lg:flex lg:flex-col lg:justify-between">
+      <div
+        class="pointer-events-none absolute -right-24 top-1/4 h-80 w-80 rounded-full border border-gold-500/10"
+        aria-hidden="true"
+      />
+      <div
+        class="pointer-events-none absolute -right-10 top-1/4 h-56 w-56 rounded-full border border-gold-500/10"
+        aria-hidden="true"
+      />
+      <KhmerMark
+        variant="wave"
+        color="#C08A2E"
+        :opacity="0.18"
+        class="pointer-events-none absolute inset-x-0 bottom-20 h-8 w-full"
+      />
+
+      <div class="relative">
+        <div class="flex items-center gap-3">
+          <div class="grid h-10 w-10 place-items-center rounded-md border border-gold-500/35 bg-white/5">
+            <KhmerMark
+              variant="seal"
+              color="#D2A343"
+              :opacity="1"
+              :stroke-width="1.2"
+              class="h-6 w-6"
+            />
+          </div>
+          <div>
+            <p class="font-display text-xl font-medium leading-none tracking-[-0.02em]">CamboBid</p>
+            <p class="mt-1 text-[10.5px] tracking-[0.08em] text-gold-200/70">Administration</p>
+          </div>
         </div>
-        <h1 class="text-2xl font-bold text-white">Admin Panel</h1>
-        <p class="text-navy-300 mt-1">Sign in to your account</p>
+
+        <h1 class="mt-16 max-w-md font-display text-[2.6rem] font-normal leading-[1.08] tracking-[-0.03em] text-white">
+          The registrar's desk for a living saleroom.
+        </h1>
+        <p class="mt-5 max-w-sm text-sm leading-6 text-white/55">
+          Catalogues, bids, settlement and disputes — one quiet room for the
+          people who keep the auction moving.
+        </p>
       </div>
 
-      <div class="bg-white rounded-xl p-8 shadow-xl">
-        <form @submit.prevent="handleLogin" class="space-y-5">
-          <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {{ error }}
+      <div class="relative flex items-center justify-between text-xs text-white/40">
+        <span>Phnom Penh</span>
+        <span class="numeric">Est. 2026</span>
+      </div>
+    </aside>
+
+    <!-- Form panel -->
+    <main class="flex min-h-screen items-center justify-center px-5 py-10 sm:px-10">
+      <div class="w-full max-w-md">
+        <div class="mb-8 flex items-center gap-3 lg:hidden">
+          <div class="grid h-10 w-10 place-items-center rounded-md border border-gold-500/40 bg-ink">
+            <KhmerMark
+              variant="seal"
+              color="#D2A343"
+              :opacity="1"
+              :stroke-width="1.2"
+              class="h-6 w-6"
+            />
+          </div>
+          <div>
+            <p class="font-display text-xl font-medium leading-none tracking-[-0.02em] text-heading">CamboBid</p>
+            <p class="mt-1 text-[10.5px] tracking-[0.08em] text-gold-700">Administration</p>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-border bg-card p-6 sm:p-8">
+          <p class="data-label flex items-center gap-2">
+            <span class="inline-block h-1 w-1 rounded-full bg-gold-500" aria-hidden="true" />
+            Staff access
+          </p>
+          <h2 class="mt-2 font-display text-[1.75rem] font-medium leading-tight text-heading">
+            Sign in
+          </h2>
+          <p class="mt-1 text-sm text-muted">
+            Use your CamboBid staff account to enter the workspace.
+          </p>
+
+          <form class="mt-6 space-y-5" @submit.prevent="handleLogin">
+            <div
+              v-if="error"
+              role="alert"
+              class="rounded-lg border border-laterite/25 bg-laterite/5 px-4 py-3 text-sm text-laterite"
+            >
+              {{ error }}
+            </div>
+
+            <BaseInput
+              v-model="email"
+              label="Email"
+              type="email"
+              placeholder="admin@cambobid.com"
+              required
+            />
+
+            <BaseInput
+              v-model="password"
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              required
+            />
+
+            <BaseButton type="submit" :loading="loading" class="w-full" size="lg">
+              Sign in
+            </BaseButton>
+          </form>
+
+          <div class="my-5 flex items-center gap-3">
+            <div class="h-px flex-1 bg-border" />
+            <span class="text-[11px] text-muted">or</span>
+            <div class="h-px flex-1 bg-border" />
           </div>
 
-          <BaseInput
-            v-model="email"
-            label="Email"
-            type="email"
-            placeholder="admin@example.com"
-            required
-          />
-
-          <BaseInput
-            v-model="password"
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            required
-          />
-
-          <BaseButton
-            type="submit"
-            :loading="loading"
-            class="w-full"
-            size="lg"
-          >
-            Sign In
+          <BaseButton variant="outline" :loading="loading" class="w-full" @click="handleGoogleLogin">
+            Continue with Google
           </BaseButton>
-        </form>
-
-        <div class="my-5 flex items-center gap-3">
-          <div class="h-px flex-1 bg-border" />
-          <span class="text-xs font-semibold uppercase tracking-widest text-muted">or</span>
-          <div class="h-px flex-1 bg-border" />
         </div>
 
-        <BaseButton variant="outline" :loading="loading" class="w-full" @click="handleGoogleLogin">
-          Continue with Google
-        </BaseButton>
-
-        <div
-          v-if="devAdminEnabled"
-          class="mt-6 rounded-lg border border-dashed border-amber-300 bg-amber-50 p-4"
-        >
-          <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">
-            Development only
-          </p>
-          <p class="mt-1 text-xs leading-5 text-amber-800">
-            Hard-coded admin access for local UI work. This bypass is excluded
-            from production builds.
-          </p>
-          <button
-            type="button"
-            class="mt-3 w-full rounded-lg bg-navy-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="loading"
-            @click="handleDevLogin"
-          >
-            Enter dev admin panel
-          </button>
-          <p class="mt-2 text-[11px] text-amber-700">
-            {{ devAdminEmail }} · {{ devAdminPassword }}
-          </p>
-        </div>
+        <p class="mt-6 text-center text-xs text-muted">
+          Need access? Ask a super admin to invite you.
+        </p>
       </div>
-    </div>
+    </main>
   </div>
 </template>

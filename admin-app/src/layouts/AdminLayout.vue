@@ -53,13 +53,13 @@ function toggleMobileSidebar() {
     </Transition>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-w-0" :class="sidebarOpen ? 'lg:ml-60' : 'lg:ml-16'">
+    <div class="flex-1 flex flex-col min-w-0" :class="sidebarOpen ? 'lg:ml-[248px]' : 'lg:ml-[72px]'">
       <AdminHeader
         @toggle-sidebar="toggleSidebar"
         @toggle-mobile-sidebar="toggleMobileSidebar"
       />
 
-      <main class="flex-1 p-6">
+      <main class="relative flex-1">
         <slot />
       </main>
     </div>

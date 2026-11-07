@@ -7,7 +7,7 @@ const paddings = { none: "", sm: "p-4", md: "p-6", lg: "p-8" };
 </script>
 
 <template>
-  <div :class="['bg-white rounded-xl border border-border', paddings[padding]]">
+  <div :class="['rounded-xl border border-border bg-card', paddings[padding]]">
     <slot />
   </div>
 </template>

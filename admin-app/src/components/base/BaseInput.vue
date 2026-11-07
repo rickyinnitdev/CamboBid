@@ -14,9 +14,9 @@ defineEmits(["update:modelValue"]);
 
 <template>
   <div class="space-y-1">
-    <label v-if="label" class="block text-sm font-medium text-heading">
+    <label v-if="label" class="label">
       {{ label }}
-      <span v-if="required" class="text-danger">*</span>
+      <span v-if="required" class="text-laterite">*</span>
     </label>
     <input
       :type="type"
@@ -24,13 +24,9 @@ defineEmits(["update:modelValue"]);
       :placeholder="placeholder"
       :disabled="disabled"
       :required="required"
-      :class="[
-        'w-full px-3 py-2 border rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500',
-        error ? 'border-danger' : 'border-border',
-        disabled ? 'bg-surface cursor-not-allowed' : 'bg-white',
-      ]"
+      :class="['input', error ? 'input-error' : '', disabled ? 'cursor-not-allowed bg-paper' : '']"
       @input="$emit('update:modelValue', $event.target.value)"
     />
-    <p v-if="error" class="text-xs text-danger">{{ error }}</p>
+    <p v-if="error" class="error-text">{{ error }}</p>
   </div>
 </template>

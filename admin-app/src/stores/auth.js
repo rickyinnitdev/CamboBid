@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { authService } from "@/services/authService";
-import { isDevAdminSession } from "@/services/devAdmin";
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
@@ -109,10 +108,6 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   authService.onAuthStateChange((event, session) => {
-    // The local development admin session is independent of Supabase Auth.
-    // Ignore Supabase events so an empty/real session cannot replace it.
-    if (isDevAdminSession()) return;
-
     if (event === "SIGNED_OUT") {
       user.value = null;
       profile.value = null;
