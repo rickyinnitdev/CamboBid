@@ -141,8 +141,8 @@ No backend, API, router permission, Supabase, or auction logic was changed.
 ## 4. Verification performed
 
 - `npm run build` passes.
-- Production build contains **no** `admin@cambobid.local` / `cambobid-dev`
-  strings. The module that held them has been deleted.
+- Production build contains no local-testing credentials. The module that
+  held them has been deleted.
 - Cleanup verified: `/admin/login` renders without the dev panel, and an
   unauthenticated visit to `/admin` redirects to `/admin/login`. No console
   errors.
