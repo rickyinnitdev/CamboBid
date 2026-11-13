@@ -735,6 +735,36 @@ test("account security, financial authorization and settlement", async (t) => {
     },
   );
   await t.test(
+    "live sample listings offer direct KHQR Buy Now for one cent",
+    async () => {
+      await sql("UPDATE payment_settings SET mode='live',live_enabled=false");
+      try {
+        await as(admin, () =>
+          rejects(
+            () => sql("SELECT create_sample_auctions(3,4320,'live')"),
+            /enable live/,
+          ),
+        );
+        await sql("UPDATE payment_settings SET live_enabled=true");
+        const samples = await as(admin, () =>
+          value("SELECT create_sample_auctions(3,4320,'live')"),
+        );
+        assert.equal(samples.length, 3);
+        for (const sample of samples) {
+          const { rows: [listing] } = await sql(
+            "SELECT a.payment_mode, l.buy_it_now_price, l.images FROM auctions a JOIN listings l ON l.id=a.listing_id WHERE a.id=$1",
+            [sample.id],
+          );
+          assert.equal(listing.payment_mode, "live");
+          assert.equal(Number(listing.buy_it_now_price), 0.01);
+          assert.match(listing.images[0], /^https:\/\/images\.pexels\.com\//);
+        }
+      } finally {
+        await sql("UPDATE payment_settings SET mode='demo',live_enabled=true");
+      }
+    },
+  );
+  await t.test(
     "approved listings start atomically with real-mode and staff safeguards",
     async () => {
       const listing = crypto.randomUUID(),

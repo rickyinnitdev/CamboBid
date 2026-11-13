@@ -9,14 +9,14 @@ const router = useRouter(),
   busy = ref(false);
 const sampleMode = ref("demo"),
   samples = ref([]);
-async function createSamples(count, minutes) {
+async function createSamples(count, minutes, mode = sampleMode.value) {
   busy.value = true;
   error.value = "";
   try {
     samples.value = await rpc("create_sample_auctions", {
       p_count: count,
       p_minutes: minutes,
-      p_mode: sampleMode.value,
+      p_mode: mode,
     });
     if (count === 1) auction.value = samples.value[0].id;
   } catch (e) {
@@ -89,11 +89,19 @@ async function close() {
           >
             Create 10 sample auctions
           </button>
+          <button
+            :disabled="busy"
+            class="btn-primary"
+            @click="createSamples(3, 4320, 'live')"
+          >
+            Create 3 live $0.01 Buy Now samples
+          </button>
         </div>
         <p class="text-xs text-slate-500">
-          Real KHQR must first be configured and enabled in Integrations. Live
-          sample auctions move actual money and have no physical delivery; agree
-          on the test refund with your friend.
+          Enable real KHQR in Integrations first. The three Buy Now samples run
+          for three days. Open a sample link from a separate buyer account and
+          choose Buy with KHQR before placing bids. These test purchases use
+          real money and have no physical delivery.
         </p>
         <ul v-if="samples.length" class="space-y-2 text-sm">
           <li v-for="s in samples" :key="s.id">

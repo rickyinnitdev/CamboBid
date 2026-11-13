@@ -151,9 +151,11 @@ remain fallback settings. Preserve the encryption key across deployments.
 
 The active environment is stored in `payment_settings`, initially demo. Enabling
 live requires configured credentials and the explicit typed phrase in admin.
-Existing auctions/checkouts keep their environment. In Presentation, choose real
-KHQR and create a fresh $0.01 auction. The ten seeded catalog auctions use demo
-funds, $0.01 starts and $0.01 increments; the first bid may equal the start.
+Existing auctions/checkouts keep their environment. Apply migration
+`025_sample_khqr_buy_now.sql`, then open **Admin > Presentation** and select
+**Create 3 live $0.01 Buy Now samples**. Open one of the resulting product links
+as a separate eligible buyer and use the direct KHQR option before placing bids.
+The sample listings use Pexels product photos and expire after three days.
 
 For a real test, use two bidder accounts plus a separate seller/staff account.
 Pay one small top-up from a different sending bank account; the receiving account
