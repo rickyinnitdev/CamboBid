@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.116.0";
+import { parseBakongTokens } from "./bakong.ts";
 async function encryptionKey() {
   const raw = Deno.env.get("INTEGRATION_ENCRYPTION_KEY") || "";
   if (!/^[a-f0-9]{64}$/i.test(raw))
@@ -60,15 +61,21 @@ export async function paymentConfig(admin: SupabaseClient) {
     .single();
   if (error) throw error;
   const saved = await readConfig(admin, "bakong");
+  const storedTokens = parseBakongTokens(saved.tokens ?? saved.token ?? "");
+  const tokens = parseBakongTokens([
+    ...storedTokens,
+    Deno.env.get("BAKONG_API_TOKENS") || "",
+    Deno.env.get("BAKONG_API_TOKEN") || "",
+  ].join(",")).slice(0, 5);
   return {
     mode: data.mode,
     liveEnabled: data.live_enabled,
     receiver: saved.receiver || Deno.env.get("BAKONG_ACCOUNT_ID") || "",
-    token: saved.token || Deno.env.get("BAKONG_API_TOKEN") || "",
-    merchantName:
-      saved.merchantName || Deno.env.get("MERCHANT_NAME") || "CamboBid",
-    merchantCity:
-      saved.merchantCity || Deno.env.get("MERCHANT_CITY") || "Phnom Penh",
+    tokens,
+    merchantName: saved.merchantName || Deno.env.get("MERCHANT_NAME") ||
+      "CamboBid",
+    merchantCity: saved.merchantCity || Deno.env.get("MERCHANT_CITY") ||
+      "Phnom Penh",
   };
 }
 

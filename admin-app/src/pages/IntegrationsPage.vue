@@ -9,7 +9,7 @@ const settings = ref(null),
   confirmation = ref("");
 const bakong = ref({
     receiver: "",
-    token: "",
+    tokens: "",
     merchantName: "CamboBid",
     merchantCity: "Phnom Penh",
   }),
@@ -28,7 +28,12 @@ async function run(fn) {
 }
 function apply(s) {
   settings.value = s;
-  bakong.value = { ...bakong.value, ...s.bakong, token: "" };
+  bakong.value = {
+    receiver: s.bakong.receiver,
+    merchantName: s.bakong.merchantName,
+    merchantCity: s.bakong.merchantCity,
+    tokens: "",
+  };
   email.value = { apiKey: "", from: s.email.from };
 }
 onMounted(() =>
@@ -214,7 +219,7 @@ async function send() {
             <p class="text-sm text-slate-500 mt-1">
               {{
                 settings?.bakong.configured
-                  ? "Credentials saved; verify a small receipt before presenting."
+                  ? `${settings.bakong.token_count ?? 1} API token(s) configured`
                   : "Not configured"
               }}
             </p>
@@ -226,16 +231,22 @@ async function send() {
               placeholder="your_name@bank"
               required /></label
           ><label class="block text-sm"
-            >Bakong API token<input
-              v-model="bakong.token"
+            >Bakong API tokens<input
+              v-model="bakong.tokens"
               type="password"
               autocomplete="new-password"
               class="block border rounded-xl p-3 w-full mt-2"
-              :placeholder="
-                settings?.bakong.configured
-                  ? 'Leave blank to keep existing token'
-                  : 'Enter your API token'
-              " /></label
+              aria-describedby="bakong-token-help"
+              placeholder="Primary token, backup token"
+            />
+            <span
+              id="bakong-token-help"
+              class="mt-2 block text-xs text-slate-500"
+            >
+              Enter up to five comma-separated tokens in priority order. A new
+              list replaces the saved list. Leave blank to keep the saved
+              tokens.
+            </span></label
           ><label class="block text-sm"
             >Merchant name<input
               v-model="bakong.merchantName"

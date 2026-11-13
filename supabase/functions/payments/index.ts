@@ -1,22 +1,24 @@
+import { checkBakongTransaction } from "../shared/bakong.ts";
 import { secureServe } from "../shared/http.ts";
 // Adapted from NetView's KHQR starter: server-generated QR and verified receipts.
 // Database completion owns idempotency; no browser callback can credit money.
 import { createKhqr, verifiedReceiptHash } from "../shared/payment-provider.ts";
 import {
-  createAdminClient,
-  createAuthClient,
   corsHeaders,
   corsResponse,
+  createAdminClient,
+  createAuthClient,
   errorResponse,
 } from "../shared/utils.ts";
 
-import { paymentConfig, deliverDocuments } from "../shared/integrations.ts";
+import { deliverDocuments, paymentConfig } from "../shared/integrations.ts";
 const publicFields =
   "id,mode,amount_minor,currency,order_id,status,qr,created_at,expires_at,paid_at,auction_id,purchased_order_id,purchase_note,bid_auction_id,submitted_bid_id";
 
 secureServe(async (req) => {
-  if (req.method === "OPTIONS")
+  if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
   try {
     const auth = createAuthClient(req),
@@ -29,12 +31,13 @@ secureServe(async (req) => {
     const body = await req.json();
     const config = await paymentConfig(admin),
       mode = config.mode;
-    if (body.action === "config")
+    if (body.action === "config") {
       return corsResponse({
         mode,
         live_enabled: config.liveEnabled,
-        live_ready: !!(config.receiver && config.token),
+        live_ready: !!(config.receiver && config.tokens.length),
       });
+    }
     const inspecting = body.action === "inspect";
     if (inspecting) {
       const { data: staff } = await auth.rpc("staff_session");
@@ -43,22 +46,25 @@ secureServe(async (req) => {
         .select("role")
         .eq("id", user.id)
         .single();
-      if (!staff || profile?.role !== "super_admin")
+      if (!staff || profile?.role !== "super_admin") {
         return errorResponse("Super admin with MFA required", 403);
+      }
     } else {
       const { error: eligible } = await auth.rpc("require_eligible");
       if (eligible) return errorResponse(eligible.message, 403);
     }
     if (body.action === "create") {
-      if (mode === "live" && !config.liveEnabled)
+      if (mode === "live" && !config.liveEnabled) {
         return errorResponse(
           "Real payments are paused by the administrator",
           403,
         );
+      }
       let amount = body.amount_minor;
       if (body.bid_auction_id) {
-        if (body.auction_id || body.order_id || mode !== "live")
+        if (body.auction_id || body.order_id || mode !== "live") {
           return errorResponse("Choose one live checkout purpose", 409);
+        }
         const { data: existing } = await admin
           .from("payment_checkouts")
           .select(publicFields)
@@ -73,11 +79,12 @@ secureServe(async (req) => {
         if (existing) return corsResponse(existing);
       }
       if (body.auction_id) {
-        if (body.order_id || mode !== "live")
+        if (body.order_id || mode !== "live") {
           return errorResponse(
             "Direct KHQR purchases require a live auction",
             409,
           );
+        }
         const { data: auction } = await admin
           .from("auctions")
           .select("payment_mode,listings!inner(buy_it_now_price)")
@@ -92,11 +99,12 @@ secureServe(async (req) => {
           auction.payment_mode !== "live" ||
           !price ||
           body.amount_minor !== price
-        )
+        ) {
           return errorResponse(
             "Buy Now price changed. Return to the item and review it again",
             409,
           );
+        }
         amount = price;
         const { data: existing } = await admin
           .from("payment_checkouts")
@@ -122,8 +130,9 @@ secureServe(async (req) => {
           !order ||
           order.status !== "pending" ||
           order.payment_mode !== mode
-        )
+        ) {
           return errorResponse("Order is not payable in this environment", 409);
+        }
         amount = Math.round(Number(order.amount) * 100);
         const { error: expireError } = await admin
           .from("payment_checkouts")
@@ -140,8 +149,9 @@ secureServe(async (req) => {
           .maybeSingle();
         if (existing) return corsResponse(existing);
       }
-      if (!Number.isSafeInteger(amount) || amount < 1 || amount > 100000)
+      if (!Number.isSafeInteger(amount) || amount < 1 || amount > 100000) {
         return errorResponse("Checkout must be $0.01–$1,000 in integer cents");
+      }
       const { data: permitted, error: budgetError } = await admin.rpc(
         "claim_api_action",
         {
@@ -152,8 +162,9 @@ secureServe(async (req) => {
         },
       );
       if (budgetError) throw budgetError;
-      if (!permitted)
+      if (!permitted) {
         return errorResponse("Checkout limit reached. Try again later", 429);
+      }
       const id = crypto.randomUUID(),
         expires = new Date(Date.now() + 300000).toISOString();
       let qr = null,
@@ -161,8 +172,9 @@ secureServe(async (req) => {
         receiver = null;
       if (mode === "live") {
         receiver = config.receiver;
-        if (!receiver || !config.token)
+        if (!receiver || !config.tokens.length) {
           throw new Error("Live payments are not configured");
+        }
         ({ qr, md5 } = createKhqr({
           receiver,
           merchantName: config.merchantName,
@@ -192,20 +204,23 @@ secureServe(async (req) => {
       if (error) throw error;
       return corsResponse(data);
     }
-    if (!["check", "simulate", "inspect"].includes(body.action))
+    if (!["check", "simulate", "inspect"].includes(body.action)) {
       return errorResponse("Unknown action");
+    }
     let query = admin.from("payment_checkouts").select("*").eq("id", body.id);
     if (!inspecting) query = query.eq("user_id", user.id);
     const { data: p, error } = await query.single();
     if (error || !p) return errorResponse("Payment not found", 404);
     // Existing receipts must remain checkable after an environment switch or pause.
     const checkoutMode = p.mode;
-    if (body.action === "simulate" && checkoutMode !== "demo")
+    if (body.action === "simulate" && checkoutMode !== "demo") {
       return errorResponse("Simulation is disabled for live payments", 403);
-    if (!["pending", "expired"].includes(p.status))
+    }
+    if (!["pending", "expired"].includes(p.status)) {
       return corsResponse(
         Object.fromEntries(publicFields.split(",").map((k) => [k, p[k]])),
       );
+    }
     let hash: string | null = null;
     if (body.action === "simulate") hash = `demo-${p.id}`;
     else if (checkoutMode === "live") {
@@ -214,43 +229,31 @@ secureServe(async (req) => {
         { p_id: p.id },
       );
       if (claimError) throw claimError;
-      if (!claimed)
+      if (!claimed) {
         return corsResponse(
           Object.fromEntries(publicFields.split(",").map((k) => [k, p[k]])),
         );
-      const token = config.token;
-      if (!token) throw new Error("Live payments are not configured");
-      const response = await fetch(
-        "https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5",
-        {
-          method: "POST",
-          redirect: "error",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ md5: p.md5 }),
-          signal: AbortSignal.timeout(20000),
-        },
-      );
-      if (!response.ok)
+      }
+      let receipt;
+      try {
+        receipt = await checkBakongTransaction(p.md5, config.tokens);
+      } catch {
         return errorResponse(
-          "Bakong verification unavailable. Retry later",
+          "Bakong verification unavailable. Retry checking this checkout without paying again.",
           502,
         );
-      const result = await response.json();
-      if (result.responseCode === 0) {
+      }
+      if (receipt) {
         try {
           hash = verifiedReceiptHash(
-            result.data,
+            receipt,
             p.receiver,
             Number(p.amount_minor),
           );
         } catch {
           return errorResponse("Receipt does not match checkout", 409);
         }
-      } else if (result.errorCode !== 1)
-        return errorResponse("Bakong did not confirm this transaction", 502);
+      }
     }
     if (hash) {
       const { error: completeError } = await admin.rpc("complete_checkout", {

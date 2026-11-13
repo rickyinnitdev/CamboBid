@@ -132,7 +132,18 @@ between environments exists. Demo funds cannot be paid out as bank money; demo w
 ## Live KHQR and email configuration
 
 Open **Admin > Integrations** with a super-admin AAL2 session. Save the receiving
-Bakong account ID, API token, merchant name and city. Secrets are encrypted using
+Bakong account ID, merchant name, city and up to five comma-separated API tokens
+in priority order. A submitted token list replaces the saved list. A blank field
+keeps it. The Edge Function tries the next token when Bakong rejects or
+rate-limits a token. A valid pending response ends the check.
+
+To configure tokens on the server, set the **Supabase Edge Function** secret
+`BAKONG_API_TOKENS` to a comma-separated list. Admin tokens take priority, then
+this list, then the existing `BAKONG_API_TOKEN` secret, with a maximum of five
+distinct effective tokens. The frontend is hosted on Vercel and verification
+runs on Supabase.
+
+Secrets are encrypted using
 AES-GCM with provider-bound authenticated data and the server-only
 `INTEGRATION_ENCRYPTION_KEY`. The table has no client permissions. API responses
 return presence flags and non-secret metadata only. Existing server Bakong secrets
@@ -157,7 +168,19 @@ sending domain you own. Configuration does not itself send messages. New checkou
 and settlement handlers attempt document delivery after committing the financial
 operation; failures leave durable queue entries. Staff can send up to 10 pending
 jobs per click; owners can retry their own document. No scheduled retry worker is
-configured. Auth confirmation emails remain separately configured in Supabase Auth.
+configured.
+
+### Registration email OTP
+
+The local Supabase configuration loads the signup template from
+`supabase/templates/confirmation.html`. On hosted Supabase, enable email
+confirmation, set the email OTP length to six digits, and paste that HTML into
+**Authentication → Email Templates → Confirm signup**. Configure Supabase Auth
+SMTP for delivery to public signup addresses.
+
+To check registration, sign up with a fresh address. Enter an incorrect code
+and confirm it is rejected. Use **Resend code** and verify with the newest email.
+Successful verification signs in the user and opens Account Security.
 
 Invoices are immutable snapshots issued when winning orders are created. Receipts
 are issued only for funded orders or confirmed wallet top-ups; refunds create

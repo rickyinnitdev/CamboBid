@@ -8,6 +8,7 @@ import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import KhmerDivider from "@/components/base/KhmerDivider.vue";
 import { securityService } from "@/services/securityService";
+import { authService } from "@/services/authService";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -20,7 +21,43 @@ const confirmPassword = ref("");
 const termsAccepted = ref(false);
 const error = ref("");
 const loading = ref(false);
-const success = ref(false);
+const verifying = ref(false);
+const code = ref("");
+const notice = ref("");
+
+function showVerification(value) {
+  verifying.value = value;
+  error.value = "";
+  notice.value = "";
+  code.value = "";
+}
+
+async function handleCode(resend = false) {
+  if (loading.value) return;
+  error.value = "";
+  notice.value = "";
+  if (!resend && !/^\d{6}$/.test(code.value.trim())) {
+    error.value = "Enter the six-digit code from your email.";
+    return;
+  }
+  loading.value = true;
+  try {
+    if (resend) {
+      await authService.resendSignupCode(email.value.trim());
+      code.value = "";
+      notice.value =
+        "If this email has an unconfirmed account, a new code was requested.";
+    } else {
+      await authService.verifySignupCode(email.value.trim(), code.value.trim());
+      await router.push("/account/security");
+    }
+  } catch (err) {
+    error.value =
+      err.message || "Email verification could not be completed. Try again.";
+  } finally {
+    loading.value = false;
+  }
+}
 
 async function handleRegister() {
   error.value = "";
@@ -45,13 +82,16 @@ async function handleRegister() {
       error.value = t("terms.unavailable");
       return;
     }
-    await register({
-      email: email.value,
+    const data = await register({
+      email: email.value.trim(),
       password: password.value,
       displayName: displayName.value,
       termsAcceptedVersion: terms.version,
     });
-    success.value = true;
+    password.value = "";
+    confirmPassword.value = "";
+    if (data.session) await router.push("/account/security");
+    else showVerification(true);
   } catch (err) {
     error.value = err.message || "Registration failed. Please try again.";
   } finally {
@@ -82,7 +122,9 @@ async function handleRegister() {
 
           <dl class="mt-10 grid max-w-md grid-cols-2 gap-x-6 gap-y-5">
             <div class="border-l border-gold-300 pl-4">
-              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              <dt
+                class="text-[11px] font-medium uppercase tracking-wider text-muted"
+              >
                 Bidding
               </dt>
               <dd class="mt-1 text-sm font-semibold text-heading">
@@ -90,13 +132,17 @@ async function handleRegister() {
               </dd>
             </div>
             <div class="border-l border-gold-300 pl-4">
-              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              <dt
+                class="text-[11px] font-medium uppercase tracking-wider text-muted"
+              >
                 Currency
               </dt>
               <dd class="mt-1 text-sm font-semibold text-heading">USD only</dd>
             </div>
             <div class="border-l border-gold-300 pl-4">
-              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              <dt
+                class="text-[11px] font-medium uppercase tracking-wider text-muted"
+              >
                 Payment
               </dt>
               <dd class="mt-1 text-sm font-semibold text-heading">
@@ -104,7 +150,9 @@ async function handleRegister() {
               </dd>
             </div>
             <div class="border-l border-gold-300 pl-4">
-              <dt class="text-[11px] font-medium uppercase tracking-wider text-muted">
+              <dt
+                class="text-[11px] font-medium uppercase tracking-wider text-muted"
+              >
                 Support
               </dt>
               <dd class="mt-1 text-sm font-semibold text-heading">
@@ -133,43 +181,71 @@ async function handleRegister() {
               Create your account in a minute.
             </p>
 
-            <div v-if="success" class="py-8 text-center">
-              <div
-                class="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-success"
-              >
-                <svg
-                  class="h-7 w-7"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
+            <form
+              v-if="verifying"
+              class="mt-6 space-y-4"
+              @submit.prevent="handleCode()"
+            >
               <h3 class="font-display text-lg font-semibold text-heading">
-                Check your email
+                Verify your email
               </h3>
-              <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-body">
-                We've sent a confirmation link to
-                <strong class="font-semibold text-heading">{{ email }}</strong
-                >. Verify your email to continue.
+              <p class="text-sm text-body">
+                Enter the six-digit code from your CamboBid signup email.
               </p>
-              <BaseButton
-                variant="primary"
-                class="mt-6"
-                @click="router.push('/login')"
+              <p
+                v-if="error"
+                role="alert"
+                class="rounded-xl bg-danger/5 p-3 text-sm text-danger"
               >
-                {{ t("nav.login") }}
+                {{ error }}
+              </p>
+              <p v-if="notice" role="status" class="text-sm text-body">
+                {{ notice }}
+              </p>
+              <BaseInput
+                v-model="email"
+                :label="t('profile.email')"
+                type="email"
+                autocomplete="email"
+                :disabled="loading"
+                required
+              />
+              <BaseInput
+                v-model="code"
+                label="Verification code"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                :disabled="loading"
+                required
+              />
+              <BaseButton type="submit" :loading="loading" class="w-full">
+                Verify email
               </BaseButton>
-            </div>
+              <div class="flex flex-wrap justify-between gap-3 text-sm">
+                <button
+                  type="button"
+                  class="underline"
+                  :disabled="loading || !email.trim()"
+                  @click="handleCode(true)"
+                >
+                  Resend code
+                </button>
+                <button
+                  type="button"
+                  class="underline"
+                  :disabled="loading"
+                  @click="showVerification(false)"
+                >
+                  Back to registration
+                </button>
+              </div>
+            </form>
 
-            <form v-else class="mt-6 space-y-4" @submit.prevent="handleRegister">
+            <form
+              v-else
+              class="mt-6 space-y-4"
+              @submit.prevent="handleRegister"
+            >
               <div
                 v-if="error"
                 role="alert"
@@ -249,7 +325,16 @@ async function handleRegister() {
               </BaseButton>
             </form>
 
-            <p v-if="!success" class="mt-6 text-center text-sm text-body">
+            <button
+              v-if="!verifying"
+              type="button"
+              class="mt-4 w-full text-sm underline"
+              :disabled="loading"
+              @click="showVerification(true)"
+            >
+              Enter a signup code
+            </button>
+            <p class="mt-6 text-center text-sm text-body">
               Already have an account?
               <router-link
                 to="/login"
